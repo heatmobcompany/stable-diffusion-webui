@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from packaging import version
+from helper.v2a_server import post_v2a
 
 import logging
 logging.getLogger("xformers").addFilter(lambda record: 'A matching Triton is not available' not in record.getMessage())
@@ -98,7 +99,8 @@ Use --skip-version-check commandline argument to disable this check.
             """.strip())
 
 
-def initialize():
+def initialize(google_id):
+    post_v2a(google_id, "initialize webui start")
     check_versions()
 
     extensions.list_extensions()
@@ -184,6 +186,7 @@ def initialize():
         os._exit(0)
 
     signal.signal(signal.SIGINT, sigint_handler)
+    post_v2a(google_id, "initialize webui end")
 
 
 def setup_middleware(app):
@@ -228,11 +231,13 @@ def api_only():
     api.launch(server_name="0.0.0.0" if cmd_opts.listen else "127.0.0.1", port=cmd_opts.port if cmd_opts.port else 7861)
 
 
-def webui():
+def webui(google_id):
+    post_v2a(google_id, "Webui start")
     launch_api = cmd_opts.api
-    initialize()
+    initialize(google_id)
 
     while 1:
+        post_v2a(google_id, "Webui loop start")
         if shared.opts.clean_temp_dir_at_start:
             ui_tempdir.cleanup_tmpdr()
             startup_timer.record("cleanup temp dir")
@@ -331,6 +336,7 @@ def webui():
         extra_networks.initialize()
         extra_networks.register_extra_network(extra_networks_hypernet.ExtraNetworkHypernet())
         startup_timer.record("initialize extra networks")
+        post_v2a(google_id, "Webui loop end")
 
 
 if __name__ == "__main__":

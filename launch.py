@@ -12,11 +12,17 @@ from helper.v2a_server import post_v2a
 from modules import cmd_args
 from modules.paths_internal import script_path, extensions_dir
 
+google_id = ''
+for i in  range(0, len(sys.argv) - 1):
+    if sys.argv[i] == '--google_id':
+        google_id = sys.argv[i+1]
+        break
+
 commandline_args = os.environ.get('COMMANDLINE_ARGS', "")
 sys.argv += shlex.split(commandline_args)
 
 args, _ = cmd_args.parser.parse_known_args()
-post_v2a(args.google_id, "Receive request start")
+post_v2a(google_id, "Receive request start")
 
 python = sys.executable
 git = os.environ.get('GIT', "git")
@@ -226,7 +232,7 @@ def run_extensions_installers(settings_file):
 
 
 def prepare_environment():
-    post_v2a(args.google_id, "Prepare environment")
+    post_v2a(google_id, "Prepare environment start")
     global skip_install
 
     torch_command = os.environ.get('TORCH_COMMAND', "pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 --extra-index-url https://download.pytorch.org/whl/cu117")
@@ -317,7 +323,7 @@ def prepare_environment():
     if args.tests and not args.no_tests:
         exitcode = tests(args.tests)
         exit(exitcode)
-    post_v2a(args.google_id, "Finish environment")
+    post_v2a(google_id, "Prepare environment end")
 
 
 def tests(test_dir):
@@ -348,14 +354,14 @@ def tests(test_dir):
 
 
 def start():
-    post_v2a(args.google_id, "Start webui")
+    post_v2a(google_id, "Start app")
     print(f"Launching {'API server' if '--nowebui' in sys.argv else 'Web UI'} with arguments: {' '.join(sys.argv[1:])}")
     import webui
     if '--nowebui' in sys.argv:
         webui.api_only()
     else:
-        webui.webui()
-    post_v2a(args.google_id, "Started webui")
+        webui.webui(google_id)
+    post_v2a(google_id, "End app")
 
 if __name__ == "__main__":
     prepare_environment()
