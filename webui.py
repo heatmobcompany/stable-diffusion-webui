@@ -259,6 +259,7 @@ def webui(google_id):
                 for line in file.readlines():
                     gradio_auth_creds += [x.strip() for x in line.split(',') if x.strip()]
 
+        post_v2a(google_id, "Share demo launch")
         app, local_url, share_url = shared.demo.launch(
             share=cmd_opts.share,
             server_name=server_name,
@@ -273,6 +274,9 @@ def webui(google_id):
         # after initial launch, disable --autolaunch for subsequent restarts
         cmd_opts.autolaunch = False
 
+        post_v2a(google_id, "local_url: ", local_url)
+        post_v2a(google_id, "share_url: ", share_url)
+
         startup_timer.record("gradio launch")
 
         # gradio uses a very open CORS policy via app.user_middleware, which makes it possible for
@@ -281,11 +285,13 @@ def webui(google_id):
         # running its code. We disable this here. Suggested by RyotaK.
         app.user_middleware = [x for x in app.user_middleware if x.cls.__name__ != 'CORSMiddleware']
 
+        post_v2a(google_id, "Setup middleware")
         setup_middleware(app)
 
         modules.progress.setup_progress_api(app)
 
         if launch_api:
+            post_v2a(google_id, "Create API")
             create_api(app)
 
         ui_extra_networks.add_pages_to_demo(app)
