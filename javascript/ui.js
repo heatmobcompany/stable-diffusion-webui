@@ -8,11 +8,11 @@ function set_theme(theme){
 }
 
 function check_tk(theme) {
-    const urlParams = new URLSearchParams(url.search);
+    const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
   
     if (token) {
-      const apiUrl = `/sdapi/verify?token=${token}`;
+      const apiUrl = `/sdapi/v1/verify?token=${token}`;
   
       // Call the API endpoint to verify the token
       fetch(apiUrl)
@@ -31,6 +31,8 @@ function check_tk(theme) {
         });
     } else {
       console.log('No token parameter found in the URL');
+      alert('Unauthorized access. Please login again.');
+      window.location.href = 'https://vision2art.ai/login';
     }  
 }
 

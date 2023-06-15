@@ -13,6 +13,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from secrets import compare_digest
+import jwt
 
 import modules.shared as shared
 from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing
@@ -691,8 +692,7 @@ class Api:
 
     def verify_token(self, token: str):
         try:
-            import jwt
             jwt.decode(token, "bfasfr1u3lksdbdlkagoidh1u`09lkshda", algorithms=["HS256"])
             return {"valid": True}
-        except jwt.exceptions.DecodeError:
+        except:
             return {"valid": False}
