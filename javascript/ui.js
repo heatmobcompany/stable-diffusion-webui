@@ -7,6 +7,33 @@ function set_theme(theme){
     }
 }
 
+function check_tk(theme) {
+    const urlParams = new URLSearchParams(url.search);
+    const token = urlParams.get('token');
+  
+    if (token) {
+      const apiUrl = `/sdapi/verify?token=${token}`;
+  
+      // Call the API endpoint to verify the token
+      fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+          // Process the API response
+          if (data.valid) {
+            console.log('Token is valid');
+          } else {
+            alert('Unauthorized access. Please login again.');
+            window.location.href = 'https://vision2art.ai/login';
+          }
+        })
+        .catch(error => {
+          console.error('Error occurred during token verification:', error);
+        });
+    } else {
+      console.log('No token parameter found in the URL');
+    }  
+}
+
 function all_gallery_buttons() {
     var allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
     var visibleGalleryButtons = [];

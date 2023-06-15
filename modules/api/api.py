@@ -197,6 +197,7 @@ class Api:
         self.add_api_route("/sdapi/v1/unload-checkpoint", self.unloadapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/reload-checkpoint", self.reloadapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/scripts", self.get_scripts_list, methods=["GET"], response_model=ScriptsList)
+        self.add_api_route("/sdapi/v1/verify", self.verify_token, methods=["GET"], response_model=TokenVerify)
 
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
@@ -687,3 +688,11 @@ class Api:
     def launch(self, server_name, port):
         self.app.include_router(self.router)
         uvicorn.run(self.app, host=server_name, port=port)
+
+    def verify_token(self, token: str):
+        try:
+            import jwt
+            jwt.decode(token, "bfasfr1u3lksdbdlkagoidh1u`09lkshda", algorithms=["HS256"])
+            return {"valid": True}
+        except jwt.exceptions.DecodeError:
+            return {"valid": False}
