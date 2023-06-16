@@ -692,7 +692,7 @@ class Api:
 
     def verify_token(self, token: str):
         try:
-            jwt.decode(token, "bfasfr1u3lksdbdlkagoidh1u`09lkshda", algorithms=["HS256"])
+            jwt.decode(token, "dfdhhf8gh523reh6qedn37dferpoawdn381j", algorithms=["HS256"])
             return {"valid": True}
         except:
             return {"valid": False}

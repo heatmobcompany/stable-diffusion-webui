@@ -10,7 +10,7 @@ function set_theme(theme){
 function check_tk(theme) {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-  
+
     if (token) {
       const apiUrl = `/sdapi/v1/verify?token=${token}`;
   
@@ -22,8 +22,9 @@ function check_tk(theme) {
           if (data.valid) {
             console.log('Token is valid');
           } else {
+            console.log('Token is invalid');
             alert('Unauthorized access. Please login again.');
-            window.location.href = 'https://vision2art.ai/login';
+            window.location.href = 'https://beta.vision2art.ai/unauthorize';
           }
         })
         .catch(error => {
@@ -31,8 +32,7 @@ function check_tk(theme) {
         });
     } else {
       console.log('No token parameter found in the URL');
-      alert('Unauthorized access. Please login again.');
-      window.location.href = 'https://vision2art.ai/login';
+      window.location.href = 'https://beta.vision2art.ai/unauthorize';
     }  
 }
 
