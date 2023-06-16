@@ -41,6 +41,7 @@ from modules.textual_inversion import textual_inversion
 import modules.hypernetworks.ui
 from modules.generation_parameters_copypaste import image_from_url_text
 import modules.extras
+import webbrowser
 
 warnings.filterwarnings("default" if opts.show_warnings else "ignore", category=UserWarning)
 
@@ -81,7 +82,7 @@ apply_style_symbol = '\U0001f4cb'  # 📋
 clear_prompt_symbol = '\U0001f5d1\ufe0f'  # 🗑️
 extra_networks_symbol = '\U0001F3B4'  # 🎴
 switch_values_symbol = '\U000021C5' # ⇅
-
+back_symbol = '\u2190\ufe0f'  # ←️
 
 def plaintext_to_html(text):
     return ui_common.plaintext_to_html(text)
@@ -387,6 +388,17 @@ def create_refresh_button(refresh_component, refresh_method, refreshed_args, ele
     )
     return refresh_button
 
+def create_back_button(elem_id):
+    def go_back():
+        webbrowser.open("https://vision2art.ai/select-style")
+
+    back_button = ToolButton(value=back_symbol, elem_id=elem_id)
+    back_button.click(
+        fn=go_back,
+        inputs=[],
+        outputs=[]
+    )
+    return back_button
 
 def create_output_panel(tabname, outdir):
     return ui_common.create_output_panel(tabname, outdir)
@@ -1387,6 +1399,15 @@ def create_ui():
                 with FormRow():
                     res = comp(label=info.label, value=fun(), elem_id=elem_id, **(args or {}))
                     create_refresh_button(res, info.refresh, info.component_args, "refresh_" + key)
+        if info.back is not None:
+            if is_quicksettings:
+                res = comp(label=info.label, value=fun(), elem_id=elem_id, **(args or {}))
+                create_back_button("back_" + key)
+            else:
+                with FormRow():
+                    res = comp(label=info.label, value=fun(), elem_id=elem_id, **(args or {}))
+                    create_back_button("back_" + key)
+                    
         else:
             res = comp(label=info.label, value=fun(), elem_id=elem_id, **(args or {}))
 
@@ -1550,16 +1571,16 @@ def create_ui():
         (txt2img_interface, "txt2img", "txt2img"),
         (img2img_interface, "img2img", "img2img"),
         (extras_interface, "Extras", "extras"),
-        (pnginfo_interface, "PNG Info", "pnginfo"),
-        (modelmerger_interface, "Checkpoint Merger", "modelmerger"),
-        (train_interface, "Train", "ti"),
+        # (pnginfo_interface, "PNG Info", "pnginfo"),
+        # (modelmerger_interface, "Checkpoint Merger", "modelmerger"),
+        # (train_interface, "Train", "ti"),
     ]
 
-    interfaces += script_callbacks.ui_tabs_callback()
-    interfaces += [(settings_interface, "Settings", "settings")]
+    # interfaces += script_callbacks.ui_tabs_callback()
+    # interfaces += [(settings_interface, "Settings", "settings")]
 
-    extensions_interface = ui_extensions.create_ui()
-    interfaces += [(extensions_interface, "Extensions", "extensions")]
+    # extensions_interface = ui_extensions.create_ui()
+    # interfaces += [(extensions_interface, "Extensions", "extensions")]
 
     shared.tab_names = []
     for _interface, label, _ifid in interfaces:
