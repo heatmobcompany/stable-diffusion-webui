@@ -102,4 +102,4 @@ parser.add_argument("--skip-version-check", action='store_true', help="Do not ch
 parser.add_argument("--no-hashing", action='store_true', help="disable sha256 hashing of checkpoints to help loading performance", default=False)
 parser.add_argument("--no-download-sd-model", action='store_true', help="don't download SD1.5 model even if no model is found in --ckpt-dir", default=False)
 parser.add_argument("--google-id", type=str, help="Google id that run this script", default='Not assign')
-parser.add_argument("--fixed-style", action='store_true', help="Fix the style model", default=True)
+parser.add_argument("--interactive-style", action='store_true', help="Allow change the style model", default=False)
