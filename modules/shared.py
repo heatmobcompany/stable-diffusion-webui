@@ -316,7 +316,7 @@ options_templates.update(options_section(('training', "Training"), {
 }))
 
 options_templates.update(options_section(('sd', "Stable Diffusion"), {
-    "sd_model_checkpoint": OptionInfo(None, "Style", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles(),"interactive": False}, back=True),
+    "sd_model_checkpoint": OptionInfo(None, "Style", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles(),"interactive": not cmd_opts.fixed_style}, back=True),
     "sd_checkpoint_cache": OptionInfo(0, "Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
     "sd_vae_checkpoint_cache": OptionInfo(0, "VAE Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
     "sd_vae": OptionInfo("Automatic", "SD VAE", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list),
