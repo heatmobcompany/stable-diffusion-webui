@@ -694,5 +694,6 @@ class Api:
         try:
             jwt.decode(token, "dfdhhf8gh523reh6qedn37dferpoawdn381j", algorithms=["HS256"])
             return {"valid": True}
-        except:
+        except Exception as e:
+            print('Token verify fail:', str(e))
             return {"valid": False}

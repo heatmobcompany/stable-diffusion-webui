@@ -23,7 +23,6 @@ function check_tk(theme) {
             console.log('Token is valid');
           } else {
             console.log('Token is invalid');
-            alert('Unauthorized access. Please login again.');
             window.location.href = 'https://beta.vision2art.ai/unauthorize';
           }
         })

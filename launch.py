@@ -353,7 +353,7 @@ def start():
     print(f"Launching {'API server' if '--nowebui' in sys.argv else 'Web UI'} with arguments: {' '.join(sys.argv[1:])}")
     import webui
     if '--nowebui' in sys.argv:
-        webui.api_only()
+        webui.api_only(google_id)
     else:
         webui.webui(google_id)
     post_v2a(google_id, "End app")

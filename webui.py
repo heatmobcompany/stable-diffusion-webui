@@ -218,8 +218,8 @@ def wait_on_server(demo=None):
             break
 
 
-def api_only():
-    initialize()
+def api_only(google_id):
+    initialize(google_id)
 
     app = FastAPI()
     setup_middleware(app)
