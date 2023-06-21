@@ -105,5 +105,8 @@ parser.add_argument("--no-gradio-queue", action='store_true', help="Disables gra
 parser.add_argument("--skip-version-check", action='store_true', help="Do not check versions of torch and xformers")
 parser.add_argument("--no-hashing", action='store_true', help="disable sha256 hashing of checkpoints to help loading performance", default=False)
 parser.add_argument("--no-download-sd-model", action='store_true', help="don't download SD1.5 model even if no model is found in --ckpt-dir", default=False)
+parser.add_argument("--google-id", type=str, help="Google id that run this script", default='Not assign')
+parser.add_argument("--interactive-style", action='store_true', help="Allow change the style model", default=False)
+parser.add_argument("--group", type=str, help="Style selected", default='')
 parser.add_argument('--subpath', type=str, help='customize the subpath for gradio, use with reverse proxy')
 parser.add_argument('--add-stop-route', action='store_true', help='add /_stop route to stop server')

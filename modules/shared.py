@@ -29,7 +29,18 @@ if os.environ.get('IGNORE_CMD_ARGS_ERRORS', None) is None:
     cmd_opts = parser.parse_args()
 else:
     cmd_opts, _ = parser.parse_known_args()
+    
+models_tbl = {
+    "Majicmix": "/content/stable-diffusion-webui/models/Stable-diffusion/majicmixRealistic_v5.safetensors",
+    "RealisticVision": "/content/stable-diffusion-webui/models/Stable-diffusion/realisticVisionV20_v20NoVAE.safetensors",
+    "RevAnimated": "/content/stable-diffusion-webui/models/Stable-diffusion/revAnimated_v122.safetensors",
+    "Meinamix": "/content/stable-diffusion-webui/models/Stable-diffusion/meinamix_meinaV10.safetensors",
+    "CosplayMix": "/content/stable-diffusion-webui/models/Stable-diffusion/cosplaymix_v41.safetensors",
+}
 
+if cmd_opts.group and cmd_opts.group in models_tbl.keys():
+    cmd_opts.ckpt = models_tbl[cmd_opts.group]
+    print('**** Model re-config:', cmd_opts.ckpt)
 
 restricted_opts = {
     "samples_filename_pattern",
@@ -394,7 +405,7 @@ options_templates.update(options_section(('training', "Training"), {
 }))
 
 options_templates.update(options_section(('sd', "Stable Diffusion"), {
-    "sd_model_checkpoint": OptionInfo(None, "Stable Diffusion checkpoint", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    "sd_model_checkpoint": OptionInfo(None, "Model checkpoint", gr.Textbox, lambda: { "interactive": False}),
     "sd_checkpoint_cache": OptionInfo(0, "Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
     "sd_vae_checkpoint_cache": OptionInfo(0, "VAE Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
     "sd_vae": OptionInfo("Automatic", "SD VAE", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list).info("choose VAE model: Automatic = use one with same filename as checkpoint; None = use VAE from checkpoint"),

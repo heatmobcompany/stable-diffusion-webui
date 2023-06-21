@@ -6,7 +6,7 @@ import importlib.util
 import platform
 import json
 from functools import lru_cache
-
+from helper.v2a_server import post_v2a
 from modules import cmd_args, errors
 from modules.paths_internal import script_path, extensions_dir
 
@@ -16,6 +16,7 @@ python = sys.executable
 git = os.environ.get('GIT', "git")
 index_url = os.environ.get('INDEX_URL', "")
 dir_repos = "repositories"
+google_id = args.google_id
 
 # Whether to default to printing command output
 default_command_live = (os.environ.get('WEBUI_LAUNCH_LIVE_OUTPUT') == "1")
@@ -339,6 +340,6 @@ def start():
     print(f"Launching {'API server' if '--nowebui' in sys.argv else 'Web UI'} with arguments: {' '.join(sys.argv[1:])}")
     import webui
     if '--nowebui' in sys.argv:
-        webui.api_only()
+        webui.api_only(google_id)
     else:
-        webui.webui()
+        webui.webui(google_id)

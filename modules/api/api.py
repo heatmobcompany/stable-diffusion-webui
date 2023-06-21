@@ -12,6 +12,7 @@ from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
 from secrets import compare_digest
+import jwt
 
 import modules.shared as shared
 from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors
@@ -206,6 +207,7 @@ class Api:
         self.add_api_route("/sdapi/v1/memory", self.get_memory, methods=["GET"], response_model=models.MemoryResponse)
         self.add_api_route("/sdapi/v1/unload-checkpoint", self.unloadapi, methods=["POST"])
         self.add_api_route("/sdapi/v1/reload-checkpoint", self.reloadapi, methods=["POST"])
+        self.add_api_route("/sdapi/v1/verify", self.verify_token, methods=["GET"], response_model=models.TokenVerify)
         self.add_api_route("/sdapi/v1/scripts", self.get_scripts_list, methods=["GET"], response_model=models.ScriptsList)
         self.add_api_route("/sdapi/v1/script-info", self.get_script_info, methods=["GET"], response_model=List[models.ScriptInfo])
 
@@ -711,6 +713,14 @@ class Api:
         except Exception as err:
             cuda = {'error': f'{err}'}
         return models.MemoryResponse(ram=ram, cuda=cuda)
+
+    def verify_token(self, token: str):
+        try:
+            jwt.decode(token, "dfdhhf8gh523reh6qedn37dferpoawdn381j", algorithms=["HS256"])
+            return {"valid": True}
+        except Exception as e:
+            print('Token verify fail:', str(e))
+            return {"valid": False}
 
     def launch(self, server_name, port):
         self.app.include_router(self.router)
