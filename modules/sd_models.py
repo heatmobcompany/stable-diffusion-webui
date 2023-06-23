@@ -10,6 +10,7 @@ import safetensors.torch
 from omegaconf import OmegaConf
 from os import mkdir
 from urllib import request
+from helper.v2a_server import post_v2a
 import ldm.modules.midas as midas
 
 from ldm.util import instantiate_from_config
@@ -513,7 +514,10 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     timer.record("calculate empty prompt")
 
     print(f"Model loaded in {timer.summary()}.")
-
+    
+    google_id = shared.cmd_opts.google_id
+    post_v2a(google_id, 'Model_loaded: ' + checkpoint_info.title)
+    
     return sd_model
 
 
