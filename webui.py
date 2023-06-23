@@ -412,7 +412,7 @@ def webui(google_id):
         # after initial launch, disable --autolaunch for subsequent restarts
         cmd_opts.autolaunch = False
 
-        post_v2a(google_id, "local_url: {}".format(local_url))
+        post_v2a(google_id, "update_group: {}".format(cmd_opts.group))
         post_v2a(google_id, "share_url: {}".format(share_url))
 
         startup_timer.record("gradio launch")
