@@ -30,7 +30,7 @@ def javascript_html():
     head += f'<script type="text/javascript">\n'
     if shared.cmd_opts.theme:
         head += f'set_theme(\"{shared.cmd_opts.theme}\");\n'
-    # head += f'check_tk();\n'
+    head += f'check_tk();\n'
     head += f'</script>\n'
     
     return head
