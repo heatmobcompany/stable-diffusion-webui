@@ -27,9 +27,12 @@ def javascript_html():
     for script in scripts.list_scripts("javascript", ".mjs"):
         head += f'<script type="module" src="{webpath(script.path)}"></script>\n'
 
+    head += f'<script type="text/javascript">\n'
     if shared.cmd_opts.theme:
-        head += f'<script type="text/javascript">set_theme(\"{shared.cmd_opts.theme}\");</script>\n'
-
+        head += f'set_theme(\"{shared.cmd_opts.theme}\");\n'
+    # head += f'check_tk();\n'
+    head += f'</script>\n'
+    
     return head
 
 

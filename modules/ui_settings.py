@@ -183,48 +183,48 @@ class UiSettings:
 
                 self.text_settings = gr.Textbox(elem_id="settings_json", value=lambda: opts.dumpjson(), visible=False)
 
-            unload_sd_model.click(
-                fn=sd_models.unload_model_weights,
-                inputs=[],
-                outputs=[]
-            )
+            # unload_sd_model.click(
+            #     fn=sd_models.unload_model_weights,
+            #     inputs=[],
+            #     outputs=[]
+            # )
 
-            reload_sd_model.click(
-                fn=sd_models.reload_model_weights,
-                inputs=[],
-                outputs=[]
-            )
+            # reload_sd_model.click(
+            #     fn=sd_models.reload_model_weights,
+            #     inputs=[],
+            #     outputs=[]
+            # )
 
-            request_notifications.click(
-                fn=lambda: None,
-                inputs=[],
-                outputs=[],
-                _js='function(){}'
-            )
+            # request_notifications.click(
+            #     fn=lambda: None,
+            #     inputs=[],
+            #     outputs=[],
+            #     _js='function(){}'
+            # )
 
-            download_localization.click(
-                fn=lambda: None,
-                inputs=[],
-                outputs=[],
-                _js='download_localization'
-            )
+            # download_localization.click(
+            #     fn=lambda: None,
+            #     inputs=[],
+            #     outputs=[],
+            #     _js='download_localization'
+            # )
 
             def reload_scripts():
                 scripts.reload_script_body_only()
                 reload_javascript()  # need to refresh the html page
 
-            reload_script_bodies.click(
-                fn=reload_scripts,
-                inputs=[],
-                outputs=[]
-            )
+            # reload_script_bodies.click(
+            #     fn=reload_scripts,
+            #     inputs=[],
+            #     outputs=[]
+            # )
 
-            restart_gradio.click(
-                fn=shared.state.request_restart,
-                _js='restart_reload',
-                inputs=[],
-                outputs=[],
-            )
+            # restart_gradio.click(
+            #     fn=shared.state.request_restart,
+            #     _js='restart_reload',
+            #     inputs=[],
+            #     outputs=[],
+            # )
 
             def check_file(x):
                 if x is None:
@@ -250,11 +250,11 @@ class UiSettings:
                 self.component_dict[k] = component
 
     def add_functionality(self, demo):
-        self.submit.click(
-            fn=wrap_gradio_call(lambda *args: self.run_settings(*args), extra_outputs=[gr.update()]),
-            inputs=self.components,
-            outputs=[self.text_settings, self.result],
-        )
+        # self.submit.click(
+        #     fn=wrap_gradio_call(lambda *args: self.run_settings(*args), extra_outputs=[gr.update()]),
+        #     inputs=self.components,
+        #     outputs=[self.text_settings, self.result],
+        # )
 
         for _i, k, _item in self.quicksettings_list:
             component = self.component_dict[k]
@@ -269,12 +269,12 @@ class UiSettings:
             )
 
         button_set_checkpoint = gr.Button('Change checkpoint', elem_id='change_checkpoint', visible=False)
-        button_set_checkpoint.click(
-            fn=lambda value, _: self.run_settings_single(value, key='sd_model_checkpoint'),
-            _js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
-            inputs=[self.component_dict['sd_model_checkpoint'], self.dummy_component],
-            outputs=[self.component_dict['sd_model_checkpoint'], self.text_settings],
-        )
+        # button_set_checkpoint.click(
+        #     fn=lambda value, _: self.run_settings_single(value, key='sd_model_checkpoint'),
+        #     _js="function(v){ var res = desiredCheckpointName; desiredCheckpointName = ''; return [res || v, null]; }",
+        #     inputs=[self.component_dict['sd_model_checkpoint'], self.dummy_component],
+        #     outputs=[self.component_dict['sd_model_checkpoint'], self.text_settings],
+        # )
 
         component_keys = [k for k in opts.data_labels.keys() if k in self.component_dict]
 
