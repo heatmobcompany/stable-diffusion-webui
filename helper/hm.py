@@ -35,7 +35,7 @@ models = [
         'name' : 'RealisticVision',
         'file' : 'realisticVisionV30_v30VAE.safetensors',
         'link_file' : 'https://civitai.com/api/download/models/105674',
-        'icon' : 'https://civitai.com/images/334107?modelVersionId=29460&prioritizedUserIds=26957&period=AllTime&sort=Most+Reactions&limit=20',
+        'icon' : 'https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/cf4b9664-975a-4f56-8fba-afe4b5827a00/width=576/334107.jpeg',
         'civitaiLink' : 'https://civitai.com/models/4201',
     },
     {
