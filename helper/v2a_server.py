@@ -2,8 +2,10 @@ import threading
 import time
 import requests
 
+BASE_API_URL = 'https://beta-api.vision2art.ai'
+
 def post_v2a(name, log):
-    url = 'http://v2a-api.dev.heatmob.net/colablog/add'
+    url = BASE_API_URL + '/colablog/add'
     data = {
         'name': name,
         'log': log
