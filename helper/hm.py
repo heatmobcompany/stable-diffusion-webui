@@ -60,10 +60,10 @@ def get_server_info():
     return server_info
 
 def init_server():
-    if args.type != 'colab':
-        heartbeat_thread = HeartbeatThread(server_id)
-        heartbeat_thread.daemon = True
-        heartbeat_thread.start()
+    # if args.type != 'colab':
+    #     heartbeat_thread = HeartbeatThread(server_id)
+    #     heartbeat_thread.daemon = True
+    #     heartbeat_thread.start()
     server_info = get_server_info()
     post_v2a(server_id, 'start_server: ' + json.dumps(server_info))
     
@@ -72,3 +72,26 @@ def get_models_info():
         if group == m['name']:
             return m['file'],  m['link_file']
     return None, None
+
+def get_firebase_head():
+    return r'''
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'
+        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js'
+
+        // Initialize Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyDxjOeHF3LMfafohrnwLwMjg_SEy9wuBEI",
+            authDomain: "v2a-web.firebaseapp.com",
+            projectId: "v2a-web",
+            storageBucket: "v2a-web.appspot.com",
+            messagingSenderId: "845966199447",
+            appId: "1:845966199447:web:90c659000db7f67d7637d2",
+            measurementId: "G-6T6NJZXY0X"
+        };
+        initializeApp(firebaseConfig);
+        console.log('Firebase analytics init!')
+
+        export const analytics = getAnalytics();
+    </script>
+    '''

@@ -6,6 +6,7 @@ import traceback
 from functools import reduce
 import warnings
 
+from helper.hm import get_firebase_head
 import gradio as gr
 import gradio.routes
 import gradio.utils
@@ -1821,6 +1822,8 @@ def javascript_html():
         head += f'set_theme(\"{cmd_opts.theme}\");'
     # head += 'check_tk();'
     head += '</script>'
+    
+    head += get_firebase_head()
 
     return head
 
