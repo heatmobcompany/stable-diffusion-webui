@@ -79,14 +79,15 @@ def get_firebase_head():
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-analytics.js"></script>
     <script>
     // Initialize Firebase
-    var firebaseConfig = {
-      apiKey: "AIzaSyDxjOeHF3LMfafohrnwLwMjg_SEy9wuBEI",
-      authDomain: "v2a-web.firebaseapp.com",
-      projectId: "v2a-web",
-      appId: "1:845966199447:web:90c659000db7f67d7637d2",
-      measurementId: "G-6T6NJZXY0X"
+    const firebaseConfig = {
+        apiKey: "AIzaSyDxjOeHF3LMfafohrnwLwMjg_SEy9wuBEI",
+        authDomain: "v2a-web.firebaseapp.com",
+        projectId: "v2a-web",
+        storageBucket: "v2a-web.appspot.com",
+        messagingSenderId: "845966199447",
+        appId: "1:845966199447:web:90c659000db7f67d7637d2",
+        measurementId: "G-6T6NJZXY0X"
     };
-
     firebase.initializeApp(firebaseConfig);
     firebase.analytics();
 
