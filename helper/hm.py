@@ -75,23 +75,24 @@ def get_models_info():
 
 def get_firebase_head():
     return r'''
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js'
-        import { getAnalytics } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics.js'
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>  
+    <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-analytics.js"></script>
+    <script>
+    // Initialize Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyDxjOeHF3LMfafohrnwLwMjg_SEy9wuBEI",
+      authDomain: "v2a-web.firebaseapp.com",
+      projectId: "v2a-web",
+      appId: "1:845966199447:web:90c659000db7f67d7637d2",
+      measurementId: "G-6T6NJZXY0X"
+    };
 
-        // Initialize Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDxjOeHF3LMfafohrnwLwMjg_SEy9wuBEI",
-            authDomain: "v2a-web.firebaseapp.com",
-            projectId: "v2a-web",
-            storageBucket: "v2a-web.appspot.com",
-            messagingSenderId: "845966199447",
-            appId: "1:845966199447:web:90c659000db7f67d7637d2",
-            measurementId: "G-6T6NJZXY0X"
-        };
-        initializeApp(firebaseConfig);
-        console.log('Firebase analytics init!')
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
 
-        export const analytics = getAnalytics();
-    </script>
+    // Export the logEvent function
+    function logEvent(eventName, eventParams) {
+      firebase.analytics().logEvent(eventName, eventParams);
+    }
+  </script>
     '''

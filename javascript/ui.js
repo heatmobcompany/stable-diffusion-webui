@@ -39,7 +39,7 @@ function check_tk() {
 function all_gallery_buttons() {
     var allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
     var visibleGalleryButtons = [];
-    allGalleryButtons.forEach(function(elem) {
+    allGalleryButtons.forEach(function (elem) {
         if (elem.parentElement.offsetParent) {
             visibleGalleryButtons.push(elem);
         }
@@ -50,7 +50,7 @@ function all_gallery_buttons() {
 function selected_gallery_button() {
     var allCurrentButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
     var visibleCurrentButton = null;
-    allCurrentButtons.forEach(function(elem) {
+    allCurrentButtons.forEach(function (elem) {
         if (elem.parentElement.offsetParent) {
             visibleCurrentButton = elem;
         }
@@ -63,7 +63,7 @@ function selected_gallery_index() {
     var button = selected_gallery_button();
 
     var result = -1;
-    buttons.forEach(function(v, i) {
+    buttons.forEach(function (v, i) {
         if (v == button) {
             result = i;
         }
@@ -179,13 +179,13 @@ function showRestoreProgressButton(tabname, show) {
 
 function submit() {
     console.log('Submit txt2img')
-    analytics.logEvent('button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
+    logEvent('button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
     localStorage.setItem("txt2img_task_id", id);
 
-    requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function() {
+    requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function () {
         showSubmitButtons('txt2img', true);
         localStorage.removeItem("txt2img_task_id");
         showRestoreProgressButton('txt2img', false);
@@ -200,13 +200,13 @@ function submit() {
 
 function submit_img2img() {
     console.log('Submit img2img')
-    analytics.logEvent('button_click', { button_id: 'img2img_generate', button_text: 'Generate' });
+    logEvent('button_click', { button_id: 'img2img_generate', button_text: 'Generate' });
     showSubmitButtons('img2img', false);
 
     var id = randomId();
     localStorage.setItem("img2img_task_id", id);
 
-    requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function() {
+    requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function () {
         showSubmitButtons('img2img', true);
         localStorage.removeItem("img2img_task_id");
         showRestoreProgressButton('img2img', false);
@@ -222,7 +222,7 @@ function submit_img2img() {
 
 function submit_extras() {
     console.log('Submit extras')
-    analytics.logEvent('button_click', { button_id: 'extras_generate', button_text: 'Generate' });
+    logEvent('button_click', { button_id: 'extras_generate', button_text: 'Generate' });
 }
 
 function restoreProgressTxt2img() {
@@ -232,7 +232,7 @@ function restoreProgressTxt2img() {
     id = localStorage.getItem("txt2img_task_id");
 
     if (id) {
-        requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function() {
+        requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function () {
             showSubmitButtons('txt2img', true);
         }, null, 0);
     }
@@ -246,7 +246,7 @@ function restoreProgressImg2img() {
     var id = localStorage.getItem("img2img_task_id");
 
     if (id) {
-        requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function() {
+        requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function () {
             showSubmitButtons('img2img', true);
         }, null, 0);
     }
@@ -255,7 +255,7 @@ function restoreProgressImg2img() {
 }
 
 
-onUiLoaded(function() {
+onUiLoaded(function () {
     showRestoreProgressButton('txt2img', localStorage.getItem("txt2img_task_id"));
     showRestoreProgressButton('img2img', localStorage.getItem("img2img_task_id"));
 });
@@ -263,7 +263,7 @@ onUiLoaded(function() {
 
 function modelmerger() {
     var id = randomId();
-    requestProgress(id, gradioApp().getElementById('modelmerger_results_panel'), null, function() {});
+    requestProgress(id, gradioApp().getElementById('modelmerger_results_panel'), null, function () { });
 
     var res = create_submit_args(arguments);
     res[0] = id;
@@ -308,7 +308,7 @@ function recalculate_prompts_img2img() {
 
 
 var opts = {};
-onUiUpdate(function() {
+onUiUpdate(function () {
     if (Object.keys(opts).length != 0) return;
 
     var json_elem = gradioApp().getElementById('settings_json');
@@ -321,7 +321,7 @@ onUiUpdate(function() {
     executeCallbacks(optionsChangedCallbacks); /*global optionsChangedCallbacks*/
 
     Object.defineProperty(textarea, 'value', {
-        set: function(newValue) {
+        set: function (newValue) {
             var valueProp = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
             var oldValue = valueProp.get.call(textarea);
             valueProp.set.call(textarea, newValue);
@@ -332,7 +332,7 @@ onUiUpdate(function() {
 
             executeCallbacks(optionsChangedCallbacks);
         },
-        get: function() {
+        get: function () {
             var valueProp = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
             return valueProp.get.call(textarea);
         }
@@ -352,7 +352,7 @@ onUiUpdate(function() {
         prompt.parentElement.insertBefore(counter, prompt);
         prompt.parentElement.style.position = "relative";
 
-        promptTokecountUpdateFuncs[id] = function() {
+        promptTokecountUpdateFuncs[id] = function () {
             update_token_counter(id_button);
         };
         textarea.addEventListener("input", promptTokecountUpdateFuncs[id]);
@@ -367,8 +367,8 @@ onUiUpdate(function() {
     var settings_tabs = gradioApp().querySelector('#settings div');
     if (show_all_pages && settings_tabs) {
         settings_tabs.appendChild(show_all_pages);
-        show_all_pages.onclick = function() {
-            gradioApp().querySelectorAll('#settings > div').forEach(function(elem) {
+        show_all_pages.onclick = function () {
+            gradioApp().querySelectorAll('#settings > div').forEach(function (elem) {
                 if (elem.id == "settings_tab_licenses") {
                     return;
                 }
@@ -379,7 +379,7 @@ onUiUpdate(function() {
     }
 });
 
-onOptionsChanged(function() {
+onOptionsChanged(function () {
     var elem = gradioApp().getElementById('sd_checkpoint_hash');
     var sd_checkpoint_hash = opts.sd_checkpoint_hash || "";
     var shorthash = sd_checkpoint_hash.substring(0, 10);
@@ -423,10 +423,10 @@ function update_token_counter(button_id) {
 function restart_reload() {
     document.body.innerHTML = '<h1 style="font-family:monospace;margin-top:20%;color:lightgray;text-align:center;">Reloading...</h1>';
 
-    var requestPing = function() {
-        requestGet("./internal/ping", {}, function(data) {
+    var requestPing = function () {
+        requestGet("./internal/ping", {}, function (data) {
             location.reload();
-        }, function() {
+        }, function () {
             setTimeout(requestPing, 500);
         });
     };
@@ -439,8 +439,8 @@ function restart_reload() {
 // Simulate an `input` DOM event for Gradio Textbox component. Needed after you edit its contents in javascript, otherwise your edits
 // will only visible on web page and not sent to python.
 function updateInput(target) {
-    let e = new Event("input", {bubbles: true});
-    Object.defineProperty(e, "target", {value: target});
+    let e = new Event("input", { bubbles: true });
+    Object.defineProperty(e, "target", { value: target });
     target.dispatchEvent(e);
 }
 
@@ -460,7 +460,7 @@ function updateImg2imgResizeToTextAfterChangingImage() {
     // At the time this is called from gradio, the image has no yet been replaced.
     // There may be a better solution, but this is simple and straightforward so I'm going with it.
 
-    setTimeout(function() {
+    setTimeout(function () {
         gradioApp().getElementById('img2img_update_resize_to').click();
     }, 500);
 
