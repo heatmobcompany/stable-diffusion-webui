@@ -180,6 +180,7 @@ function showRestoreProgressButton(tabname, show) {
 function submit() {
     console.log('Submit txt2img')
     analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
+    checkCredit();
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
@@ -201,6 +202,7 @@ function submit() {
 function submit_img2img() {
     console.log('Submit img2img')
     analytics.logEvent('generate_button_click', { button_id: 'img2img_generate', button_text: 'Generate' });
+    checkCredit();
     showSubmitButtons('img2img', false);
 
     var id = randomId();
@@ -223,6 +225,7 @@ function submit_img2img() {
 function submit_extras() {
     console.log('Submit extras')
     analytics.logEvent('generate_button_click', { button_id: 'extras_generate', button_text: 'Generate' });
+    checkCredit();
 }
 
 function restoreProgressTxt2img() {
@@ -491,4 +494,32 @@ function switchWidthHeight(tabname) {
     updateInput(width);
     updateInput(height);
     return [];
+}
+
+function checkCredit() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    // Call the API endpoint to consume credit
+    if (!token) {
+        throw new Error(`Not found token`);
+    }
+    let isError = false;
+    fetch(`https://web-api.vision2art.ai/account/check-credit`, {
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            // Process the API response
+            console.log('Successfully check credit');
+        })
+        .catch(error => {
+            console.error('Error occurred during token verification:', error);
+            isError = true;
+        });
+    if (isError) {
+        throw new Error('Check coin failed');
+    }
 }

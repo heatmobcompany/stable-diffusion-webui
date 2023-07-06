@@ -12,7 +12,7 @@ function request(url, data, handler, errorHandler) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", url, true);
     xhr.setRequestHeader("Content-Type", "application/json");
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 try {
@@ -86,17 +86,36 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
         parentGallery.insertBefore(livePreview, gallery);
     }
 
-    var removeProgressBar = function() {
+    var removeProgressBar = function () {
         setTitle("");
         parentProgressbar.removeChild(divProgress);
         if (parentGallery) parentGallery.removeChild(livePreview);
         atEnd();
     };
 
-    var fun = function(id_task, id_live_preview) {
-        request("./internal/progress", {id_task: id_task, id_live_preview: id_live_preview}, function(res) {
+    var fun = function (id_task, id_live_preview) {
+        request("./internal/progress", { id_task: id_task, id_live_preview: id_live_preview }, function (res) {
             if (res.completed) {
                 removeProgressBar();
+                
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+
+                fetch(`https://web-api.vision2art.ai/account/use-credit`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Process the API response
+                        console.log('Successfully consume credit');
+                    })
+                    .catch(error => {
+                        console.error('Error occurred during token verification:', error);
+                    });
+
                 return;
             }
 
@@ -151,7 +170,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                 }
 
                 var img = new Image();
-                img.onload = function() {
+                img.onload = function () {
                     livePreview.appendChild(img);
                     if (livePreview.childElementCount > 2) {
                         livePreview.removeChild(livePreview.firstElementChild);
@@ -168,7 +187,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
             setTimeout(() => {
                 fun(id_task, res.id_live_preview);
             }, opts.live_preview_refresh_period || 500);
-        }, function() {
+        }, function () {
             removeProgressBar();
         });
     };
