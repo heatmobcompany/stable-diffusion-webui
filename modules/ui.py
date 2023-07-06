@@ -1820,7 +1820,7 @@ def javascript_html():
     head += '<script type="text/javascript">'
     if cmd_opts.theme:
         head += f'set_theme(\"{cmd_opts.theme}\");'
-    # head += 'check_tk();'
+    head += 'check_tk();'
     head += '</script>'
     
     head += get_firebase_head()
