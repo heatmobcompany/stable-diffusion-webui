@@ -179,7 +179,7 @@ function showRestoreProgressButton(tabname, show) {
 
 function submit() {
     console.log('Submit txt2img')
-    logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
+    analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
@@ -200,7 +200,7 @@ function submit() {
 
 function submit_img2img() {
     console.log('Submit img2img')
-    logEvent('generate_button_click', { button_id: 'img2img_generate', button_text: 'Generate' });
+    analytics.logEvent('generate_button_click', { button_id: 'img2img_generate', button_text: 'Generate' });
     showSubmitButtons('img2img', false);
 
     var id = randomId();
@@ -222,7 +222,7 @@ function submit_img2img() {
 
 function submit_extras() {
     console.log('Submit extras')
-    logEvent('generate_button_click', { button_id: 'extras_generate', button_text: 'Generate' });
+    analytics.logEvent('generate_button_click', { button_id: 'extras_generate', button_text: 'Generate' });
 }
 
 function restoreProgressTxt2img() {

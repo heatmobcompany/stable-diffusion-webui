@@ -89,11 +89,6 @@ def get_firebase_head():
         measurementId: "G-6T6NJZXY0X"
     };
     firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
-
-    // Export the logEvent function
-    function logEvent(eventName, eventParams) {
-      firebase.analytics().logEvent(eventName, eventParams);
-    }
-  </script>
+    const analytics = firebase.analytics();
+    </script>
     '''
