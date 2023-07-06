@@ -71,7 +71,12 @@ def progressapi(req: ProgressRequest):
     completed = req.id_task in finished_tasks
 
     if not active:
-        return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo="In queue..." if queued else "Waiting...")
+        remain_tasks = 0
+        for task in pending_tasks:
+            remain_tasks += 1
+            if task == req.id_task:
+                break
+        return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo=f"In queue... {remain_tasks} {'request' if remain_tasks <= 1 else 'requests'} remaining until yours" if queued else "Waiting...")
 
     progress = 0
 
