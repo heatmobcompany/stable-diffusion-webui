@@ -8,32 +8,32 @@ function set_theme(theme) {
 }
 
 function check_tk() {
-    // const urlParams = new URLSearchParams(window.location.search);
-    // const token = urlParams.get('token');
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
 
-    // if (token) {
-    //     const apiUrl = `/sdapi/v1/verify?token=${token}`;
+    if (token) {
+        const apiUrl = `/sdapi/v1/verify?token=${token}`;
 
-    //     // Call the API endpoint to verify the token
-    //     fetch(apiUrl)
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             // Process the API response
-    //             if (data.valid) {
-    //                 console.log('Token is valid');
-    //             } else {
-    //                 console.log('Token is invalid');
-    //                 window.location.href = 'https://beta.vision2art.ai/unauthorize';
-    //             }
-    //         })
-    //         .catch(error => {
-    //             console.error('Error occurred during token verification:', error);
-    //             window.location.href = 'https://beta.vision2art.ai/unauthorize';
-    //         });
-    // } else {
-    //     console.log('No token parameter found in the URL');
-    //     window.location.href = 'https://beta.vision2art.ai/unauthorize';
-    // }
+        // Call the API endpoint to verify the token
+        fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                // Process the API response
+                if (data.valid) {
+                    console.log('Token is valid');
+                } else {
+                    console.log('Token is invalid');
+                    window.location.href = 'https://beta.vision2art.ai/unauthorize';
+                }
+            })
+            .catch(error => {
+                console.error('Error occurred during token verification:', error);
+                window.location.href = 'https://beta.vision2art.ai/unauthorize';
+            });
+    } else {
+        console.log('No token parameter found in the URL');
+        window.location.href = 'https://beta.vision2art.ai/unauthorize';
+    }
 }
 
 function all_gallery_buttons() {
