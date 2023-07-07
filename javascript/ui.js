@@ -8,32 +8,32 @@ function set_theme(theme) {
 }
 
 function check_tk() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
+    // const urlParams = new URLSearchParams(window.location.search);
+    // const token = urlParams.get('token');
 
-    if (token) {
-        const apiUrl = `/sdapi/v1/verify?token=${token}`;
+    // if (token) {
+    //     const apiUrl = `/sdapi/v1/verify?token=${token}`;
 
-        // Call the API endpoint to verify the token
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                // Process the API response
-                if (data.valid) {
-                    console.log('Token is valid');
-                } else {
-                    console.log('Token is invalid');
-                    window.location.href = 'https://beta.vision2art.ai/unauthorize';
-                }
-            })
-            .catch(error => {
-                console.error('Error occurred during token verification:', error);
-                window.location.href = 'https://beta.vision2art.ai/unauthorize';
-            });
-    } else {
-        console.log('No token parameter found in the URL');
-        window.location.href = 'https://beta.vision2art.ai/unauthorize';
-    }
+    //     // Call the API endpoint to verify the token
+    //     fetch(apiUrl)
+    //         .then(response => response.json())
+    //         .then(data => {
+    //             // Process the API response
+    //             if (data.valid) {
+    //                 console.log('Token is valid');
+    //             } else {
+    //                 console.log('Token is invalid');
+    //                 window.location.href = 'https://beta.vision2art.ai/unauthorize';
+    //             }
+    //         })
+    //         .catch(error => {
+    //             console.error('Error occurred during token verification:', error);
+    //             window.location.href = 'https://beta.vision2art.ai/unauthorize';
+    //         });
+    // } else {
+    //     console.log('No token parameter found in the URL');
+    //     window.location.href = 'https://beta.vision2art.ai/unauthorize';
+    // }
 }
 
 function all_gallery_buttons() {
@@ -499,27 +499,32 @@ function switchWidthHeight(tabname) {
 function checkCredit() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
+
     // Call the API endpoint to consume credit
     if (!token) {
-        throw new Error(`Not found token`);
+        throw new Error('Token not found');
     }
-    let isError = false;
-    fetch(`https://web-api.vision2art.ai/account/check-credit`, {
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://web-api.vision2art.ai/account/check-credit', false);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send();
+    if (xhr.status === 200) {
+        console.log('Successfully checked credit');
+    } else if (xhr.status === 200) {
+        var data = JSON.parse(xhr.responseText);
+        if (data.success === false) {
+            alert(errorMessage)
+            throw new Error('Insufficient credits');
+        } else {
+            var errorMessage = 'Request failed with status: ' + xhr.status;
+            alert('Request failed with status: ' + xhr.status)
+            throw new Error(errorMessage);
         }
-    })
-        .then(response => response.json())
-        .then(data => {
-            // Process the API response
-            console.log('Successfully check credit');
-        })
-        .catch(error => {
-            console.error('Error occurred during token verification:', error);
-            isError = true;
-        });
-    if (isError) {
-        throw new Error('Check coin failed');
+    } else {
+        var errorMessage = 'Request failed with status: ' + xhr.status;
+        alert('Request failed with status: ' + xhr.status)
+        throw new Error(errorMessage);
     }
 }
