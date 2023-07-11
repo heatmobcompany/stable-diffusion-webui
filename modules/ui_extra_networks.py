@@ -242,7 +242,7 @@ def register_default_pages():
     from modules.ui_extra_networks_checkpoints import ExtraNetworksPageCheckpoints
     register_page(ExtraNetworksPageTextualInversion())
     register_page(ExtraNetworksPageHypernetworks())
-    register_page(ExtraNetworksPageCheckpoints())
+    # register_page(ExtraNetworksPageCheckpoints())
 
 
 class ExtraNetworksUi:
