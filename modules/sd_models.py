@@ -126,7 +126,10 @@ def list_models():
 
     download_name = ''
     if hm.args.group:
-        download_name, model_url = hm.get_models_info()
+        server_info = hm.server_info if hm.server_info and hm.server_info['file'] else hm.get_server_info()
+        if server_info:
+            download_name = server_info['file']
+            model_url = server_info['link_file']
         shared.cmd_opts.ckpt = os.path.join(model_path, download_name)
         cmd_ckpt = shared.cmd_opts.ckpt
 
