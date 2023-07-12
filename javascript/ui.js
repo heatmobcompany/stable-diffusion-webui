@@ -512,7 +512,7 @@ function checkCredit() {
     xhr.send();
     if (xhr.status === 200) {
         console.log('Successfully checked credit');
-    } else if (xhr.status === 200) {
+    } else if (xhr.status === 400) {
         var data = JSON.parse(xhr.responseText);
         if (data.success === false) {
             alert(errorMessage)
