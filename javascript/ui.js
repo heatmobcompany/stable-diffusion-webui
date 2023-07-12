@@ -226,6 +226,9 @@ function submit_extras() {
     console.log('Submit extras')
     analytics.logEvent('generate_button_click', { button_id: 'extras_generate', button_text: 'Generate' });
     checkCredit();
+
+    var res = create_submit_args(arguments);
+    return res;
 }
 
 function restoreProgressTxt2img() {
