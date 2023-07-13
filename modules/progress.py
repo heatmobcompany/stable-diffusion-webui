@@ -120,7 +120,7 @@ def progressapi(req: ProgressRequest):
     else:
         live_preview = None
 
-    return ProgressResponse(active=active, queued=queued, completed=completed, progress=progress, eta=eta, live_preview=live_preview, id_live_preview=id_live_preview, textinfo=shared.state.textinfo)
+    return ProgressResponse(active=active, queued=queued, completed=completed, progress=progress, eta=eta, live_preview=live_preview, id_live_preview=id_live_preview, textinfo=shared.state.textinfo if progress > 0 else "Processing...")
 
 
 def restore_progress(id_task):
