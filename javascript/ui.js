@@ -19,10 +19,8 @@ function check_tk() {
             .then(response => response.json())
             .then(data => {
                 // Process the API response
-                if (data.valid) {
-                    console.log('Token is valid');
-                } else {
-                    console.log('Token is invalid');
+                if (!data.valid) {
+                    // console.log('Token is invalid');
                     window.location.href = 'https://beta.vision2art.ai/unauthorize';
                 }
             })
@@ -178,7 +176,7 @@ function showRestoreProgressButton(tabname, show) {
 }
 
 function submit() {
-    console.log('Submit txt2img')
+    // console.log('Submit txt2img')
     analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
     checkCredit();
     showSubmitButtons('txt2img', false);
@@ -200,7 +198,7 @@ function submit() {
 }
 
 function submit_img2img() {
-    console.log('Submit img2img')
+    // console.log('Submit img2img')
     analytics.logEvent('generate_button_click', { button_id: 'img2img_generate', button_text: 'Generate' });
     checkCredit();
     showSubmitButtons('img2img', false);
@@ -223,7 +221,7 @@ function submit_img2img() {
 }
 
 function submit_extras() {
-    console.log('Submit extras')
+    // console.log('Submit extras')
     analytics.logEvent('generate_button_click', { button_id: 'extras_generate', button_text: 'Generate' });
     checkCredit();
 
@@ -445,7 +443,7 @@ function checkCredit() {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
     if (xhr.status === 200) {
-        console.log('Successfully checked credit');
+        // console.log('Successfully checked credit');
     } else if (xhr.status === 400) {
         var data = JSON.parse(xhr.responseText);
         if (data.success === false) {
