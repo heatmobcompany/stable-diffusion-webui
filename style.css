@@ -5,7 +5,7 @@
 /* general gradio fixes */
 
 /* Hidden PNG Info, Checkpoint Merger, Train, Extensions, Settings */
-#tabs div:nth-child(1) button:not(:nth-child(-n+3)):not(:nth-child(n+9)) {
+#tabs > div:first-child > button:not(:nth-child(-n+3)):not(:nth-child(n+9)) {
     display: none;
 }
 
