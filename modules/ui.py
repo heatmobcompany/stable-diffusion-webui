@@ -290,14 +290,14 @@ def create_toprow(is_img2img):
         with gr.Column(scale=1, elem_id=f"{id_part}_actions_column"):
             with gr.Row(elem_id=f"{id_part}_generate_box", elem_classes="generate-box"):
                 interrupt = gr.Button('Interrupt', elem_id=f"{id_part}_interrupt", elem_classes="generate-box-interrupt")
-                skip = gr.Button('Skip', elem_id=f"{id_part}_skip", elem_classes="generate-box-skip")
+                # skip = gr.Button('Skip', elem_id=f"{id_part}_skip", elem_classes="generate-box-skip")
                 submit = gr.Button('Generate (-3 Credits)', elem_id=f"{id_part}_generate", variant='primary')
 
-                skip.click(
-                    fn=lambda: shared.state.skip(),
-                    inputs=[],
-                    outputs=[],
-                )
+                # skip.click(
+                #     fn=lambda: shared.state.skip(),
+                #     inputs=[],
+                #     outputs=[],
+                # )
 
                 interrupt.click(
                     fn=lambda: shared.state.interrupt(),
