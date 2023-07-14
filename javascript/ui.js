@@ -29,7 +29,7 @@ function check_tk() {
                 window.location.href = 'https://beta.vision2art.ai/unauthorize';
             });
     } else {
-        console.log('No token parameter found in the URL');
+        // console.log('No token parameter found in the URL');
         window.location.href = 'https://beta.vision2art.ai/unauthorize';
     }
 }
@@ -443,7 +443,7 @@ function checkCredit() {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
     if (xhr.status === 200) {
-        console.log('Successfully checked credit');
+        // console.log('Successfully checked credit');
     } else {
         var errorMessage = 'Request failed with status: ' + xhr.status;
         throw new Error(errorMessage);
