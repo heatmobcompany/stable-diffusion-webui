@@ -443,20 +443,9 @@ function checkCredit() {
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
     if (xhr.status === 200) {
-        // console.log('Successfully checked credit');
-    } else if (xhr.status === 400) {
-        var data = JSON.parse(xhr.responseText);
-        if (data.success === false) {
-            alert(errorMessage)
-            throw new Error('Insufficient credits');
-        } else {
-            var errorMessage = 'Request failed with status: ' + xhr.status;
-            alert('Request failed with status: ' + xhr.status)
-            throw new Error(errorMessage);
-        }
+        console.log('Successfully checked credit');
     } else {
         var errorMessage = 'Request failed with status: ' + xhr.status;
-        alert('Request failed with status: ' + xhr.status)
         throw new Error(errorMessage);
     }
 }
