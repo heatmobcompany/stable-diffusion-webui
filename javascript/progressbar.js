@@ -110,7 +110,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                     .then(response => response.json())
                     .then(data => {
                         // Process the API response
-                        console.log('Successfully consume credit');
+                        // console.log('Successfully consume credit');
                     })
                     .catch(error => {
                         console.error('Error occurred during token verification:', error);

@@ -43,7 +43,6 @@ export TORCH_COMMAND="pip install torch torchvision torchaudio --index-url https
 
 # Fixed git commits
 #export STABLE_DIFFUSION_COMMIT_HASH=""
-#export TAMING_TRANSFORMERS_COMMIT_HASH=""
 #export CODEFORMER_COMMIT_HASH=""
 #export BLIP_COMMIT_HASH=""
 
