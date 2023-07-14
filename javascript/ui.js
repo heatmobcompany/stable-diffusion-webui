@@ -506,7 +506,7 @@ function checkCredit() {
     }
 
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'http://localhost:4000/account/check-credit', false);
+    xhr.open('GET', 'https://web-api.vision2art.ai/account/check-credit', false);
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
