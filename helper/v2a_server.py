@@ -2,7 +2,7 @@ import threading
 import time
 import requests
 
-BASE_API_URL = 'http://v2a-app-api.dev.v2a.ai'
+BASE_API_URL = 'https://beta-api.v2a.ai'
 def post_v2a(name, log):
     url = BASE_API_URL + '/log/add'
     data = {
