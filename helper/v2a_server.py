@@ -2,15 +2,9 @@ import threading
 import time
 import requests
 
-BASE_API_URL = 'https://beta-api.vision2art.ai'
-
-AUTH_HEADER = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY0YTc3NjY5NTE2Y2ZmNDZlYTRmMDhmMiIsInJvbGVzIjpbIlBSSU1BUlkiXSwiZW1haWwiOiJhbi5uZ3V5ZW5AaGVhdG1vYi5uZXQiLCJjcmVhdGVfYXQiOiIyMDIzLTA3LTA3VDAyOjIwOjI1LjcxOVoiLCJpYXQiOjE2ODg2OTY0MzAsImV4cCI6MTY5MTI4ODQzMH0.HgIgnKvoianhG9H6TFeJxlvilsibin5bW2HKzixx5K0'
-}
-
+BASE_API_URL = 'http://v2a-app-api.dev.v2a.ai'
 def post_v2a(name, log):
-    url = BASE_API_URL + '/colablog/add'
+    url = BASE_API_URL + '/log/add'
     data = {
         'name': name,
         'log': log
@@ -24,9 +18,9 @@ def post_v2a(name, log):
         print('Post v2a failure: ', log)
         
 def get_model_info(name):
-    url = f'{BASE_API_URL}/sdstyle?name={name}'
+    url = f'{BASE_API_URL}/sdstyle/getsimple?name={name}'
     try:
-        response = requests.request("GET", url, headers=AUTH_HEADER)
+        response = requests.request("GET", url)
         return response.json()
     except requests.exceptions.RequestException as e:
         return None
