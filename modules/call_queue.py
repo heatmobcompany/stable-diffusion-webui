@@ -5,8 +5,8 @@ from helper.hm import get_user_priority
 
 from modules import shared, progress, errors
 from modules.priority_lock import PriorityLock
+from modules.shared import queue_lock
 
-queue_lock = PriorityLock()
 class QueueLock:
     def __init__(self, pri=100, name=None):
         self._priority = pri
@@ -44,7 +44,7 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
             token = args[1].replace('token:', '')
             pri, name = get_user_priority(token)
         print('wrap_gradio_gpu_call wait', pri, name, id_task)
-        with QueueLock(pri):
+        with QueueLock(pri, id_task):
             shared.state.begin()
             print('wrap_gradio_gpu_call start', pri, name, id_task)
             progress.start_task(id_task)

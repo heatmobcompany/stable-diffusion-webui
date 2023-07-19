@@ -41,7 +41,8 @@ import ldm.modules.encoders.modules  # noqa: F401
 startup_timer.record("import ldm")
 
 from modules import extra_networks
-from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call, queue_lock  # noqa: F401
+from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call  # noqa: F401
+from modules.shared import queue_lock
 
 # Truncate version number of nightly/local build of PyTorch to not cause exceptions with CodeFormer or Safetensors
 if ".dev" in torch.__version__ or "+git" in torch.__version__:

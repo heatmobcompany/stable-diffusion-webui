@@ -11,6 +11,7 @@ import tqdm
 
 import modules.interrogate
 import modules.memmon
+from modules.priority_lock import PriorityLock
 import modules.styles
 import modules.devices as devices
 from modules import localization, script_loading, errors, ui_components, shared_items, cmd_args
@@ -21,6 +22,8 @@ from typing import Optional
 demo = None
 
 parser = cmd_args.parser
+
+queue_lock = PriorityLock()
 
 script_loading.preload_extensions(extensions_dir, parser)
 script_loading.preload_extensions(extensions_builtin_dir, parser)
