@@ -175,6 +175,17 @@ function showRestoreProgressButton(tabname, show) {
     button.style.display = show ? "flex" : "none";
 }
 
+function getUrlParams() {
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const queryParams = {};
+
+    for (const [key, value] of urlSearchParams.entries()) {
+        queryParams[key] = value;
+    }
+
+    return queryParams;
+}
+
 function submit() {
     // console.log('Submit txt2img')
     analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
@@ -193,6 +204,7 @@ function submit() {
     var res = create_submit_args(arguments);
 
     res[0] = id;
+    res[1] = `token:${getUrlParams().token}`;
 
     return res;
 }
@@ -215,7 +227,8 @@ function submit_img2img() {
     var res = create_submit_args(arguments);
 
     res[0] = id;
-    res[1] = get_tab_index('mode_img2img');
+    res[1] = `token:${getUrlParams().token}`;
+    res[2] = get_tab_index('mode_img2img');
 
     return res;
 }
@@ -225,7 +238,11 @@ function submit_extras() {
     analytics.logEvent('generate_button_click', { button_id: 'extras_generate', button_text: 'Generate' });
     checkCredit();
 
+    var id = randomId();
     var res = create_submit_args(arguments);
+    res[0] = id;
+    res[1] = `token:${getUrlParams().token}`;
+
     return res;
 }
 

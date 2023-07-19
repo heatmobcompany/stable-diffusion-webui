@@ -17,6 +17,7 @@ import jwt
 import modules.shared as shared
 from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors
 from modules.api import models
+from modules.call_queue import QueueLock
 from modules.shared import opts
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
 from modules.textual_inversion.textual_inversion import create_embedding, train_embedding
@@ -325,7 +326,7 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
-        with self.queue_lock:
+        with QueueLock():
             p = StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)
             p.scripts = script_runner
             p.outpath_grids = opts.outdir_txt2img_grids
@@ -381,7 +382,7 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
-        with self.queue_lock:
+        with QueueLock():
             p = StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)
             p.init_images = [decode_base64_to_image(x) for x in init_images]
             p.scripts = script_runner
@@ -410,7 +411,7 @@ class Api:
 
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
-        with self.queue_lock:
+        with QueueLock():
             result = postprocessing.run_extras(extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=False, **reqDict)
 
         return models.ExtrasSingleImageResponse(image=encode_pil_to_base64(result[0][0]), html_info=result[1])
@@ -421,7 +422,7 @@ class Api:
         image_list = reqDict.pop('imageList', [])
         image_folder = [decode_base64_to_image(x.data) for x in image_list]
 
-        with self.queue_lock:
+        with QueueLock():
             result = postprocessing.run_extras(extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=False, **reqDict)
 
         return models.ExtrasBatchImagesResponse(images=list(map(encode_pil_to_base64, result[0])), html_info=result[1])
@@ -479,7 +480,7 @@ class Api:
         img = img.convert('RGB')
 
         # Override object param
-        with self.queue_lock:
+        with QueueLock():
             if interrogatereq.model == "clip":
                 processed = shared.interrogator.interrogate(img)
             elif interrogatereq.model == "deepdanbooru":
@@ -595,7 +596,7 @@ class Api:
         }
 
     def refresh_checkpoints(self):
-        with self.queue_lock:
+        with QueueLock():
             shared.refresh_checkpoints()
 
     def create_embedding(self, args: dict):

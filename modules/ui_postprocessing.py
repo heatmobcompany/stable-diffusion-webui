@@ -8,6 +8,7 @@ def create_ui():
 
     with gr.Row().style(equal_height=False, variant='compact'):
         with gr.Column(variant='compact'):
+            dummy_component = gr.Label(visible=False)
             with gr.Tabs(elem_id="mode_extras"):
                 with gr.TabItem('Single Image', id="single_image", elem_id="extras_single_tab") as tab_single:
                     extras_image = gr.Image(label="Source", source="upload", interactive=True, type="pil", elem_id="extras_image")
@@ -35,6 +36,8 @@ def create_ui():
         fn=call_queue.wrap_gradio_gpu_call(postprocessing.run_postprocessing, extra_outputs=[None, '']),
         _js='submit_extras',
         inputs=[
+            dummy_component,
+            dummy_component,
             tab_index,
             extras_image,
             image_batch,

@@ -3,6 +3,8 @@ import time
 import requests
 
 BASE_API_URL = 'https://beta-api.v2a.ai'
+WEB_API_URL = 'https://web-api.v2a.ai'
+
 def post_v2a(name, log):
     url = BASE_API_URL + '/log/add'
     data = {
@@ -23,6 +25,18 @@ def get_model_info(name):
         response = requests.request("GET", url)
         return response.json()
     except requests.exceptions.RequestException as e:
+        return None
+
+def get_user_info(token):
+    url = f'{WEB_API_URL}/account/user-info'
+    headers = {'Authorization': f'Bearer {token}'}
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        user_info = response.json()
+        return user_info
+    except Exception as e:
+        print(f"Error: {e}")
         return None
 
 class HeartbeatThread(threading.Thread):

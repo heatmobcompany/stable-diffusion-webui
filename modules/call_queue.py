@@ -1,15 +1,27 @@
 import html
 import threading
 import time
+from helper.hm import get_user_priority
 
 from modules import shared, progress, errors
+from modules.priority_lock import PriorityLock
 
-queue_lock = threading.Lock()
+queue_lock = PriorityLock()
+class QueueLock:
+    def __init__(self, pri=100, name=None):
+        self._priority = pri
+        self._name = name
 
+    def __enter__(self):
+        queue_lock.acquire(self._priority, self._name)
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        queue_lock.release()
 
 def wrap_queued_call(func):
     def f(*args, **kwargs):
-        with queue_lock:
+        with QueueLock():
             res = func(*args, **kwargs)
 
         return res
@@ -27,8 +39,14 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
         else:
             id_task = None
 
-        with queue_lock:
+        pri, name = 100, None
+        if args and type(args[1]) == str and args[1].startswith("token:"):
+            token = args[1].replace('token:', '')
+            pri, name = get_user_priority(token)
+        print('wrap_gradio_gpu_call wait', pri, name, id_task)
+        with QueueLock(pri):
             shared.state.begin()
+            print('wrap_gradio_gpu_call start', pri, name, id_task)
             progress.start_task(id_task)
 
             try:
@@ -38,7 +56,7 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
                 progress.finish_task(id_task)
 
             shared.state.end()
-
+            print('wrap_gradio_gpu_call done', pri, name, id_task)
         return res
 
     return wrap_gradio_call(f, extra_outputs=extra_outputs, add_stats=True)

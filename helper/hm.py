@@ -1,6 +1,7 @@
+from datetime import datetime
 import json
 from modules import cmd_args
-from helper.v2a_server import get_model_info, post_v2a
+from helper.v2a_server import get_model_info, get_user_info, post_v2a
 
 args, _ = cmd_args.parser.parse_known_args()
 
@@ -23,6 +24,20 @@ def get_server_info():
         server_info['link_file'] = res['result']['link_file']
         server_info['civitaiLink'] = res['result']['civitaiLink']
     return server_info
+
+def get_user_priority(token):
+    response_data = get_user_info(token)
+    pri, name = 100, None
+    try:
+        name = response_data['data']['username']
+        expires_str = response_data['data']['subscription']['expires']
+        expires_datetime = datetime.strptime(expires_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+        current_datetime = datetime.utcnow()
+        if expires_datetime > current_datetime:
+            pri = 50 # Subscription priority
+    except Exception as e:
+        print(f"Error: parse user data: {e}")
+    return pri, name # Default priority
 
 server_info = {}
 def init_server():
