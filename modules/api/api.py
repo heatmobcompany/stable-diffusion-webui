@@ -2,6 +2,7 @@ import base64
 import io
 import random
 import string
+import threading
 import time
 import datetime
 import uvicorn
@@ -220,21 +221,25 @@ class Api:
 
     def add_api_v2(self, app):
         @app.post("/sdapi/v2/txt2img")
-        async def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, background_tasks: BackgroundTasks):
+        def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, background_tasks: BackgroundTasks):
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
                         'task_id': task_id}
-            background_tasks.add_task(self.text2imgapi, txt2imgreq, task_id)
+            thread = threading.Thread(target=self.text2imgapi, args=(txt2imgreq, task_id))
+            thread.start()
+            # background_tasks.add_task(self.text2imgapi, txt2imgreq, task_id)
             return response
 
         @app.post("/sdapi/v2/img2img")
-        async def img2imgv2api(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, background_tasks: BackgroundTasks):
+        def img2imgv2api(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, background_tasks: BackgroundTasks):
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
                         'task_id': task_id}
-            background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
+            thread = threading.Thread(target=self.img2imgapi, args=(img2imgreq, task_id))
+            thread.start()
+            # background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
             return response
 
     def add_api_route(self, path: str, endpoint, **kwargs):
