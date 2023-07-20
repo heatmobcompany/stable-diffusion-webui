@@ -2,17 +2,20 @@ import random
 import string
 import threading
 
+def custom_sort_key(item):
+    # sort by priority
+    return item[0]
 class MyPriorityQueue:
     def __init__(self):
         self._queue = []
 
     def put(self, priority, item):
         self._queue.append((priority, item))
-        self._queue.sort()  # Sort the list based on priority
+        self._queue.sort(key=custom_sort_key)
 
     def get(self):
         if self._queue:
-            return self._queue.pop(0)[1]  # Return and remove the item with the highest priority
+            return self._queue.pop(0)[1]
         else:
             raise IndexError("PriorityQueue is empty")
 
@@ -47,10 +50,23 @@ class MyPriorityQueue:
             return None
 
     def get_item_position(self, item):
+        pos = -1
         for index, (priority, current_item) in enumerate(self._queue):
             if current_item == item:
-                return index
-        return -1
+                pos = index
+                break
+        total = len(self._queue)
+        return pos, total
+
+    def get_task_position(self, task):
+        pos = -1
+        filtered_list = [(pri, item) for (pri, item) in self._queue if item.startswith('task(')]
+        for index, (pri, item) in enumerate(filtered_list):
+            if item == task:
+                pos = index
+                break
+        total = len(filtered_list)
+        return pos, total
 
 class PriorityLock:
     def __init__(self):
@@ -62,9 +78,10 @@ class PriorityLock:
         self._pri = 0
         
     def get_queue_position(self, name):
-        pos = self._wait_queue.get_item_position(name)
-        len = self._wait_queue.qsize()
-        return pos, len
+        return self._wait_queue.get_item_position(name)
+
+    def get_task_position(self, name):
+        return self._wait_queue.get_task_position(name)
 
     def acquire(self, priority=0, name=None):
         if not name:
