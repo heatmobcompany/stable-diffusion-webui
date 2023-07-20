@@ -1,12 +1,14 @@
 import base64
 import io
+import random
+import string
 import time
 import datetime
 import uvicorn
 import gradio as gr
 from threading import Lock
 from io import BytesIO
-from fastapi import APIRouter, Depends, FastAPI, Request, Response
+from fastapi import APIRouter, Depends, FastAPI, BackgroundTasks, Request, Response
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.exceptions import HTTPException
 from fastapi.responses import JSONResponse
@@ -15,7 +17,7 @@ from secrets import compare_digest
 import jwt
 
 import modules.shared as shared
-from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors
+from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors, progress
 from modules.api import models
 from modules.call_queue import QueueLock
 from modules.shared import opts
@@ -177,6 +179,7 @@ class Api:
         self.app = app
         self.queue_lock = queue_lock
         api_middleware(self.app)
+        self.add_api_v2(app)
         self.add_api_route("/sdapi/v1/txt2img", self.text2imgapi, methods=["POST"], response_model=models.TextToImageResponse)
         self.add_api_route("/sdapi/v1/img2img", self.img2imgapi, methods=["POST"], response_model=models.ImageToImageResponse)
         self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
@@ -214,6 +217,25 @@ class Api:
 
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
+
+    def add_api_v2(self, app):
+        @app.post("/sdapi/v2/txt2img")
+        async def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, background_tasks: BackgroundTasks):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            background_tasks.add_task(self.text2imgapi, txt2imgreq, task_id)
+            return response
+
+        @app.post("/sdapi/v2/img2img")
+        async def img2imgv2api(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, background_tasks: BackgroundTasks):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
+            return response
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
@@ -299,7 +321,7 @@ class Api:
                         script_args[alwayson_script.args_from + idx] = request.alwayson_scripts[alwayson_script_name]["args"][idx]
         return script_args
 
-    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, task_id=None):
         script_runner = scripts.scripts_txt2img
         if not script_runner.scripts:
             script_runner.initialize_scripts(False)
@@ -326,26 +348,30 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
-        with QueueLock():
+        progress.add_task_to_queue(task_id)
+        with QueueLock(name=task_id):
             p = StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)
             p.scripts = script_runner
             p.outpath_grids = opts.outdir_txt2img_grids
             p.outpath_samples = opts.outdir_txt2img_samples
 
             shared.state.begin()
+            progress.start_task(task_id)
             if selectable_scripts is not None:
                 p.script_args = script_args
                 processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
             else:
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
+            progress.record_results(task_id, processed)
+            progress.finish_task(task_id)
             shared.state.end()
 
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
-    def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+    def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, task_id=None):
         init_images = img2imgreq.init_images
         if init_images is None:
             raise HTTPException(status_code=404, detail="Init image not found")
@@ -382,6 +408,7 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
+        progress.add_task_to_queue(task_id)
         with QueueLock():
             p = StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)
             p.init_images = [decode_base64_to_image(x) for x in init_images]
@@ -390,12 +417,15 @@ class Api:
             p.outpath_samples = opts.outdir_img2img_samples
 
             shared.state.begin()
+            progress.start_task(task_id)
             if selectable_scripts is not None:
                 p.script_args = script_args
                 processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
             else:
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
+            progress.record_results(task_id, processed)
+            progress.finish_task(task_id)
             shared.state.end()
 
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
