@@ -30,10 +30,11 @@ def get_user_priority(token):
     pri, name = 100, None
     try:
         name = response_data['data']['username']
+        coins = response_data['data']['coins']
         expires_str = response_data['data']['subscription']['expires']
         expires_datetime = datetime.strptime(expires_str, "%Y-%m-%dT%H:%M:%S.%fZ")
         current_datetime = datetime.utcnow()
-        if expires_datetime > current_datetime:
+        if expires_datetime > current_datetime and coins > 0:
             pri = 50 # Subscription priority
     except Exception as e:
         print(f"Error: parse user data: {e}")
