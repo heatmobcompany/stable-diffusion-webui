@@ -351,8 +351,9 @@ class StableDiffusionProcessing:
 
 
 class Processed:
-    def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments=""):
+    def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments="", images_path=[]):
         self.images = images_list
+        self.imagespath = images_path
         self.prompt = p.prompt
         self.negative_prompt = p.negative_prompt
         self.seed = seed
@@ -674,6 +675,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     infotexts = []
     output_images = []
+    images_path = []
 
     with torch.no_grad(), p.sd_model.ema_scope():
         with devices.autocast():
@@ -786,7 +788,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 image = apply_overlay(image, p.paste_to, i, p.overlay_images)
 
                 if opts.samples_save and not p.do_not_save_samples:
-                    images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], opts.samples_format, info=infotext(n, i), p=p)
+                    img_path, _ = images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], opts.samples_format, info=infotext(n, i), p=p)
+                    images_path.append(img_path)
 
                 text = infotext(n, i)
                 infotexts.append(text)
@@ -842,6 +845,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     res = Processed(
         p,
         images_list=output_images,
+        images_path=images_path,
         seed=p.all_seeds[0],
         info=infotext(),
         comments="".join(f"{comment}\n" for comment in comments),
