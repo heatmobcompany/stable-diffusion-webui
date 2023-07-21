@@ -44,6 +44,13 @@ def record_results(id_task, res):
 def save_images_results(id_task, images_path):
     images_results[id_task] = images_path
 
+def get_tasks_info():
+    ret = {}
+    ret['current_task'] = current_task
+    ret['queue_tasks'] = len(pending_tasks)
+    ret['finished_tasks'] = len(finished_tasks)
+    return ret
+
 def add_task_to_queue(id_job):
     pending_tasks[id_job] = time.time()
 

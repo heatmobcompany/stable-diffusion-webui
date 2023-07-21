@@ -242,6 +242,11 @@ class Api:
             # background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
             return response
 
+        @app.get("/sdapi/v2/progress")
+        def statusv2api():
+            jobs_info = progress.get_tasks_info()
+            return jobs_info
+
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)
