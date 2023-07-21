@@ -12,6 +12,7 @@ from modules.shared import queue_lock
 
 current_task = None
 pending_tasks = {}
+images_results = {}
 finished_tasks = []
 recorded_results = []
 recorded_results_limit = 2
@@ -40,6 +41,8 @@ def record_results(id_task, res):
     if len(recorded_results) > recorded_results_limit:
         recorded_results.pop(0)
 
+def save_images_results(id_task, images_path):
+    images_results[id_task] = images_path
 
 def add_task_to_queue(id_job):
     pending_tasks[id_job] = time.time()
@@ -59,6 +62,7 @@ class ProgressResponse(BaseModel):
     live_preview: str = Field(default=None, title="Live preview image", description="Current live preview; a data: uri")
     id_live_preview: int = Field(default=None, title="Live preview image ID", description="Send this together with next request to prevent receiving same image")
     textinfo: str = Field(default=None, title="Info text", description="Info text used by WebUI.")
+    images_path: list = Field(default=None, title="Images result", description="Generated images.")
 
 
 def setup_progress_api(app):
@@ -70,6 +74,9 @@ def progressapi(req: ProgressRequest):
     queued = req.id_task in pending_tasks
     completed = req.id_task in finished_tasks
 
+    images_path = []
+    if completed and req.id_task in images_results:
+        images_path = images_results[req.id_task]
     if not active:
         pos, len = queue_lock.get_queue_position(req.id_task)
         remain_tasks = 0
@@ -77,7 +84,7 @@ def progressapi(req: ProgressRequest):
             remain_tasks += 1
             if task == req.id_task:
                 break
-        return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo=f"In queue... {pos + 1}/{len} request(s) remaining until yours" if queued else "Waiting...")
+        return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo=f"In queue... {pos + 1}/{len} request(s) remaining until yours" if queued and pos >= 0 else "Waiting...", images_path=images_path)
 
     progress = 0
 
