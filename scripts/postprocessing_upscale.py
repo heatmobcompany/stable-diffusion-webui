@@ -4,16 +4,48 @@ import numpy as np
 from modules import scripts_postprocessing, shared
 import gradio as gr
 
-from modules.ui_components import FormRow, ToolButton
+from modules.ui_components import FormHTML, FormRow, ToolButton
 from modules.ui import switch_values_symbol
 
 upscale_cache = {}
 
+MAX_WIDTH = 896
+MAX_HEIGHT = 896
+def resize_from_to_html(width, height, scale_by):
+    target_width = int(width * scale_by)
+    target_height = int(height * scale_by)
+
+    if not target_width or not target_height:
+        return "no image selected"
+
+    return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>"
+
+def resize_from_to_html_scale(width, height, scale_by):
+    target_width = int(width * scale_by)
+    target_height = int(height * scale_by)
+
+    if not target_width or not target_height:
+        return "no image selected", scale_by
+
+    if target_width > MAX_WIDTH or target_height > MAX_HEIGHT:
+        iratio = target_width / target_height
+        fratio = MAX_WIDTH / MAX_HEIGHT
+        if iratio > fratio:
+            target_width = MAX_WIDTH
+            target_height = round(MAX_HEIGHT / iratio)
+        else:
+            target_width = round(MAX_WIDTH * iratio)
+            target_height = MAX_HEIGHT
+
+    return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>", scale_by
 
 class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
     name = "Upscale"
     order = 1000
-
+    dummy_component = None
+    scale_by_html = None
+    upscaling_resize = None
+    
     def ui(self):
         selected_tab = gr.State(value=0)
 
@@ -21,13 +53,18 @@ class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
             with FormRow():
                 with gr.Tabs(elem_id="extras_resize_mode"):
                     with gr.TabItem('Scale by', elem_id="extras_scale_by_tab") as tab_scale_by:
-                        upscaling_resize = gr.Slider(minimum=1.0, maximum=8.0, step=0.05, label="Resize", value=4, elem_id="extras_upscaling_resize")
-
+                        upscaling_resize = gr.Slider(minimum=0.0, maximum=3.0, step=0.05, label="Resize", value=1, elem_id="extras_upscaling_resize")
+                        self.upscaling_resize = upscaling_resize
+                        self.dummy_component = gr.Label(visible=False)
+                        upscaling_resize.value
+                        with FormRow():
+                            self.scale_by_html = FormHTML(resize_from_to_html(0, 0, 0.0), elem_id="extras_scale_resolution_preview")
+                        self.upscaleChanged()
                     with gr.TabItem('Scale to', elem_id="extras_scale_to_tab") as tab_scale_to:
                         with FormRow():
                             with gr.Column(elem_id="upscaling_column_size", scale=4):
-                                upscaling_resize_w = gr.Slider(minimum=64, maximum=2048, step=8, label="Width", value=512, elem_id="extras_upscaling_resize_w")
-                                upscaling_resize_h = gr.Slider(minimum=64, maximum=2048, step=8, label="Height", value=512, elem_id="extras_upscaling_resize_h")
+                                upscaling_resize_w = gr.Slider(minimum=64, maximum=MAX_WIDTH, step=8, label="Width", value=512, elem_id="extras_upscaling_resize_w")
+                                upscaling_resize_h = gr.Slider(minimum=64, maximum=MAX_HEIGHT, step=8, label="Height", value=512, elem_id="extras_upscaling_resize_h")
                             with gr.Column(elem_id="upscaling_dimensions_row", scale=1, elem_classes="dimensions-tools"):
                                 upscaling_res_switch_btn = ToolButton(value=switch_values_symbol, elem_id="upscaling_res_switch_btn")
                                 upscaling_crop = gr.Checkbox(label='Crop to fit', value=True, elem_id="extras_upscaling_crop")
@@ -53,6 +90,16 @@ class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
             "upscaler_2_name": extras_upscaler_2,
             "upscaler_2_visibility": extras_upscaler_2_visibility,
         }
+        
+    def upscaleChanged(self):
+        on_change_args = dict(
+            fn=resize_from_to_html_scale,
+            _js="scaleToExtrasResolution",
+            inputs=[self.dummy_component, self.dummy_component, self.upscaling_resize],
+            outputs=[self.scale_by_html, self.upscaling_resize],
+            show_progress=False,
+        )
+        self.upscaling_resize.change(**on_change_args)
 
     def upscale(self, image, info, upscaler, upscale_mode, upscale_by,  upscale_to_width, upscale_to_height, upscale_crop):
         if upscale_mode == 1:

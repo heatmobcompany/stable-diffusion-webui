@@ -7,6 +7,8 @@ function set_theme(theme) {
     }
 }
 
+const MAX_WIDTH = 896
+const MAX_HEIGHT = 896
 function check_tk() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -405,6 +407,53 @@ function selectCheckpoint(name) {
 
 function currentImg2imgSourceResolution(w, h, scaleBy) {
     var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] img');
+    return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
+}
+
+function scaleToImg2imgResolution(w, h, scaleBy) {
+    var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] img');
+    if (img && (img.naturalWidth * scaleBy > MAX_WIDTH || img.naturalHeight * scaleBy > MAX_HEIGHT)){
+        let iratio = img.naturalWidth / img.naturalHeight;
+        let fratio = MAX_WIDTH / MAX_HEIGHT;
+        if (iratio > fratio) {
+            scaleBy = MAX_HEIGHT / img.naturalHeight
+        }
+        else {
+            scaleBy = MAX_WIDTH / img.naturalWidth
+        }
+    }
+    return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
+}
+
+function detectCurrentImageResolution(w, h, scaleBy) {
+    var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] img');
+    if (img && (img.naturalWidth > MAX_WIDTH || img.naturalHeight > MAX_HEIGHT)){
+        let iratio = img.naturalWidth / img.naturalHeight;
+        let fratio = MAX_WIDTH / MAX_HEIGHT;
+        if (iratio > fratio) {
+            scaleBy = MAX_HEIGHT / img.naturalHeight
+            return [MAX_WIDTH, Math.round(MAX_HEIGHT / iratio), scaleBy]
+        }
+        else {
+            scaleBy = MAX_WIDTH / img.naturalWidth
+            return [Math.round(MAX_WIDTH * iratio), MAX_HEIGHT, scaleBy]
+        }
+    }
+    return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
+}
+
+function scaleToExtrasResolution(w, h, scaleBy) {
+    var img = gradioApp().querySelector('#mode_extras > div[style="display: block;"] img');
+    if (img && (img.naturalWidth * scaleBy > MAX_WIDTH || img.naturalHeight * scaleBy > MAX_HEIGHT)){
+        let iratio = img.naturalWidth / img.naturalHeight;
+        let fratio = MAX_WIDTH / MAX_HEIGHT;
+        if (iratio > fratio) {
+            scaleBy = MAX_HEIGHT / img.naturalHeight
+        }
+        else {
+            scaleBy = MAX_WIDTH / img.naturalWidth
+        }
+    }
     return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
 }
 

@@ -45,6 +45,8 @@ warnings.filterwarnings("default" if opts.show_warnings else "ignore", category=
 mimetypes.init()
 mimetypes.add_type('application/javascript', '.js')
 
+MAX_WIDTH = 896
+MAX_HEIGHT = 896
 if not cmd_opts.share and not cmd_opts.listen:
     # fix gradio phoning home
     gradio.utils.version_check = lambda: None
@@ -129,6 +131,24 @@ def resize_from_to_html(width, height, scale_by):
 
     return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>"
 
+def resize_from_to_html_scale(width, height, scale_by):
+    target_width = int(width * scale_by)
+    target_height = int(height * scale_by)
+
+    if not target_width or not target_height:
+        return "no image selected", scale_by
+
+    if target_width > MAX_WIDTH or target_height > MAX_HEIGHT:
+        iratio = target_width / target_height
+        fratio = MAX_WIDTH / MAX_HEIGHT
+        if iratio > fratio:
+            target_width = MAX_WIDTH
+            target_height = round(MAX_HEIGHT / iratio)
+        else:
+            target_width = round(MAX_WIDTH * iratio)
+            target_height = MAX_HEIGHT
+
+    return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>", scale_by
 
 def apply_styles(prompt, prompt_neg, styles):
     prompt = shared.prompt_styles.apply_styles_to_prompt(prompt, styles)
@@ -440,8 +460,8 @@ def create_ui():
                     elif category == "dimensions":
                         with FormRow():
                             with gr.Column(elem_id="txt2img_column_size", scale=4):
-                                width = gr.Slider(minimum=64, maximum=896, step=8, label="Width", value=512, elem_id="txt2img_width")
-                                height = gr.Slider(minimum=64, maximum=896, step=8, label="Height", value=512, elem_id="txt2img_height")
+                                width = gr.Slider(minimum=64, maximum=MAX_WIDTH, step=8, label="Width", value=512, elem_id="txt2img_width")
+                                height = gr.Slider(minimum=64, maximum=MAX_HEIGHT, step=8, label="Height", value=512, elem_id="txt2img_height")
 
                             with gr.Column(elem_id="txt2img_dimensions_row", scale=1, elem_classes="dimensions-tools"):
                                 res_switch_btn = ToolButton(value=switch_values_symbol, elem_id="txt2img_res_switch_btn", label="Switch dims")
@@ -777,14 +797,14 @@ def create_ui():
                                     with gr.Tab(label="Resize to") as tab_scale_to:
                                         with FormRow():
                                             with gr.Column(elem_id="img2img_column_size", scale=4):
-                                                width = gr.Slider(minimum=64, maximum=896, step=8, label="Width", value=512, elem_id="img2img_width")
-                                                height = gr.Slider(minimum=64, maximum=896, step=8, label="Height", value=512, elem_id="img2img_height")
+                                                width = gr.Slider(minimum=64, maximum=MAX_WIDTH, step=8, label="Width", value=512, elem_id="img2img_width")
+                                                height = gr.Slider(minimum=64, maximum=MAX_HEIGHT, step=8, label="Height", value=512, elem_id="img2img_height")
                                             with gr.Column(elem_id="img2img_dimensions_row", scale=1, elem_classes="dimensions-tools"):
                                                 res_switch_btn = ToolButton(value=switch_values_symbol, elem_id="img2img_res_switch_btn")
                                                 detect_image_size_btn = ToolButton(value=detect_image_size_symbol, elem_id="img2img_detect_image_size_btn")
 
                                     with gr.Tab(label="Resize by") as tab_scale_by:
-                                        scale_by = gr.Slider(minimum=0.05, maximum=4.0, step=0.05, label="Scale", value=1.0, elem_id="img2img_scale")
+                                        scale_by = gr.Slider(minimum=0.05, maximum=2.0, step=0.05, label="Scale", value=1.0, elem_id="img2img_scale")
 
                                         with FormRow():
                                             scale_by_html = FormHTML(resize_from_to_html(0, 0, 0.0), elem_id="img2img_scale_resolution_preview")
@@ -792,10 +812,10 @@ def create_ui():
                                             button_update_resize_to = gr.Button(visible=False, elem_id="img2img_update_resize_to")
 
                                     on_change_args = dict(
-                                        fn=resize_from_to_html,
-                                        _js="currentImg2imgSourceResolution",
+                                        fn=resize_from_to_html_scale,
+                                        _js="scaleToImg2imgResolution",
                                         inputs=[dummy_component, dummy_component, scale_by],
-                                        outputs=scale_by_html,
+                                        outputs=[scale_by_html, scale_by],
                                         show_progress=False,
                                     )
 
@@ -968,7 +988,7 @@ def create_ui():
 
             detect_image_size_btn.click(
                 fn=lambda w, h, _: (w or gr.update(), h or gr.update()),
-                _js="currentImg2imgSourceResolution",
+                _js="detectCurrentImageResolution",
                 inputs=[dummy_component, dummy_component, dummy_component],
                 outputs=[width, height],
                 show_progress=False,
