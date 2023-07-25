@@ -203,7 +203,7 @@ function getUrlParams() {
     return queryParams;
 }
 
-const NSFW_PROMPT = " nsfw, nude, nipples, nudity, pussy, penis, cum, bad anatomy, sexual, big tits, exposed breasts"
+const NSFW_PROMPT = " ,nsfw, nude, nipples, nudity, pussy, penis, cum, bad anatomy, sexual, big tits, exposed breasts"
 function submit() {
     // console.log('Submit txt2img')
     analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
