@@ -28,14 +28,10 @@ def javascript_html():
     for script in scripts.list_scripts("javascript", ".mjs"):
         head += f'<script type="module" src="{webpath(script.path)}"></script>\n'
 
-    head += '<script type="text/javascript">'
     if shared.cmd_opts.theme:
-        head += f'set_theme(\"{shared.cmd_opts.theme}\");'
-    head += 'check_tk();'
-    head += '</script>'
-    
+        head += f'<script type="text/javascript">set_theme(\"{shared.cmd_opts.theme}\");</script>\n'
     head += get_firebase_head()
-    
+
     return head
 
 

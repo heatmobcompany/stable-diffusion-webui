@@ -9,31 +9,46 @@ function set_theme(theme) {
 
 const MAX_WIDTH = 896
 const MAX_HEIGHT = 896
+
+document.addEventListener("DOMContentLoaded", function() {
+    check_tk()
+});
+
 function check_tk() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
-
-    if (token) {
-        const apiUrl = `/sdapi/v1/verify?token=${token}`;
-
-        // Call the API endpoint to verify the token
-        fetch(apiUrl)
-            .then(response => response.json())
-            .then(data => {
-                // Process the API response
-                if (!data.valid) {
-                    // console.log('Token is invalid');
-                    window.location.href = 'https://beta.vision2art.ai/unauthorize';
-                }
-            })
-            .catch(error => {
-                console.error('Error occurred during token verification:', error);
-                window.location.href = 'https://beta.vision2art.ai/unauthorize';
-            });
-    } else {
-        // console.log('No token parameter found in the URL');
-        window.location.href = 'https://beta.vision2art.ai/unauthorize';
+    let isValid = false;
+    let isSub = false;
+    if (!token) {
+        window.location.href = 'https://beta.vision2art.ai'
+        return
     }
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://web-api.vision2art.ai/account/user-info', false);
+    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.send();
+    if (xhr.status === 200) {
+        var res = JSON.parse(xhr.responseText);
+        isValid = res?.success
+        if (res && res.data && res.data.subscription) {
+            const expirationDate = new Date(res.data.subscription.expires);
+            const currentDate = new Date();
+            isSub = expirationDate > currentDate;
+        }
+    }
+    if (!isValid) {
+        window.location.href = 'https://beta.vision2art.ai'
+        return
+    }
+
+    setTimeout(() => {
+        if (!isSub) {
+            var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
+            if (nsfw) nsfw.disabled = true;
+            else console.log('Can not get NSFW checkbox')
+        }
+    }, 2000)
 }
 
 function all_gallery_buttons() {
@@ -188,6 +203,7 @@ function getUrlParams() {
     return queryParams;
 }
 
+const NSFW_PROMPT = " nsfw, nude, nipples, nudity, pussy, penis, cum, bad anatomy, sexual, big tits, exposed breasts"
 function submit() {
     // console.log('Submit txt2img')
     analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
@@ -207,6 +223,10 @@ function submit() {
 
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
+    var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
+    if (nsfw && nsfw.checked) {
+        res[3] += NSFW_PROMPT
+    }
 
     return res;
 }
@@ -231,6 +251,10 @@ function submit_img2img() {
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
     res[2] = get_tab_index('mode_img2img');
+    var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
+    if (nsfw && nsfw.checked) {
+        res[4] += NSFW_PROMPT
+    }
 
     return res;
 }
