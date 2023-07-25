@@ -203,7 +203,13 @@ function getUrlParams() {
     return queryParams;
 }
 
-const NSFW_PROMPT = " ,nsfw, nude, nipples, nudity, pussy, penis, cum, bad anatomy, sexual, big tits, exposed breasts"
+const NSFW_PROMPT = ",nsfw,nude,nipples,nudity,pussy,penis,cum,sexual,big tits,big tit,exposed breasts,big breast,big breasts"
+function replaceAll(input, from, to) {
+    const regex = new RegExp(from, 'g');
+    const ret = input.replace(regex, to);
+    return ret;
+}
+  
 function submit() {
     // console.log('Submit txt2img')
     analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
@@ -225,6 +231,10 @@ function submit() {
     res[1] = `token:${getUrlParams().token}`;
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
+        const nsfwArray = NSFW_PROMPT.split(',')
+        for (let idx in nsfwArray) {
+            res[2] = replaceAll(res[2], nsfwArray[idx].trim(), '')
+        }
         res[3] += NSFW_PROMPT
     }
 
@@ -253,6 +263,10 @@ function submit_img2img() {
     res[2] = get_tab_index('mode_img2img');
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
+        const nsfwArray = NSFW_PROMPT.split(',')
+        for (let idx in nsfwArray) {
+            res[3] = replaceAll(res[3], nsfwArray[idx].trim(), '')
+        }
         res[4] += NSFW_PROMPT
     }
 
