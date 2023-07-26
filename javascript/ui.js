@@ -10,11 +10,12 @@ function set_theme(theme) {
 const MAX_WIDTH = 896
 const MAX_HEIGHT = 896
 
-document.addEventListener("DOMContentLoaded", function() {
-    check_tk()
+document.addEventListener("DOMContentLoaded", async function() {
+    await check_tk()
 });
 
-function check_tk() {
+function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
+async function check_tk() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     let isValid = false;
@@ -23,32 +24,38 @@ function check_tk() {
         window.location.href = 'https://beta.vision2art.ai'
         return
     }
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://web-api.vision2art.ai/account/user-info', false);
-    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send();
-    if (xhr.status === 200) {
-        var res = JSON.parse(xhr.responseText);
-        isValid = res?.success
-        if (res && res.data && res.data.subscription) {
-            const expirationDate = new Date(res.data.subscription.expires);
-            const currentDate = new Date();
-            isSub = expirationDate > currentDate;
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'https://web-api.vision2art.ai/account/user-info', false);
+        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send();
+        if (xhr.status === 200) {
+            var res = JSON.parse(xhr.responseText);
+            isValid = res?.success
+            if (res && res.data && res.data.subscription) {
+                const expirationDate = new Date(res.data.subscription.expires);
+                const currentDate = new Date();
+                isSub = expirationDate > currentDate;
+            }
         }
+    } catch {
+        console.error('Error getting user infomation!!!')
     }
     if (!isValid) {
         window.location.href = 'https://beta.vision2art.ai'
         return
     }
+    // Wait until document loaded
+    while (!gradioApp().querySelector('#footer')) {
+        await delay(200);
+    }
 
-    setTimeout(() => {
-        if (!isSub) {
-            var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
-            if (nsfw) nsfw.disabled = true;
-            else console.log('Can not get NSFW checkbox')
-        }
-    }, 2000)
+    if (!isSub) {
+        var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
+        if (nsfw) nsfw.disabled = true;
+        else console.log('Can not get NSFW checkbox')
+    }
 }
 
 function all_gallery_buttons() {
