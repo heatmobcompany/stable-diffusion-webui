@@ -373,7 +373,7 @@ class Api:
             else:
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
-            progress.save_images_results(task_id, processed.imagespath)
+            progress.save_images_results(task_id, processed.imagespath, processed.js())
             progress.finish_task(task_id)
             shared.state.end()
 
@@ -434,7 +434,7 @@ class Api:
             else:
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
-            progress.save_images_results(task_id, processed.imagespath)
+            progress.save_images_results(task_id, processed.imagespath, processed.js())
             progress.finish_task(task_id)
             shared.state.end()
 
