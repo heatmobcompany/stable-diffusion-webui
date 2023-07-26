@@ -51,6 +51,20 @@ def get_tasks_info():
     ret['finished_tasks'] = len(finished_tasks)
     return ret
 
+def get_task_info(task_id):
+    active = task_id == current_task
+    queued = task_id in pending_tasks
+    completed = task_id in finished_tasks
+    if not active:
+        pos, total = queue_lock.get_task_position(task_id)
+    ret = {}
+    ret['active'] = active
+    ret['queued'] = queued
+    ret['queue_pos'] = pos
+    ret['queue_len'] = total
+    ret['completed'] = completed
+    return ret
+
 def add_task_to_queue(id_job):
     pending_tasks[id_job] = time.time()
 
