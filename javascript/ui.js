@@ -210,7 +210,7 @@ function getUrlParams() {
     return queryParams;
 }
 
-const NSFW_PROMPT = ",nsfw,nude,nipples,nudity,pussy,penis,cum,sexual,big tits,big tit,exposed breasts,big breast,big breasts"
+const NSFW_PROMPT = ",nsfw,nude,topless,nipples,nudity,pussy,penis,cum,big tits,big tit"
 function replaceAll(input, from, to) {
     const regex = new RegExp(from, 'g');
     const ret = input.replace(regex, to);
