@@ -305,7 +305,7 @@ def create_toprow(is_img2img):
             with gr.Row():
                 with gr.Column(scale=80):
                     with gr.Row():
-                        nsfw_negative_switch = gr.Checkbox(label='NSFW filter (Only subscription users can modify)', value=True, visible=True, elem_id="nsfw_negative_switch")
+                        nsfw_negative_switch = gr.Checkbox(label='NSFW filter', value=True, visible=True, elem_id="nsfw_negative_switch")
 
         button_interrogate = None
         button_deepbooru = None

@@ -8,6 +8,7 @@ var titles = {
     "DDIM": "Denoising Diffusion Implicit Models - best at inpainting",
     "UniPC": "Unified Predictor-Corrector Framework for Fast Sampling of Diffusion Models",
     "DPM adaptive": "Ignores step count - uses a number of steps determined by the CFG and resolution",
+    "NSFW filter" : "Exclusively available to subscription users, the option to enable/disable NSFW content",
 
     "\u{1F4D0}": "Auto detect size from img2img",
     "Batch count": "How many batches of images to create (has no impact on generation performance or VRAM usage)",
