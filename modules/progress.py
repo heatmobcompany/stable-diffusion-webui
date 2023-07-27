@@ -61,6 +61,7 @@ def get_task_info(task_id):
     active = task_id == current_task
     queued = task_id in pending_tasks
     completed = task_id in finished_tasks
+    pos, total = None, None
     if not active:
         pos, total = queue_lock.get_task_position(task_id)
     ret = {}
