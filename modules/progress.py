@@ -104,6 +104,7 @@ def progressapi(req: ProgressRequest):
     completed = req.id_task in finished_tasks
 
     images_path = []
+    inputs_info = ""
     if completed:
         if req.id_task in images_results:
             images_path = images_results[req.id_task]

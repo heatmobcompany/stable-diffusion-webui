@@ -210,6 +210,7 @@ function getUrlParams() {
     return queryParams;
 }
 
+// Search NSFW_PROMPT in python code to update
 const NSFW_PROMPT = ",nsfw,nude,topless,nipples,nudity,pussy,penis,cum,big tits,big tit"
 function replaceAll(input, from, to) {
     const regex = new RegExp(from, 'g');
