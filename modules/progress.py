@@ -46,9 +46,9 @@ def save_images_results(id_task, images_path, inputs_info):
     images_results[id_task] = images_path
     inputs_infos[id_task] = inputs_info
     if len(images_results) > 16:
-        images_results.pop(0)
+        images_results.pop(list(images_results.keys())[0])
     if len(inputs_infos) > 16:
-        inputs_infos.pop(0)
+        inputs_infos.pop(list(inputs_infos.keys())[0])
 
 def get_tasks_info():
     ret = {}
