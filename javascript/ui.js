@@ -220,7 +220,9 @@ function replaceAll(input, from, to) {
   
 function submit() {
     // console.log('Submit txt2img')
-    analytics.logEvent('generate_button_click', { button_id: 'txt2img_generate', button_text: 'Generate' });
+    if (window.parent) {
+        window.parent.postMessage({ name: "generate_button_click", data: { button_id: 'txt2img_generate', button_text: 'Generate' } }, "*");
+    }
     checkCredit();
     showSubmitButtons('txt2img', false);
 
@@ -251,7 +253,10 @@ function submit() {
 
 function submit_img2img() {
     // console.log('Submit img2img')
-    analytics.logEvent('generate_button_click', { button_id: 'img2img_generate', button_text: 'Generate' });
+    if (window.parent) {
+        window.parent.postMessage({ name: "generate_button_click", data: { button_id: 'img2img_generate', button_text: 'Generate' } }, "*");
+    }
+
     checkCredit();
     showSubmitButtons('img2img', false);
 
@@ -283,7 +288,10 @@ function submit_img2img() {
 
 function submit_extras() {
     // console.log('Submit extras')
-    analytics.logEvent('generate_button_click', { button_id: 'extras_generate', button_text: 'Generate' });
+    if (window.parent) {
+        window.parent.postMessage({ name: "generate_button_click", data: { button_id: 'extras_generate', button_text: 'Generate' } }, "*");
+    }
+
     checkCredit();
 
     var id = randomId();
