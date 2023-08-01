@@ -21,7 +21,7 @@ def create_ui():
                     extras_batch_output_dir = gr.Textbox(label="Output directory", **shared.hide_dirs, placeholder="Leave blank to save images to the default path.", elem_id="extras_batch_output_dir")
                     show_extras_results = gr.Checkbox(label='Show result images', value=True, elem_id="extras_show_extras_results")
 
-            submit = gr.Button('Generate (-3 Credits)', elem_id="extras_generate", variant='primary')
+            submit = gr.Button('Generate (-1 Credits)', elem_id="extras_generate", variant='primary')
 
             script_inputs = scripts.scripts_postproc.setup_ui()
 

@@ -55,6 +55,7 @@ async function check_tk() {
 async function initialize() {
     window.topWeb = "https://beta.vision2art.ai"
     window.topApi = "https://web-api.vision2art.ai"
+    window.tasks_info = {}
     
     // Wait until document loaded
     while (!gradioApp().querySelector('#footer')) {
@@ -242,6 +243,8 @@ function submit() {
 
     var id = randomId();
     localStorage.setItem("txt2img_task_id", id);
+    window.tasks_info[id] = {}
+    window.tasks_info[id].action = "txt2img_generate"
 
     requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function () {
         showSubmitButtons('txt2img', true);
@@ -274,6 +277,8 @@ function submit_img2img() {
 
     var id = randomId();
     localStorage.setItem("img2img_task_id", id);
+    window.tasks_info[id] = {}
+    window.tasks_info[id].action = "img2img_generate"
 
     requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function () {
         showSubmitButtons('img2img', true);
@@ -303,6 +308,23 @@ function submit_extras() {
     window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'extras_generate', button_text: 'Generate' } }, "*");
 
     checkCredit();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const token = urlParams.get('token');
+    fetch(`${window.topApi}/account/use-credit`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            action: "extras_generate",
+        })
+    })
+        .then(response => response.json())
+        .catch(error => {
+            console.error('Error occurred during token verification:', error);
+        });
 
     var id = randomId();
     var res = create_submit_args(arguments);

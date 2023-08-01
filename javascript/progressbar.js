@@ -100,18 +100,21 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                 
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get('token');
+                const action = window?.tasks_info[id_task]?.action;
+                const infodata = JSON.parse(res?.inputsinfo || {});
 
                 fetch(`${window.topApi}/account/use-credit`, {
+                    method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        action,
+                        infodata,
+                    })
                 })
                     .then(response => response.json())
-                    .then(data => {
-                        // Process the API response
-                        // console.log('Successfully consume credit');
-                    })
                     .catch(error => {
                         console.error('Error occurred during token verification:', error);
                     });
