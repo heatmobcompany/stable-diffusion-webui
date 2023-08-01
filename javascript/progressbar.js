@@ -101,7 +101,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get('token');
 
-                fetch(`https://web-api.vision2art.ai/account/use-credit`, {
+                fetch(`${window.topApi}/account/use-credit`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'

@@ -11,7 +11,7 @@ const MAX_WIDTH = 896
 const MAX_HEIGHT = 896
 
 document.addEventListener("DOMContentLoaded", async function() {
-    await check_tk()
+    await initialize();
 });
 
 function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
@@ -21,12 +21,12 @@ async function check_tk() {
     let isValid = false;
     let isSub = false;
     if (!token) {
-        window.location.href = 'https://beta.vision2art.ai'
+        window.location.href = window.topWeb
         return
     }
     try {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'https://web-api.vision2art.ai/account/user-info', false);
+        xhr.open('GET', `${window.topApi}/account/user-info`, false);
         xhr.setRequestHeader('Authorization', 'Bearer ' + token);
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send();
@@ -43,19 +43,35 @@ async function check_tk() {
         console.error('Error getting user infomation!!!')
     }
     if (!isValid) {
-        window.location.href = 'https://beta.vision2art.ai'
+        window.location.href = window.topWeb
         return
     }
-    // Wait until document loaded
-    while (!gradioApp().querySelector('#footer')) {
-        await delay(200);
-    }
-
     if (!isSub) {
         var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
         if (nsfw) nsfw.disabled = true;
         else console.log('Can not get NSFW checkbox')
     }
+}
+async function initialize() {
+    window.topWeb = "https://beta.vision2art.ai"
+    window.topApi = "https://web-api.vision2art.ai"
+    
+    // Wait until document loaded
+    while (!gradioApp().querySelector('#footer')) {
+        await delay(200);
+    }
+
+    async function handleWindowMessage(event) {
+        console.log('SD message received:', event.data);
+        if (event.data && event.data.message == "InitData") {
+            window.topWeb = event.origin
+            window.topApi = event.data.data.api
+
+            await check_tk();
+        }
+    }
+    window.addEventListener('message', handleWindowMessage);
+    window.parent?.postMessage({ message: "SdDOMLoaded", data: {} }, "*");
 }
 
 function all_gallery_buttons() {
@@ -220,9 +236,7 @@ function replaceAll(input, from, to) {
   
 function submit() {
     // console.log('Submit txt2img')
-    if (window.parent) {
-        window.parent.postMessage({ name: "generate_button_click", data: { button_id: 'txt2img_generate', button_text: 'Generate' } }, "*");
-    }
+    window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'txt2img_generate', button_text: 'Generate' } }, "*");
     checkCredit();
     showSubmitButtons('txt2img', false);
 
@@ -253,9 +267,7 @@ function submit() {
 
 function submit_img2img() {
     // console.log('Submit img2img')
-    if (window.parent) {
-        window.parent.postMessage({ name: "generate_button_click", data: { button_id: 'img2img_generate', button_text: 'Generate' } }, "*");
-    }
+    window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'img2img_generate', button_text: 'Generate' } }, "*");
 
     checkCredit();
     showSubmitButtons('img2img', false);
@@ -288,9 +300,7 @@ function submit_img2img() {
 
 function submit_extras() {
     // console.log('Submit extras')
-    if (window.parent) {
-        window.parent.postMessage({ name: "generate_button_click", data: { button_id: 'extras_generate', button_text: 'Generate' } }, "*");
-    }
+    window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'extras_generate', button_text: 'Generate' } }, "*");
 
     checkCredit();
 
@@ -558,7 +568,7 @@ function checkCredit() {
     }
 
     var xhr = new XMLHttpRequest();
-    xhr.open('GET', 'https://web-api.vision2art.ai/account/check-credit', false);
+    xhr.open('GET', `${window.topApi}/account/check-credit`, false);
     xhr.setRequestHeader('Authorization', 'Bearer ' + token);
     xhr.setRequestHeader('Content-Type', 'application/json');
     xhr.send();
