@@ -404,8 +404,8 @@ def webui():
             prevent_thread_lock=True,
             allowed_paths=cmd_opts.gradio_allowed_path,
             app_kwargs={
-                "docs_url": "/docs",
-                "redoc_url": "/redoc",
+                "docs_url": "/xdocs",
+                "redoc_url": "/xredoc",
             },
         )
         if cmd_opts.add_stop_route:
