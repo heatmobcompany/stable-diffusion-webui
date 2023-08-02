@@ -63,12 +63,13 @@ async function initialize() {
     }
 
     async function handleWindowMessage(event) {
-        console.log('SD message received:', event.data);
-        if (event.data && event.data.message == "InitData") {
-            window.topWeb = event.origin
-            window.topApi = event.data.data.api
-
-            await check_tk();
+        if (event.data && event.data.message) {
+            console.log('SD message received:', event.data);
+            if (event.data.message == "InitData") {
+                window.topWeb = event.origin
+                window.topApi = event.data.data.api
+                await check_tk();
+            }    
         }
     }
     window.addEventListener('message', handleWindowMessage);
