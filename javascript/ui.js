@@ -48,8 +48,14 @@ async function check_tk() {
     }
     if (!isSub) {
         var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
+        const nsfwlabel = document.querySelector('#nsfw_negative_switch > label');
+        nsfwlabel.addEventListener('click', () => {
+            if (nsfw.disabled) {
+                window.parent?.postMessage({ message: "onlySubscription", data: undefined }, "*");
+            }
+        });
         if (nsfw) nsfw.disabled = true;
-        else console.log('Can not get NSFW checkbox')
+        else console.error('Can not get NSFW checkbox')
     }
 }
 async function initialize() {
@@ -73,7 +79,7 @@ async function initialize() {
         }
     }
     window.addEventListener('message', handleWindowMessage);
-    window.parent?.postMessage({ message: "SdDOMLoaded", data: {} }, "*");
+    window.parent?.postMessage({ message: "SdDOMLoaded", data: undefined }, "*");
 }
 
 function all_gallery_buttons() {
