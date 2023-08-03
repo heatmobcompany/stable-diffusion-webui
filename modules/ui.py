@@ -302,10 +302,6 @@ def create_toprow(is_img2img):
                 with gr.Column(scale=80):
                     with gr.Row():
                         negative_prompt = gr.Textbox(label="Negative prompt", elem_id=f"{id_part}_neg_prompt", show_label=False, lines=3, placeholder="Negative prompt (press Ctrl+Enter or Alt+Enter to generate)", elem_classes=["prompt"])
-            with gr.Row():
-                with gr.Column(scale=80):
-                    with gr.Row():
-                        nsfw_negative_switch = gr.Checkbox(label='NSFW Filter (Subcription Only)', value=True, visible=True, elem_id="nsfw_negative_switch")
 
         button_interrogate = None
         button_deepbooru = None
@@ -332,7 +328,7 @@ def create_toprow(is_img2img):
                     outputs=[],
                 )
 
-            with gr.Row(elem_id=f"{id_part}_tools"):
+            with gr.Row(elem_id=f"{id_part}_tools", visible=False):
                 paste = ToolButton(value=paste_symbol, elem_id="paste")
                 clear_prompt_button = ToolButton(value=clear_prompt_symbol, elem_id=f"{id_part}_clear_prompt")
                 extra_networks_button = ToolButton(value=extra_networks_symbol, elem_id=f"{id_part}_extra_networks")
@@ -352,9 +348,12 @@ def create_toprow(is_img2img):
                     outputs=[prompt, negative_prompt],
                 )
 
-            with gr.Row(elem_id=f"{id_part}_styles_row"):
+            with gr.Row(elem_id=f"{id_part}_styles_row", visible=False):
                 prompt_styles = gr.Dropdown(label="Styles", elem_id=f"{id_part}_styles", choices=[k for k, v in shared.prompt_styles.styles.items()], value=[], multiselect=True)
                 create_refresh_button(prompt_styles, shared.prompt_styles.reload, lambda: {"choices": [k for k, v in shared.prompt_styles.styles.items()]}, f"refresh_{id_part}_styles")
+    with gr.Row():
+        extra_networks_button = gr.Button(value="Show/hide Lora, Extra networks", elem_id=f"{id_part}_extra_networks")
+        nsfw_negative_switch = gr.Checkbox(label='NSFW Filter (Subcription Only)', value=True, visible=True, elem_id="nsfw_negative_switch")
 
     return prompt, prompt_styles, negative_prompt, submit, button_interrogate, button_deepbooru, prompt_style_apply, save_style, paste, extra_networks_button, token_counter, token_button, negative_token_counter, negative_token_button, restore_progress_button
 

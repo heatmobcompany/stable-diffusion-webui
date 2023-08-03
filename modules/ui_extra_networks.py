@@ -282,6 +282,7 @@ def pages_in_preferred_order(pages):
 
     def tab_name_score(name):
         name = name.lower()
+        if name == 'lora': return -10 # Move Lora to the first
         for i, possible_match in enumerate(tab_order):
             if possible_match in name:
                 return i

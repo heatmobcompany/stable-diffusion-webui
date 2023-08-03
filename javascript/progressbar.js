@@ -101,7 +101,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                 const urlParams = new URLSearchParams(window.location.search);
                 const token = urlParams.get('token');
                 const action = window?.tasks_info[id_task]?.action;
-                const infodata = JSON.parse(res?.inputsinfo || {});
+                const infodata = JSON.parse(res?.inputsinfo) || {};
 
                 fetch(`${window.topApi}/account/use-credit`, {
                     method: 'POST',
@@ -111,7 +111,10 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                     },
                     body: JSON.stringify({
                         action,
-                        infodata,
+                        infodata: {
+                            ...infodata,
+                            sd_model_checkpoint: opts.sd_model_checkpoint,
+                        },
                     })
                 })
                     .then(response => response.json())

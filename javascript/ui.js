@@ -326,6 +326,9 @@ function submit_extras() {
         },
         body: JSON.stringify({
             action: "extras_generate",
+            infodata: {
+                sd_model_checkpoint: opts.sd_model_checkpoint
+            }
         })
     })
         .then(response => response.json())
