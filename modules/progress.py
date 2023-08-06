@@ -53,6 +53,8 @@ def save_images_result(id_task, images_path, inputs_info):
 
 def save_failure_result(id_task, result):
     failed_results[id_task] = result
+    if id_task in pending_tasks:
+        pending_tasks.pop(id_task)
     if len(failed_results) > 16:
         failed_results.pop(list(failed_results.keys())[0])
     if len(inputs_infos) > 16:

@@ -181,8 +181,8 @@ class Api:
         self.queue_lock = queue_lock
         api_middleware(self.app)
         self.add_api_v2(app)
-        self.add_api_route("/sdapi/v1/txt2img", self.text2imgapi, methods=["POST"], response_model=models.TextToImageResponse)
-        self.add_api_route("/sdapi/v1/img2img", self.img2imgapi, methods=["POST"], response_model=models.ImageToImageResponse)
+        # self.add_api_route("/sdapi/v1/txt2img", self.text2imgapi, methods=["POST"], response_model=models.TextToImageResponse)
+        # self.add_api_route("/sdapi/v1/img2img", self.img2imgapi, methods=["POST"], response_model=models.ImageToImageResponse)
         self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ExtrasBatchImagesResponse)
         self.add_api_route("/sdapi/v1/png-info", self.pnginfoapi, methods=["POST"], response_model=models.PNGInfoResponse)
@@ -220,24 +220,48 @@ class Api:
         self.default_script_arg_img2img = []
 
     def add_api_v2(self, app):
+        def text2imgtask(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.text2imgapi(txt2imgreq, task_id)
+            except HTTPException as e:
+                print("text2imgtask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("text2imgtask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+
+        def img2imgtask(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.img2imgapi(img2imgreq, task_id)
+            except HTTPException as e:
+                print("img2imgtask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("img2imgtask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+
         @app.post("/sdapi/v2/txt2img")
-        def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, background_tasks: BackgroundTasks):
+        def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
                         'task_id': task_id}
-            thread = threading.Thread(target=self.text2imgapi, args=(txt2imgreq, task_id))
+            thread = threading.Thread(target=text2imgtask, args=(txt2imgreq, task_id))
             thread.start()
             # background_tasks.add_task(self.text2imgapi, txt2imgreq, task_id)
             return response
 
         @app.post("/sdapi/v2/img2img")
-        def img2imgv2api(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, background_tasks: BackgroundTasks):
+        def img2imgv2api(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
                         'task_id': task_id}
-            thread = threading.Thread(target=self.img2imgapi, args=(img2imgreq, task_id))
+            thread = threading.Thread(target=img2imgtask, args=(img2imgreq, task_id))
             thread.start()
             # background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
             return response
@@ -358,7 +382,6 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
-        progress.add_task_to_queue(task_id)
         with QueueLock(name=task_id):
             p = StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)
             p.scripts = script_runner
@@ -373,7 +396,7 @@ class Api:
             else:
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
-            progress.save_images_results(task_id, processed.imagespath, processed.js())
+            progress.save_images_result(task_id, processed.imagespath, processed.js())
             progress.finish_task(task_id)
             shared.state.end()
 
@@ -418,7 +441,6 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
 
-        progress.add_task_to_queue(task_id)
         with QueueLock():
             p = StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)
             p.init_images = [decode_base64_to_image(x) for x in init_images]
@@ -434,7 +456,7 @@ class Api:
             else:
                 p.script_args = tuple(script_args) # Need to pass args as tuple here
                 processed = process_images(p)
-            progress.save_images_results(task_id, processed.imagespath, processed.js())
+            progress.save_images_result(task_id, processed.imagespath, processed.js())
             progress.finish_task(task_id)
             shared.state.end()
 
