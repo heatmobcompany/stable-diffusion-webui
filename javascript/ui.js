@@ -74,6 +74,7 @@ async function initialize() {
             if (event.data.message == "InitData") {
                 window.topWeb = event.origin
                 window.topApi = event.data.data.api
+                window.style = event.data.data.style
                 await check_tk();
             }    
         }
