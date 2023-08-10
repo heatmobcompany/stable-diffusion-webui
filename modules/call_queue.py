@@ -51,9 +51,6 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
 
             try:
                 res = func(*args, **kwargs)
-                if len(res) >= 2 and isinstance(res[1], str) and "prompt" in res[1]:
-                    progress.save_images_result(id_task, None, res[1])
-
                 progress.record_results(id_task, res)
             except Exception as e:
                 progress.save_failure_result(id_task, str(e))
