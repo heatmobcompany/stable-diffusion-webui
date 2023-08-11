@@ -13,8 +13,8 @@ jsonmerge
 kornia
 lark
 numpy
-pyjwt
 omegaconf
+open-clip-torch
 
 piexif
 psutil
