@@ -180,7 +180,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                 const promises = images_result.map(img => uploadImage(img, token));
                 Promise.all(promises)
                     .then(retUpload => {
-                        fetch(`${window.topApi}/gateway/submit-result`, {
+                        fetch(`${window.topApi}/gallery/web-advance/submit-result`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -189,7 +189,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                             body: JSON.stringify({
                                 task_id: id_task,
                                 model: window.style,
-                                api_type: `${action}_webui`,
+                                api_type: `${action}`,
                                 images_path: retUpload,
                                 inputsinfo: res?.inputsinfo,
                             })
