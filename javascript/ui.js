@@ -264,13 +264,14 @@ function submit() {
 
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
+    res[2] = opts.sd_model_checkpoint;
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
         const nsfwArray = NSFW_PROMPT.split(',')
         for (let idx in nsfwArray) {
-            res[2] = replaceAll(res[2], nsfwArray[idx].trim(), '')
+            res[3] = replaceAll(res[3], nsfwArray[idx].trim(), '')
         }
-        res[3] += NSFW_PROMPT
+        res[4] += NSFW_PROMPT
     }
 
     return res;
@@ -298,14 +299,15 @@ function submit_img2img() {
 
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
-    res[2] = get_tab_index('mode_img2img');
+    res[2] = opts.sd_model_checkpoint;
+    res[3] = get_tab_index('mode_img2img');
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
         const nsfwArray = NSFW_PROMPT.split(',')
         for (let idx in nsfwArray) {
-            res[3] = replaceAll(res[3], nsfwArray[idx].trim(), '')
+            res[4] = replaceAll(res[4], nsfwArray[idx].trim(), '')
         }
-        res[4] += NSFW_PROMPT
+        res[5] += NSFW_PROMPT
     }
 
     return res;
