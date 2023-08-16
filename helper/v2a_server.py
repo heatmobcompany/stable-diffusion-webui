@@ -16,15 +16,16 @@ def post_v2a(name, log):
         response = requests.post(url, json=data)
         response.raise_for_status()
         print('Post v2a success: ', log)
-    except requests.exceptions.RequestException as e:
-        print('Post v2a failure: ', log)
+    except Exception as e:
+        print('Post v2a fail: ', log)
         
 def get_model_info(name):
     url = f'{BASE_API_URL}/sdstyle/getsimple?name={name}'
     try:
         response = requests.request("GET", url)
         return response.json()
-    except requests.exceptions.RequestException as e:
+    except Exception as e:
+        print(f'Get model info fail: {e}')
         return None
 
 def get_user_info(token):
@@ -36,7 +37,7 @@ def get_user_info(token):
         user_info = response.json()
         return user_info
     except Exception as e:
-        print(f"Error: {e}")
+        print(f'Get user info fail: {e}')
         return None
 
 class HeartbeatThread(threading.Thread):

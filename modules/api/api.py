@@ -383,15 +383,17 @@ class Api:
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
-
-        with QueueLock(name=task_id):
+        pri = args.pop('priority', 100)
+        print('text2imgapi wait', task_id, pri)
+        with QueueLock(name=task_id, pri=pri):
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_txt2img_grids
                 p.outpath_samples = opts.outdir_txt2img_samples
 
                 try:
-                    shared.state.begin(job="scripts_txt2img")
+                    print('text2imgapi start', task_id, pri)
+                    shared.state.begin(job=task_id)
                     progress.start_task(task_id)
                     if selectable_scripts is not None:
                         p.script_args = script_args
@@ -403,7 +405,7 @@ class Api:
                     progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
-
+                    print('text2imgapi done', task_id, pri)
 
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
@@ -445,8 +447,9 @@ class Api:
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
-
-        with QueueLock(name=task_id):
+        pri = args.pop('priority', 100)
+        print('img2imgapi wait', task_id, pri)
+        with QueueLock(name=task_id, pri=pri):
             with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
                 p.init_images = [decode_base64_to_image(x) for x in init_images]
                 p.scripts = script_runner
@@ -454,7 +457,8 @@ class Api:
                 p.outpath_samples = opts.outdir_img2img_samples
 
                 try:
-                    shared.state.begin(job="scripts_img2img")
+                    print('img2imgapi start', task_id, pri)
+                    shared.state.begin(job=task_id)
                     progress.start_task(task_id)
                     if selectable_scripts is not None:
                         p.script_args = script_args
@@ -466,6 +470,7 @@ class Api:
                     progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
+                    print('img2imgapi done', task_id, pri)
 
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
