@@ -102,6 +102,7 @@ StableDiffusionTxt2ImgProcessingAPI = PydanticModelGenerator(
     "StableDiffusionProcessingTxt2Img",
     StableDiffusionProcessingTxt2Img,
     [
+        {"key": "priority", "type": int, "default": 100},
         {"key": "sampler_index", "type": str, "default": "Euler"},
         {"key": "script_name", "type": str, "default": None},
         {"key": "script_args", "type": list, "default": []},
@@ -115,6 +116,7 @@ StableDiffusionImg2ImgProcessingAPI = PydanticModelGenerator(
     "StableDiffusionProcessingImg2Img",
     StableDiffusionProcessingImg2Img,
     [
+        {"key": "priority", "type": int, "default": 100},
         {"key": "sampler_index", "type": str, "default": "Euler"},
         {"key": "init_images", "type": list, "default": None},
         {"key": "denoising_strength", "type": float, "default": 0.75},
