@@ -1,6 +1,7 @@
 import random
 import string
 import threading
+import time
 
 def custom_sort_key(item):
     # sort by priority
@@ -98,7 +99,8 @@ class PriorityLock:
                     self._name = name
                     self._pri = priority
                     self._wait_queue.get()
-                    break
+                    return
+            time.sleep(1)
 
     def release(self):
         with self._lock:
