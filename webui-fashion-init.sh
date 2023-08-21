@@ -17,6 +17,8 @@ git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/digiplay/majicMIX_realistic_v6/resolve/main/majicmixRealistic_v6.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o majicmixRealistic_v6.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ckpt/rev-animated/resolve/main/revAnimated_v11.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o revAnimated_v11.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/realisticVisionV30_v30VAE.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o realisticVisionV30_v30VAE.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/kencanmix_v20Beta.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o kencanmix_v20Beta.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/toonyou_beta6.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o toonyou_beta6.safetensors
 
 # Controlnet
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11f1e_sd15_tile.pth -d /workspace/stable-diffusion-webui/extensions/control/models -o control_v11f1e_sd15_tile.pth
@@ -51,6 +53,18 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/ngoctrinh-000008.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o ngoctrinh-000008.jpeg
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Amee_V12.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o Amee_V12.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Amee_V12.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o Amee_V12.jpeg
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Nezuko.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o Nezuko.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Nezuko.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o Nezuko.jpeg
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/SamYang.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o SamYang.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/SamYang.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o SamYang.jpeg
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Makima.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o Makima.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Makima.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o Makima.jpeg
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Cute_VNFace.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o Cute_VNFace.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Cute_VNFace.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o Cute_VNFace.jpeg
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/add_detail.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o add_detail.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/add_detail.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o add_detail.jpeg
+
+# ESRGAN
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/embed/upscale/resolve/main/4x-UltraSharp.pth -d /workspace/stable-diffusion-webui/models/ESRGAN -o 4x-UltraSharp.pth
 
 # Roop
