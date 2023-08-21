@@ -388,6 +388,16 @@ class Processed:
         self.batch_size = p.batch_size
         self.restore_faces = p.restore_faces
         self.face_restoration_model = opts.face_restoration_model if p.restore_faces else None
+
+        self.tiling = p.tiling
+        self.resize_mode = p.resize_mode if hasattr(p, "resize_mode") else None
+        self.mask_blur_x = p.mask_blur_x if hasattr(p, "mask_blur_x") else None
+        self.mask_blur_y = p.mask_blur_y if hasattr(p, "mask_blur_y") else None
+        self.mask_mode = p.inpainting_mask_invert if hasattr(p, "inpainting_mask_invert") else None
+        self.mask_content = p.inpainting_fill if hasattr(p, "inpainting_fill") else None
+        self.inpaint_area = p.inpaint_full_res if hasattr(p, "inpaint_full_res") else None
+        self.only_mask_padding = p.inpaint_full_res_padding if hasattr(p, "inpaint_full_res_padding") else None
+
         self.sd_model_hash = shared.sd_model.sd_model_hash
         self.seed_resize_from_w = p.seed_resize_from_w
         self.seed_resize_from_h = p.seed_resize_from_h
@@ -439,6 +449,16 @@ class Processed:
             "batch_size": self.batch_size,
             "restore_faces": self.restore_faces,
             "face_restoration_model": self.face_restoration_model,
+            
+            "tiling": self.tiling,
+            "resize_mode": self.resize_mode,
+            "mask_blur_x" : self.mask_blur_x,
+            "mask_blur_y" : self.mask_blur_y,
+            "mask_mode" : self.mask_mode,
+            "mask_content" : self.mask_content,
+            "inpaint_area" : self.inpaint_area,
+            "only_mask_padding" : self.only_mask_padding,
+            
             "sd_model_hash": self.sd_model_hash,
             "seed_resize_from_w": self.seed_resize_from_w,
             "seed_resize_from_h": self.seed_resize_from_h,
@@ -639,7 +659,7 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
         "Init image hash": getattr(p, 'init_img_hash', None),
         "RNG": opts.randn_source if opts.randn_source != "GPU" else None,
         "NGMS": None if p.s_min_uncond == 0 else p.s_min_uncond,
-        **p.extra_generation_params,
+        "extras": None if not p.extra_generation_params else {**p.extra_generation_params},
         "Version": program_version() if opts.add_version_to_infotext else None,
         "User": p.user if opts.add_user_name_to_info else None,
     }
