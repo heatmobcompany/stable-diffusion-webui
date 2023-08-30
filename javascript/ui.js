@@ -7,8 +7,8 @@ function set_theme(theme) {
     }
 }
 
-const MAX_WIDTH = 896
-const MAX_HEIGHT = 896
+window.max_w = 896
+window.max_h = 896
 
 document.addEventListener("DOMContentLoaded", async function() {
     await initialize();
@@ -19,7 +19,7 @@ async function check_tk() {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
     let isValid = false;
-    let isSub = false;
+    let _s = false;
     if (!token) {
         window.location.href = window.topWeb
         return
@@ -36,7 +36,8 @@ async function check_tk() {
             if (res && res.data && res.data.subscription) {
                 const expirationDate = new Date(res.data.subscription.expires);
                 const currentDate = new Date();
-                isSub = expirationDate > currentDate;
+                _s = expirationDate > currentDate;
+                window._s = _s
             }
         }
     } catch {
@@ -46,7 +47,7 @@ async function check_tk() {
         window.location.href = window.topWeb
         return
     }
-    if (!isSub) {
+    if (!_s) {
         var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
         const nsfwlabel = document.querySelector('#nsfw_negative_switch > label');
         nsfwlabel.addEventListener('click', () => {
@@ -56,6 +57,16 @@ async function check_tk() {
         });
         if (nsfw) nsfw.disabled = true;
         else console.error('Can not get NSFW checkbox')
+    } else {
+        window.max_w = 1024
+        window.max_h = 1024
+        const sizeIds = ["txt2img_width", "txt2img_height", "img2img_width", "img2img_height", "extras_upscaling_resize_w", "extras_upscaling_resize_h"]
+        sizeIds.forEach(item => {
+            const inputs = document.querySelectorAll(`#${item} input`);
+            inputs.forEach(input => {
+                input.setAttribute('max', window.max_w);
+            });    
+        })
     }
 }
 async function initialize() {
@@ -507,51 +518,51 @@ function currentImg2imgSourceResolution(w, h, scaleBy) {
     return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
 }
 
-function scaleToImg2imgResolution(w, h, scaleBy) {
+function scaleToImg2imgResolution(w, h, scaleBy, max_w, max_h) {
     var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] img');
-    if (img && (img.naturalWidth * scaleBy > MAX_WIDTH || img.naturalHeight * scaleBy > MAX_HEIGHT)){
+    if (img && (img.naturalWidth * scaleBy > window.max_w || img.naturalHeight * scaleBy > window.max_h)){
         let iratio = img.naturalWidth / img.naturalHeight;
-        let fratio = MAX_WIDTH / MAX_HEIGHT;
-        if (iratio > fratio) {
-            scaleBy = MAX_HEIGHT / img.naturalHeight
+        let fratio = window.max_w / window.max_h;
+        if (iratio < fratio) {
+            scaleBy = window.max_h / img.naturalHeight
         }
         else {
-            scaleBy = MAX_WIDTH / img.naturalWidth
+            scaleBy = window.max_w / img.naturalWidth
+        }
+    }
+    return img ? [img.naturalWidth, img.naturalHeight, scaleBy, window.max_w, window.max_h] : [0, 0, scaleBy, window.max_w, window.max_h];
+}
+
+function detectCurrentImageResolution(w, h, scaleBy, max_w, max_h) {
+    var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] img');
+    if (img && (img.naturalWidth > window.max_w || img.naturalHeight > window.max_h)){
+        let iratio = img.naturalWidth / img.naturalHeight;
+        let fratio = window.max_w / window.max_h;
+        if (iratio > fratio) {
+            scaleBy = window.max_w / img.naturalWidth
+            return [window.max_w, Math.round(window.max_h / iratio), scaleBy]
+        }
+        else {
+            scaleBy = window.max_h / img.naturalHeight
+            return [Math.round(window.max_w * iratio), window.max_h, scaleBy]
         }
     }
     return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
 }
 
-function detectCurrentImageResolution(w, h, scaleBy) {
-    var img = gradioApp().querySelector('#mode_img2img > div[style="display: block;"] img');
-    if (img && (img.naturalWidth > MAX_WIDTH || img.naturalHeight > MAX_HEIGHT)){
-        let iratio = img.naturalWidth / img.naturalHeight;
-        let fratio = MAX_WIDTH / MAX_HEIGHT;
-        if (iratio > fratio) {
-            scaleBy = MAX_HEIGHT / img.naturalHeight
-            return [MAX_WIDTH, Math.round(MAX_HEIGHT / iratio), scaleBy]
-        }
-        else {
-            scaleBy = MAX_WIDTH / img.naturalWidth
-            return [Math.round(MAX_WIDTH * iratio), MAX_HEIGHT, scaleBy]
-        }
-    }
-    return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
-}
-
-function scaleToExtrasResolution(w, h, scaleBy) {
+function scaleToExtrasResolution(w, h, scaleBy, max_w, max_h) {
     var img = gradioApp().querySelector('#mode_extras > div[style="display: block;"] img');
-    if (img && (img.naturalWidth * scaleBy > MAX_WIDTH || img.naturalHeight * scaleBy > MAX_HEIGHT)){
+    if (img && (img.naturalWidth * scaleBy > window.max_w || img.naturalHeight * scaleBy > window.max_h)){
         let iratio = img.naturalWidth / img.naturalHeight;
-        let fratio = MAX_WIDTH / MAX_HEIGHT;
-        if (iratio > fratio) {
-            scaleBy = MAX_HEIGHT / img.naturalHeight
+        let fratio = window.max_w / window.max_h;
+        if (iratio < fratio) {
+            scaleBy = window.max_h / img.naturalHeight
         }
         else {
-            scaleBy = MAX_WIDTH / img.naturalWidth
+            scaleBy = window.max_w / img.naturalWidth
         }
     }
-    return img ? [img.naturalWidth, img.naturalHeight, scaleBy] : [0, 0, scaleBy];
+    return img ? [img.naturalWidth, img.naturalHeight, scaleBy, window.max_w, window.max_h] : [0, 0, scaleBy, window.max_w, window.max_h];
 }
 
 function updateImg2imgResizeToTextAfterChangingImage() {
