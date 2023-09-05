@@ -4,10 +4,10 @@
 #########################################################
 
 # Group: Majicmix, RevAnimated, Meinamix, RealisticVision, CosplayMix, ...
-ID=fashion_3
-GROUP=RevAnimated
-TYPE='fashion_app'
-URL='https://a8d30dx2rzedjy-3001.proxy.runpod.net'
+ID=fashion_
+GROUP=Majicmix
+TYPE=fashion_app_pod
+URL=
 
 # Install directory without trailing slash
 install_dir="/workspace"
