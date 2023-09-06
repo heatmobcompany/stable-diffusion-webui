@@ -60,14 +60,23 @@ async function check_tk() {
     } else {
         window.max_w = 1024
         window.max_h = 1024
-        const sizeIds = ["txt2img_width", "txt2img_height", "img2img_width", "img2img_height", "extras_upscaling_resize_w", "extras_upscaling_resize_h"]
-        sizeIds.forEach(item => {
-            const inputs = document.querySelectorAll(`#${item} input`);
-            inputs.forEach(input => {
-                input.setAttribute('max', window.max_w);
-            });    
-        })
     }
+
+    const sizeIds = ["txt2img_width", "txt2img_height", "img2img_width", "img2img_height"]
+    sizeIds.forEach(item => {
+        const inputs = document.querySelectorAll(`#${item} input`);
+        inputs.forEach(input => {
+            input.setAttribute('max', window.max_w);
+        });
+    })
+
+    const sizeIds2 = ["extras_upscaling_resize_w", "extras_upscaling_resize_h"]
+    sizeIds2.forEach(item => {
+        const inputs = document.querySelectorAll(`#${item} input`);
+        inputs.forEach(input => {
+            input.setAttribute('max', 3 * window.max_w);
+        });
+    })
 }
 async function initialize() {
     window.topWeb = "https://beta.vision2art.ai"
@@ -551,18 +560,21 @@ function detectCurrentImageResolution(w, h, scaleBy, max_w, max_h) {
 }
 
 function scaleToExtrasResolution(w, h, scaleBy, max_w, max_h) {
+    console.log("scaleToExtrasResolution", w, h, scaleBy, max_w, max_h)
     var img = gradioApp().querySelector('#mode_extras > div[style="display: block;"] img');
-    if (img && (img.naturalWidth * scaleBy > window.max_w || img.naturalHeight * scaleBy > window.max_h)){
+    const _max_w = 3*window.max_w;
+    const _max_h = 3*window.max_h;
+    if (img && (img.naturalWidth * scaleBy > _max_w || img.naturalHeight * scaleBy > _max_h)){
         let iratio = img.naturalWidth / img.naturalHeight;
-        let fratio = window.max_w / window.max_h;
+        let fratio = _max_w / _max_h;
         if (iratio < fratio) {
-            scaleBy = window.max_h / img.naturalHeight
+            scaleBy = _max_h / img.naturalHeight
         }
         else {
-            scaleBy = window.max_w / img.naturalWidth
+            scaleBy = _max_w / img.naturalWidth
         }
     }
-    return img ? [img.naturalWidth, img.naturalHeight, scaleBy, window.max_w, window.max_h] : [0, 0, scaleBy, window.max_w, window.max_h];
+    return img ? [img.naturalWidth, img.naturalHeight, scaleBy, _max_w, _max_h] : [0, 0, scaleBy, _max_w, _max_h];
 }
 
 function updateImg2imgResizeToTextAfterChangingImage() {

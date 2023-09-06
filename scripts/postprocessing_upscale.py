@@ -99,7 +99,7 @@ class ScriptPostprocessingUpscale(scripts_postprocessing.ScriptPostprocessing):
             outputs=[self.scale_by_html, self.upscaling_resize],
             show_progress=False,
         )
-        self.upscaling_resize.change(**on_change_args)
+        self.upscaling_resize.release(**on_change_args)
 
     def upscale(self, image, info, upscaler, upscale_mode, upscale_by,  upscale_to_width, upscale_to_height, upscale_crop):
         if upscale_mode == 1:
