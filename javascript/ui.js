@@ -74,7 +74,7 @@ async function check_tk() {
     sizeIds2.forEach(item => {
         const inputs = document.querySelectorAll(`#${item} input`);
         inputs.forEach(input => {
-            input.setAttribute('max', 3 * window.max_w);
+            input.setAttribute('max', 4 * window.max_w);
         });
     })
 }
@@ -562,8 +562,8 @@ function detectCurrentImageResolution(w, h, scaleBy, max_w, max_h) {
 function scaleToExtrasResolution(w, h, scaleBy, max_w, max_h) {
     console.log("scaleToExtrasResolution", w, h, scaleBy, max_w, max_h)
     var img = gradioApp().querySelector('#mode_extras > div[style="display: block;"] img');
-    const _max_w = 3*window.max_w;
-    const _max_h = 3*window.max_h;
+    const _max_w = 4 * window.max_w;
+    const _max_h = 4 * window.max_h;
     if (img && (img.naturalWidth * scaleBy > _max_w || img.naturalHeight * scaleBy > _max_h)){
         let iratio = img.naturalWidth / img.naturalHeight;
         let fratio = _max_w / _max_h;
