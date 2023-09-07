@@ -73,6 +73,7 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 
 # ESRGAN
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/embed/upscale/resolve/main/4x-UltraSharp.pth -d /workspace/stable-diffusion-webui/models/ESRGAN -o 4x-UltraSharp.pth
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/4x_NMKD-Siax_200k.pth -d /workspace/stable-diffusion-webui/models/ESRGAN -o 4x_NMKD-Siax_200k.pth
 
 # Roop
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/inswapper_128.onnx -d /workspace/stable-diffusion-webui/models/roop -o inswapper_128.onnx
