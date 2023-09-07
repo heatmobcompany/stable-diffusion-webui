@@ -130,22 +130,22 @@ def resize_from_to_html(width, height, scale_by):
 
     return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>"
 
-def resize_from_to_html_scale(width, height, scale_by):
+def resize_from_to_html_scale(width, height, scale_by, max_w, max_h):
     target_width = int(width * scale_by)
     target_height = int(height * scale_by)
 
     if not target_width or not target_height:
         return "no image selected", scale_by
 
-    if target_width > MAX_WIDTH or target_height > MAX_HEIGHT:
+    if target_width > max_w or target_height > max_h:
         iratio = target_width / target_height
-        fratio = MAX_WIDTH / MAX_HEIGHT
+        fratio = max_w / max_h
         if iratio > fratio:
-            target_width = MAX_WIDTH
-            target_height = round(MAX_HEIGHT / iratio)
+            target_width = max_w
+            target_height = round(max_h / iratio)
         else:
-            target_width = round(MAX_WIDTH * iratio)
-            target_height = MAX_HEIGHT
+            target_width = round(max_w * iratio)
+            target_height = max_h
 
     return f"resize: from <span class='resolution'>{width}x{height}</span> to <span class='resolution'>{target_width}x{target_height}</span>", scale_by
 
@@ -821,7 +821,7 @@ def create_ui():
                                     on_change_args = dict(
                                         fn=resize_from_to_html_scale,
                                         _js="scaleToImg2imgResolution",
-                                        inputs=[dummy_component, dummy_component, scale_by],
+                                        inputs=[dummy_component, dummy_component, scale_by, dummy_component, dummy_component],
                                         outputs=[scale_by_html, scale_by],
                                         show_progress=False,
                                     )
