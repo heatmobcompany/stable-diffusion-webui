@@ -4,7 +4,7 @@ import threading
 import time
 from helper.hm import get_user_priority
 
-from modules import shared, progress, errors
+from modules import shared, progress, errors, devices
 from modules.priority_lock import PriorityLock
 from modules.shared import queue_lock
 
@@ -95,6 +95,8 @@ def wrap_gradio_call(func, extra_outputs=None, add_stats=False):
 
             error_message = f'{type(e).__name__}: {e}'
             res = extra_outputs_array + [f"<div class='error'>{html.escape(error_message)}</div>"]
+
+        devices.torch_gc()
 
         shared.state.skipped = False
         shared.state.interrupted = False
