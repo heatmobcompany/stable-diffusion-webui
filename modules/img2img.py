@@ -16,7 +16,7 @@ import modules.processing as processing
 from modules.ui import plaintext_to_html
 import modules.scripts
 from modules import progress
-
+from helper import hmio
 
 def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args, to_scale=False, scale_by=1.0, use_png_info=False, png_info_props=None, png_info_dir=None):
     processing.fix_seed(p)
@@ -217,6 +217,8 @@ def img2img(id_task: str, token: str, mode: int, prompt: str, negative_prompt: s
         override_settings=override_settings,
     )
 
+    hmio.process_img2img(p)
+    hmio.process_extensions(modules.scripts.scripts_img2img.scripts, args)
     p.scripts = modules.scripts.scripts_img2img
     p.script_args = args
 
