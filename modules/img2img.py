@@ -217,8 +217,9 @@ def img2img(id_task: str, token: str, mode: int, prompt: str, negative_prompt: s
         override_settings=override_settings,
     )
 
-    hmio.process_img2img(p)
-    hmio.process_extensions(modules.scripts.scripts_img2img.scripts, args)
+    if id_task and id_task.startswith("export"):
+        result = hmio.process_img2img(p, modules.scripts.scripts_img2img.scripts, args)
+        return f"{id_task} {result}"
     p.scripts = modules.scripts.scripts_img2img
     p.script_args = args
 
