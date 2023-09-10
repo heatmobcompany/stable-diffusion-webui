@@ -4,10 +4,10 @@
 #########################################################
 
 # Group: Majicmix, RevAnimated, Meinamix, RealisticVision, CosplayMix, ...
-ID=server_id
-GROUP=RevAnimated
-TYPE=''
-URL=''
+ID=fashion_
+GROUP=Majicmix
+TYPE=fashion_app_pod
+URL=
 
 # Install directory without trailing slash
 install_dir="/workspace"

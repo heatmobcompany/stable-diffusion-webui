@@ -266,7 +266,7 @@ function replaceAll(input, from, to) {
 function submit() {
     // console.log('Submit txt2img')
     window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'txt2img_generate', button_text: 'Generate' } }, "*");
-    checkCredit();
+    // checkCredit();
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
@@ -284,13 +284,14 @@ function submit() {
 
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
+    res[2] = opts.sd_model_checkpoint;
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
         const nsfwArray = NSFW_PROMPT.split(',')
         for (let idx in nsfwArray) {
-            res[2] = replaceAll(res[2], nsfwArray[idx].trim(), '')
+            res[3] = replaceAll(res[3], nsfwArray[idx].trim(), '')
         }
-        res[3] += NSFW_PROMPT
+        res[4] += NSFW_PROMPT
     }
 
     return res;
@@ -300,7 +301,7 @@ function submit_img2img() {
     // console.log('Submit img2img')
     window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'img2img_generate', button_text: 'Generate' } }, "*");
 
-    checkCredit();
+    // checkCredit();
     showSubmitButtons('img2img', false);
 
     var id = randomId();
@@ -318,14 +319,15 @@ function submit_img2img() {
 
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
-    res[2] = get_tab_index('mode_img2img');
+    res[2] = opts.sd_model_checkpoint;
+    res[3] = get_tab_index('mode_img2img');
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
         const nsfwArray = NSFW_PROMPT.split(',')
         for (let idx in nsfwArray) {
-            res[3] = replaceAll(res[3], nsfwArray[idx].trim(), '')
+            res[4] = replaceAll(res[4], nsfwArray[idx].trim(), '')
         }
-        res[4] += NSFW_PROMPT
+        res[5] += NSFW_PROMPT
     }
 
     return res;
@@ -335,7 +337,7 @@ function submit_extras() {
     // console.log('Submit extras')
     window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'extras_generate', button_text: 'Generate' } }, "*");
 
-    checkCredit();
+    // checkCredit();
 
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
