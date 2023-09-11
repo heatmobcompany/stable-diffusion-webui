@@ -14,7 +14,7 @@ def process_txt2img(p, scripts, script_args):
         "general": general.dict(),
         "controlnet": controlnet,
         "adetailer": adetailer,
-    })
+    }, indent=4)
     return result
 
 
@@ -26,7 +26,7 @@ def process_img2img(p, scripts, script_args):
         "general": general.dict(),
         "controlnet": controlnet,
         "adetailer": adetailer,
-    })
+    }, indent=4)
     return result
 
 def process_extensions(scripts, script_args):
@@ -39,14 +39,12 @@ def process_extensions(scripts, script_args):
                 ctrl = ControlnetModel.validate(ctrl)
                 controlnet.append(ctrl.dict())
         elif script.name == "adetailer":
-            print('debug adetailer', script_args[script.args_from:script.args_to])
+            # print('debug adetailer', script_args[script.args_from:script.args_to])
             adetailer.append(script_args[script.args_from])
             for i in range(script.args_from + 1, script.args_to):
                 adl = convert_to_dict(script_args[i])
                 adl = ADetailerModel.validate(adl)
                 adetailer.append(adl.dict())
-    print("controlnet", controlnet)
-    print("adetailer", adetailer)
     return controlnet, adetailer
 
 def get_jsonable(obj):
