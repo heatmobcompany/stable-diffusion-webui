@@ -4,16 +4,26 @@ from helper.txt2imgmodel import Txt2imgApiModel, Txt2imgWebModel
 from helper.img2imgmodel import Img2imgApiModel, Img2imgWebModel
 from helper.adetailermodel import ADetailerModel
 from helper.controlnetmodel import ControlnetModel
+from modules.shared import opts
 
+def program_version():
+    import launch
+    res = launch.git_tag()
+    if res == "<none>":
+        res = None
+    return res
 
 def process_txt2img(p, scripts, script_args):
     general = convert_to_dict(p, 2)
     general = Txt2imgApiModel.validate(general)
+    if not general.override_settings.get("sd_model_checkpoint", None):
+        general.override_settings["sd_model_checkpoint"] = opts.sd_model_checkpoint
     controlnet, adetailer = process_extensions(scripts, script_args)
     result = json.dumps({
         "general": general.dict(),
         "controlnet": controlnet,
         "adetailer": adetailer,
+        "version": program_version(),
     }, indent=4)
     return result
 
@@ -21,11 +31,14 @@ def process_txt2img(p, scripts, script_args):
 def process_img2img(p, scripts, script_args):
     general = convert_to_dict(p, 2)
     general = Img2imgApiModel.validate(general)
+    if not general.override_settings.get("sd_model_checkpoint", None):
+        general.override_settings["sd_model_checkpoint"] = opts.sd_model_checkpoint
     controlnet, adetailer = process_extensions(scripts, script_args)
     result = json.dumps({
         "general": general.dict(),
         "controlnet": controlnet,
         "adetailer": adetailer,
+        "version": program_version(),
     }, indent=4)
     return result
 

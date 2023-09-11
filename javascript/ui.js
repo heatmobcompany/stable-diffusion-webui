@@ -672,6 +672,7 @@ async function export_txt2img_parameters() {
     var res = create_submit_args(arguments);
     var task_id = randomId().replace('task', 'export');
     res[0] = task_id
+    res[2] = opts.sd_model_checkpoint;
     setTimeout(() => check_export(task_id, "txt2img", 0), 1000);
     return res
 }
@@ -680,6 +681,7 @@ async function export_img2img_parameters() {
     var res = create_submit_args(arguments);
     var task_id = randomId().replace('task', 'export');
     res[0] = task_id
+    res[2] = opts.sd_model_checkpoint;
     setTimeout(() => check_export(task_id, "img2img", 0), 1000);
     return res
 }
