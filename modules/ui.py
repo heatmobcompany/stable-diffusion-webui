@@ -445,6 +445,7 @@ def create_ui():
         txt2img_prompt, txt2img_prompt_styles, txt2img_negative_prompt, submit, _, _, txt2img_prompt_style_apply, txt2img_save_style, txt2img_paste, extra_networks_button, token_counter, token_button, negative_token_counter, negative_token_button, restore_progress_button = create_toprow(is_img2img=False)
 
         dummy_component = gr.Label(visible=False)
+        export_component = gr.Label(visible=False, elem_id="export_component")
         txt_prompt_img = gr.File(label="", elem_id="txt2img_prompt_image", file_count="single", type="binary", visible=False)
 
         with FormRow(variant='compact', elem_id="txt2img_extra_networks", visible=False) as extra_networks:
@@ -545,7 +546,7 @@ def create_ui():
                     show_progress=False,
                 )
 
-            txt2img_gallery, generation_info, html_info, html_log = create_output_panel("txt2img", opts.outdir_txt2img_samples)
+            txt2img_gallery, generation_info, html_info, html_log, import_btn, export_btn = create_output_panel("txt2img", opts.outdir_txt2img_samples)
 
             connect_reuse_seed(seed, reuse_seed, generation_info, dummy_component, is_subseed=False)
             connect_reuse_seed(subseed, reuse_subseed, generation_info, dummy_component, is_subseed=True)
@@ -597,6 +598,12 @@ def create_ui():
             txt2img_prompt.submit(**txt2img_args)
             submit.click(**txt2img_args)
 
+            export_btn.click(
+                _js="export_txt2img_parameters",
+                fn=modules.txt2img.txt2img,
+                inputs=txt2img_args["inputs"],
+                outputs=[export_component],
+            )
             res_switch_btn.click(fn=None, _js="function(){switchWidthHeight('txt2img')}", inputs=None, outputs=None, show_progress=False)
 
             restore_progress_button.click(
@@ -903,7 +910,7 @@ def create_ui():
                     else:
                         modules.scripts.scripts_img2img.setup_ui_for_section(category)
 
-            img2img_gallery, generation_info, html_info, html_log = create_output_panel("img2img", opts.outdir_img2img_samples)
+            img2img_gallery, generation_info, html_info, html_log, import_btn, export_btn = create_output_panel("img2img", opts.outdir_img2img_samples)
 
             connect_reuse_seed(seed, reuse_seed, generation_info, dummy_component, is_subseed=False)
             connect_reuse_seed(subseed, reuse_subseed, generation_info, dummy_component, is_subseed=True)
@@ -975,6 +982,13 @@ def create_ui():
                     html_log,
                 ],
                 show_progress=False,
+            )
+            
+            export_btn.click(
+                _js="export_img2img_parameters",
+                fn=modules.img2img.img2img,
+                inputs=img2img_args["inputs"],
+                outputs=[export_component],
             )
 
             interrogate_args = dict(

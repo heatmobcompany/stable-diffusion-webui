@@ -637,3 +637,53 @@ function checkCredit() {
         throw new Error(errorMessage);
     }
 }
+
+function getCurrentDateTime() {
+    const now = new Date();
+    const year = now.getFullYear().toString();
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const day = now.getDate().toString().padStart(2, '0');
+    const hours = now.getHours().toString().padStart(2, '0');
+    const minutes = now.getMinutes().toString().padStart(2, '0');
+    const seconds = now.getSeconds().toString().padStart(2, '0');
+    
+    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+}
+
+async function check_export(task_id, task_type, retry) {
+    let txt = gradioApp().getElementById('export_component').textContent
+    if (retry < 5) {
+        if (txt.includes(task_id)) {
+            let listStr = txt.split(task_id)
+            let jsonData = listStr[listStr.length - 1];
+            var blob = new Blob([jsonData], { type: 'application/json' });
+            var anchor = document.createElement('a');
+            anchor.href = URL.createObjectURL(blob);
+            anchor.download = `${task_type}_${getCurrentDateTime()}.json`;
+            anchor.click();
+        } else {
+            retry += 1;
+            setTimeout(check_export, 1000, task_id, retry);    
+        }
+     } else {
+        alert("Error in export parameter!")
+    }
+}
+
+async function export_txt2img_parameters() {
+    var res = create_submit_args(arguments);
+    var task_id = randomId().replace('task', 'export');
+    res[0] = task_id
+    res[2] = opts.sd_model_checkpoint;
+    setTimeout(() => check_export(task_id, "txt2img", 0), 1000);
+    return res
+}
+
+async function export_img2img_parameters() {
+    var res = create_submit_args(arguments);
+    var task_id = randomId().replace('task', 'export');
+    res[0] = task_id
+    res[2] = opts.sd_model_checkpoint;
+    setTimeout(() => check_export(task_id, "img2img", 0), 1000);
+    return res
+}

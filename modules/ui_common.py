@@ -137,11 +137,15 @@ Requested path was: {f}
             result_gallery = gr.Gallery(label='Output', show_label=False, elem_id=f"{tabname}_gallery").style(columns=4)
 
         generation_info = None
+        import_btn = None
+        export_btn = None
         with gr.Column():
             with gr.Row(elem_id=f"image_buttons_{tabname}", elem_classes="image-buttons"):
                 open_folder_button = gr.Button(folder_symbol, visible=not shared.cmd_opts.hide_ui_dir_config)
 
                 if tabname != "extras":
+                    import_btn = gr.Button('Import', elem_id=f'import_{tabname}')
+                    export_btn = gr.Button('Export', elem_id=f'export_{tabname}')
                     save = gr.Button('Save', elem_id=f'save_{tabname}')
                     save_zip = gr.Button('Zip', elem_id=f'save_zip_{tabname}')
 
@@ -219,7 +223,7 @@ Requested path was: {f}
                     paste_field_names=paste_field_names
                 ))
 
-            return result_gallery, generation_info if tabname != "extras" else html_info_x, html_info, html_log
+            return result_gallery, generation_info if tabname != "extras" else html_info_x, html_info, html_log, import_btn, export_btn
 
 
 def create_refresh_button(refresh_component, refresh_method, refreshed_args, elem_id):

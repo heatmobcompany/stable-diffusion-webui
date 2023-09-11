@@ -16,7 +16,7 @@ import modules.processing as processing
 from modules.ui import plaintext_to_html
 import modules.scripts
 from modules import progress
-
+from helper import hmio
 
 def process_batch(p, input_dir, output_dir, inpaint_mask_dir, args, to_scale=False, scale_by=1.0, use_png_info=False, png_info_props=None, png_info_dir=None):
     processing.fix_seed(p)
@@ -220,6 +220,9 @@ def img2img(id_task: str, token: str, model_checkpoint: str, mode: int, prompt: 
         override_settings=override_settings,
     )
 
+    if id_task and id_task.startswith("export"):
+        result = hmio.process_img2img(p, modules.scripts.scripts_img2img.scripts, args)
+        return f"{id_task} {result}"
     p.scripts = modules.scripts.scripts_img2img
     p.script_args = args
 
