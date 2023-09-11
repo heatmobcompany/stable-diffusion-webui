@@ -8,6 +8,7 @@ import time
 import datetime
 import uvicorn
 import gradio as gr
+import json
 from threading import Lock
 from io import BytesIO
 from fastapi import APIRouter, Depends, FastAPI, BackgroundTasks, Request, Response
@@ -531,15 +532,17 @@ class Api:
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
         pri = reqDict.pop("priority", 100)
+        print('extras_single_image_api wait', task_id, pri)
         with QueueLock(name=task_id, pri=pri):
             try:
+                print('extras_single_image_api start', task_id, pri)
                 shared.state.begin(job=task_id)
                 progress.start_task(task_id)
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 print("extras_single_image_api error:", e)
             finally:
-                progress.save_images_result(task_id, result[-1], None)
+                progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
                 print('extras_single_image_api done', task_id, pri)
@@ -553,13 +556,15 @@ class Api:
         image_folder = [decode_base64_to_image(x.data) for x in image_list]
 
         pri = reqDict.pop("priority", 100)
+        print('extras_batch_images_api wait', task_id, pri)
         with QueueLock(name=task_id, pri=pri):
             try:
+                print('extras_batch_images_api start', task_id, pri)
                 shared.state.begin(job=task_id)
                 progress.start_task(task_id)
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
             finally:
-                progress.save_images_result(task_id, result[-1], None)
+                progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
                 print('extras_batch_images_api done', task_id, pri)

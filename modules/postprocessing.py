@@ -4,6 +4,7 @@ from PIL import Image
 
 from modules import shared, images, devices, scripts, scripts_postprocessing, ui_common, generation_parameters_copypaste
 from modules.shared import opts
+import json
 
 
 def run_postprocessing(id_task: str, token: str, extras_mode, image, image_folder, input_dir, output_dir, show_extras_results, *args, save_output: bool = True):
@@ -81,7 +82,7 @@ def run_postprocessing(id_task: str, token: str, extras_mode, image, image_folde
 
     devices.torch_gc()
 
-    return outputs, ui_common.plaintext_to_html(infotext), '', images_path
+    return outputs, ui_common.plaintext_to_html(infotext), '', json.dumps(images_path)
 
 
 def run_extras(id_task: str, token: str, extras_mode, resize_mode, image, image_folder, input_dir, output_dir, show_extras_results, gfpgan_visibility, codeformer_visibility, codeformer_weight, upscaling_resize, upscaling_resize_w, upscaling_resize_h, upscaling_crop, extras_upscaler_1, extras_upscaler_2, extras_upscaler_2_visibility, upscale_first: bool, save_output: bool = True):
