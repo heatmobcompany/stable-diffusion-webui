@@ -3,7 +3,7 @@
 apt update
 apt install -y aria2
 
-# 1. Majicmix,Meinamix,XXMix9realistic,RevAnimated,ChilloutMix
+# 1. Majicmix,Meinamix,XXMix9realistic,RevAnimated,ChilloutMix,Counterfeit
 # 2. Majicmix,SDVN1Real,ToonYou,CyberRealistic,RealisticVision,GhostMix,KenCanMix
 # Majicmix
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/sinkinai/majicMIX-realistic-v5/resolve/main/majicmixRealistic_v5.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o majicmixRealistic_v5.safetensors
@@ -16,6 +16,9 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 
 # RevAnimated
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ckpt/rev-animated/resolve/main/revAnimated_v11.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o revAnimated_v11.safetensors
+
+# Counterfeit
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/CounterfeitV30_v30.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o CounterfeitV30_v30.safetensors
 
 # # ChilloutMix
 # aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/chilloutmix_NiPrunedFp32.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o chilloutmix_NiPrunedFp32.safetensors
