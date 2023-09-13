@@ -13,9 +13,9 @@ apt install -y aria2
 git clone https://github.com/heatmobcompany/sd-webui-segment-anything /workspace/stable-diffusion-webui/extensions/sd-webui-segment-anything
 git clone https://github.com/heatmobcompany/sd-webui-roop /workspace/stable-diffusion-webui/extensions/sd-webui-roop
 git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable-diffusion-webui/extensions/sd-webui-adetailer
-git clone https://github.com/heatmobcompany/sd-webui-prompt-all-in-one /content/ui/extensions/sd-webui-prompt-all-in-one
-git clone https://github.com/heatmobcompany/Civitai-Helper /content/ui/extensions/Civitai-Helper
-git clone https://github.com/fkunn1326/openpose-editor /content/ui/extensions/openpose-editor
+git clone https://github.com/heatmobcompany/sd-webui-prompt-all-in-one /workspace/stable-diffusion-webui/extensions/sd-webui-prompt-all-in-one
+git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-diffusion-webui/extensions/Civitai-Helper
+git clone https://github.com/fkunn1326/openpose-editor /workspace/stable-diffusion-webui/extensions/openpose-editor
 
 # Model checkpoint: Use special script
 
