@@ -15,9 +15,9 @@ def post_v2a(name, log):
     try:
         response = requests.post(url, json=data)
         response.raise_for_status()
-        print('Post v2a success: ', log)
+        print('Post v2a success: ', name, log)
     except Exception as e:
-        print('Post v2a fail: ', log)
+        print('Post v2a fail: ', name, log)
         
 def get_model_info(name):
     url = f'{BASE_API_URL}/sdstyle/getsimple?name={name}'

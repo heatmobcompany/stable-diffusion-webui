@@ -78,6 +78,28 @@ async function check_tk() {
         });
     })
 }
+
+function get_model_checkpoint(style) {
+    try {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', `https://beta-api.v2a.ai/sdstyle/getsimple?name=${style}`, false);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send();
+        if (xhr.status === 200) {
+            let res = JSON.parse(xhr.responseText);
+            let model_checkpoint =  res?.result?.file
+            if (!model_checkpoint) {
+                console.error('Empty model checkpoint')
+            }
+            return model_checkpoint
+        } else {
+            console.error('Error getting model checkpoint, code:', xhr.status)
+        }
+    } catch (err) {
+        console.error('Error getting model checkpoint', err)
+    }
+}
+
 async function initialize() {
     window.topWeb = "https://beta.vision2art.ai"
     window.topApi = "https://web-api.vision2art.ai"
@@ -95,6 +117,7 @@ async function initialize() {
                 window.topWeb = event.origin
                 window.topApi = event.data.data.api
                 window.style = event.data.data.style
+                window.model_checkpoint = get_model_checkpoint(window.style)
                 await check_tk();
             }    
         }
@@ -284,7 +307,7 @@ function submit() {
 
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
-    res[2] = opts.sd_model_checkpoint;
+    res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
         const nsfwArray = NSFW_PROMPT.split(',')
@@ -319,7 +342,7 @@ function submit_img2img() {
 
     res[0] = id;
     res[1] = `token:${getUrlParams().token}`;
-    res[2] = opts.sd_model_checkpoint;
+    res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
     res[3] = get_tab_index('mode_img2img');
     var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
     if (nsfw && nsfw.checked) {
@@ -350,7 +373,7 @@ function submit_extras() {
         body: JSON.stringify({
             action: "extras_generate",
             infodata: {
-                sd_model_checkpoint: opts.sd_model_checkpoint
+                sd_model_checkpoint: window.model_checkpoint || opts.sd_model_checkpoint
             }
         })
     })
@@ -674,7 +697,7 @@ async function export_txt2img_parameters() {
     var res = create_submit_args(arguments);
     var task_id = randomId().replace('task', 'export');
     res[0] = task_id
-    res[2] = opts.sd_model_checkpoint;
+    res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
     setTimeout(() => check_export(task_id, "txt2img", 0), 1000);
     return res
 }
@@ -683,7 +706,7 @@ async function export_img2img_parameters() {
     var res = create_submit_args(arguments);
     var task_id = randomId().replace('task', 'export');
     res[0] = task_id
-    res[2] = opts.sd_model_checkpoint;
+    res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
     setTimeout(() => check_export(task_id, "img2img", 0), 1000);
     return res
 }

@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from packaging import version
 from helper.v2a_server import post_v2a
-from helper.hm import server_id
+from helper.hm import get_server_info, server_infos
 
 import logging
 
@@ -386,7 +386,6 @@ def webui():
     initialize()
 
     while 1:
-        post_v2a(server_id, "Webui loop start")
         if shared.opts.clean_temp_dir_at_start:
             ui_tempdir.cleanup_tmpdr()
             startup_timer.record("cleanup temp dir")
@@ -424,9 +423,11 @@ def webui():
         # after initial launch, disable --autolaunch for subsequent restarts
         cmd_opts.autolaunch = False
 
-        post_v2a(server_id, "server_started")
         if share_url:
-            post_v2a(server_id, "share_url: {}".format(share_url))
+            servers = server_infos if server_infos else get_server_info()
+            for server in servers:
+                post_v2a(server["id"], "share_url: {}".format(share_url))
+
 
         startup_timer.record("gradio launch")
 

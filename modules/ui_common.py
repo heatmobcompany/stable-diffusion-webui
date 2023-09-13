@@ -223,6 +223,8 @@ Requested path was: {f}
                     paste_field_names=paste_field_names
                 ))
 
+            if tabname != "extras" and tabname != "txt2img" and tabname != "img2img":
+                return result_gallery, generation_info, html_info, html_log
             return result_gallery, generation_info if tabname != "extras" else html_info_x, html_info, html_log, import_btn, export_btn
 
 

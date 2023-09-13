@@ -12,7 +12,7 @@ from os import mkdir
 from urllib import request
 from helper.v2a_server import post_v2a
 from helper import hm
-from helper.hm import server_id
+from helper.hm import get_server_info, server_infos
 import ldm.modules.midas as midas
 
 from ldm.util import instantiate_from_config
@@ -126,7 +126,7 @@ def list_models():
 
     download_name = ''
     if hm.args.group:
-        server_info = hm.server_info if hm.server_info and hm.server_info['file'] else hm.get_server_info()
+        server_info = hm.server_info if hm.server_info and hm.server_info['file'] else hm.get_server_info()[0]
         if server_info:
             download_name = server_info['file']
             model_url = server_info['link_file']
@@ -551,7 +551,9 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
     print(f"Model loaded in {timer.summary()}.")
     
-    post_v2a(server_id, 'Model_loaded: ' + checkpoint_info.title)
+    servers = server_infos if server_infos else get_server_info()
+    for server in servers:
+        post_v2a(server["id"], 'Model_loaded: ' + checkpoint_info.title)
 
     return sd_model
 

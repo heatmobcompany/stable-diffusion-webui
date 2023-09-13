@@ -168,7 +168,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
                         action,
                         infodata: {
                             ...infodata,
-                            sd_model_checkpoint: opts.sd_model_checkpoint,
+                            sd_model_checkpoint: window.model_checkpoint || opts.sd_model_checkpoint,
                         },
                     })
                 })
