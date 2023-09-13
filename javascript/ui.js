@@ -675,7 +675,7 @@ function getCurrentDateTime() {
 
 async function check_export(task_id, task_type, retry) {
     let txt = gradioApp().getElementById('export_component').textContent
-    if (retry < 5) {
+    if (retry < 10) {
         if (txt.includes(task_id)) {
             let listStr = txt.split(task_id)
             let jsonData = listStr[listStr.length - 1];
@@ -685,8 +685,8 @@ async function check_export(task_id, task_type, retry) {
             anchor.download = `${task_type}_${getCurrentDateTime()}.json`;
             anchor.click();
         } else {
-            retry += 1;
-            setTimeout(check_export, 1000, task_id, retry);    
+            retry ++;
+            setTimeout(() => check_export(task_id, task_type, retry), 1000);
         }
      } else {
         alert("Error in export parameter!")
