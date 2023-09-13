@@ -50,6 +50,7 @@ def run_postprocessing(id_task: str, token: str, extras_mode, image, image_folde
 
     infotext = ''
 
+    images_path = []
     for image, name in zip(image_data, image_names):
         shared.state.textinfo = name
 
@@ -73,17 +74,17 @@ def run_postprocessing(id_task: str, token: str, extras_mode, image, image_folde
             pp.image.info["postprocessing"] = infotext
 
         if save_output:
-            images.save_image(pp.image, path=outpath, basename=basename, seed=None, prompt=None, extension=opts.samples_format, info=infotext, short_filename=True, no_prompt=True, grid=False, pnginfo_section_name="extras", existing_info=existing_pnginfo, forced_filename=None)
-
+            img_path, _ = images.save_image(pp.image, path=outpath, basename=basename, seed=None, prompt=None, extension=opts.samples_format, info=infotext, short_filename=True, no_prompt=True, grid=False, pnginfo_section_name="extras", existing_info=existing_pnginfo, forced_filename=None)
+            images_path.append(img_path)
         if extras_mode != 2 or show_extras_results:
             outputs.append(pp.image)
 
     devices.torch_gc()
 
-    return outputs, ui_common.plaintext_to_html(infotext), ''
+    return outputs, ui_common.plaintext_to_html(infotext), '', images_path
 
 
-def run_extras(extras_mode, resize_mode, image, image_folder, input_dir, output_dir, show_extras_results, gfpgan_visibility, codeformer_visibility, codeformer_weight, upscaling_resize, upscaling_resize_w, upscaling_resize_h, upscaling_crop, extras_upscaler_1, extras_upscaler_2, extras_upscaler_2_visibility, upscale_first: bool, save_output: bool = True):
+def run_extras(id_task: str, token: str, extras_mode, resize_mode, image, image_folder, input_dir, output_dir, show_extras_results, gfpgan_visibility, codeformer_visibility, codeformer_weight, upscaling_resize, upscaling_resize_w, upscaling_resize_h, upscaling_crop, extras_upscaler_1, extras_upscaler_2, extras_upscaler_2_visibility, upscale_first: bool, save_output: bool = True):
     """old handler for API"""
 
     args = scripts.scripts_postproc.create_args_for_run({
@@ -106,4 +107,4 @@ def run_extras(extras_mode, resize_mode, image, image_folder, input_dir, output_
         },
     })
 
-    return run_postprocessing(extras_mode, image, image_folder, input_dir, output_dir, show_extras_results, *args, save_output=save_output)
+    return run_postprocessing(id_task, token, extras_mode, image, image_folder, input_dir, output_dir, show_extras_results, *args, save_output=save_output)

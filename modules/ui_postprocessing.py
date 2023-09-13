@@ -50,6 +50,7 @@ def create_ui():
             result_images,
             html_info_x,
             html_info,
+            dummy_component,
         ]
     )
 

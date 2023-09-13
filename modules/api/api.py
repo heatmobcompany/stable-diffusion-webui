@@ -181,8 +181,8 @@ class Api:
         self.add_api_v2(app)
         # self.add_api_route("/sdapi/v1/txt2img", self.text2imgapi, methods=["POST"], response_model=models.TextToImageResponse)
         # self.add_api_route("/sdapi/v1/img2img", self.img2imgapi, methods=["POST"], response_model=models.ImageToImageResponse)
-        self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
-        self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ExtrasBatchImagesResponse)
+        # self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
+        # self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ExtrasBatchImagesResponse)
         self.add_api_route("/sdapi/v1/png-info", self.pnginfoapi, methods=["POST"], response_model=models.PNGInfoResponse)
         self.add_api_route("/sdapi/v1/progress", self.progressapi, methods=["GET"], response_model=models.ProgressResponse)
         self.add_api_route("/sdapi/v1/interrogate", self.interrogateapi, methods=["POST"])
@@ -245,6 +245,31 @@ class Api:
                 print("img2imgtask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
             progress.finish_task(task_id)
+        
+        def extrasingletask(req: models.ExtrasSingleImageRequest, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.extras_single_image_api(req, task_id)
+            except HTTPException as e:
+                print("extrasingletask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("extrasingletask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+
+        def extrabatchtask(req: models.ExtrasBatchImagesRequest, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.extras_batch_images_api(req, task_id)
+            except HTTPException as e:
+                print("extrabatchtask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("extrabatchtask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+
 
         @app.post("/sdapi/v2/txt2img")
         def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
@@ -266,6 +291,26 @@ class Api:
             thread = threading.Thread(target=img2imgtask, args=(img2imgreq, task_id))
             thread.start()
             # background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
+            return response
+
+        @app.post("/sdapi/v2/extra-single-image")
+        def extrasinglev2api(req: models.ExtrasSingleImageRequest):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            thread = threading.Thread(target=extrasingletask, args=(req, task_id))
+            thread.start()
+            return response
+        
+        @app.post("/sdapi/v2/extra-batch-images")
+        def extrabatchv2api(req: models.ExtrasBatchImagesRequest):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            thread = threading.Thread(target=extrabatchtask, args=(req, task_id))
+            thread.start()
             return response
 
         @app.get("/sdapi/v2/progress")
@@ -480,24 +525,44 @@ class Api:
 
         return models.ImageToImageResponse(images=b64images, parameters=vars(img2imgreq), info=processed.js())
 
-    def extras_single_image_api(self, req: models.ExtrasSingleImageRequest):
+    def extras_single_image_api(self, req: models.ExtrasSingleImageRequest, task_id=None):
         reqDict = setUpscalers(req)
 
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
-        with QueueLock():
-            result = postprocessing.run_extras(extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=False, **reqDict)
+        pri = reqDict.pop("priority", 100)
+        with QueueLock(name=task_id, pri=pri):
+            try:
+                shared.state.begin(job=task_id)
+                progress.start_task(task_id)
+                result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
+            except Exception as e:
+                print("extras_single_image_api error:", e)
+            finally:
+                progress.save_images_result(task_id, result[-1], None)
+                progress.finish_task(task_id)
+                shared.state.end()
+                print('extras_single_image_api done', task_id, pri)
 
         return models.ExtrasSingleImageResponse(image=encode_pil_to_base64(result[0][0]), html_info=result[1])
 
-    def extras_batch_images_api(self, req: models.ExtrasBatchImagesRequest):
+    def extras_batch_images_api(self, req: models.ExtrasBatchImagesRequest, task_id=None):
         reqDict = setUpscalers(req)
 
         image_list = reqDict.pop('imageList', [])
         image_folder = [decode_base64_to_image(x.data) for x in image_list]
 
-        with QueueLock():
-            result = postprocessing.run_extras(extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=False, **reqDict)
+        pri = reqDict.pop("priority", 100)
+        with QueueLock(name=task_id, pri=pri):
+            try:
+                shared.state.begin(job=task_id)
+                progress.start_task(task_id)
+                result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
+            finally:
+                progress.save_images_result(task_id, result[-1], None)
+                progress.finish_task(task_id)
+                shared.state.end()
+                print('extras_batch_images_api done', task_id, pri)
 
         return models.ExtrasBatchImagesResponse(images=list(map(encode_pil_to_base64, result[0])), html_info=result[1])
 

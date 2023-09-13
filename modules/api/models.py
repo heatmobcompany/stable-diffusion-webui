@@ -141,6 +141,7 @@ class ImageToImageResponse(BaseModel):
     info: str
 
 class ExtrasBaseRequest(BaseModel):
+    priority: int = Field(default=100, title="Priority", description="Priority for the job in queue")
     resize_mode: Literal[0, 1] = Field(default=0, title="Resize Mode", description="Sets the resize mode: 0 to upscale by upscaling_resize amount, 1 to upscale up to upscaling_resize_h x upscaling_resize_w.")
     show_extras_results: bool = Field(default=True, title="Show results", description="Should the backend return the generated image?")
     gfpgan_visibility: float = Field(default=0, title="GFPGAN Visibility", ge=0, le=1, allow_inf_nan=False, description="Sets the visibility of GFPGAN, values should be between 0 and 1.")
