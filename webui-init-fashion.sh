@@ -3,7 +3,7 @@
 # get heatmob repo
 # cd /workspace/stable-diffusion-webui
 # git remote add heatmob git@github.com:heatmobcompany/stable-diffusion-webui.git
-# git checkout fashion_pod
+# git checkout <>
 
 apt update
 apt install -y aria2
@@ -15,15 +15,7 @@ git clone https://github.com/heatmobcompany/sd-webui-roop /workspace/stable-diff
 git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable-diffusion-webui/extensions/sd-webui-adetailer
 
 # Model checkpoint
-aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/sinkinai/majicMIX-realistic-v5/resolve/main/majicmixRealistic_v5.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o majicmixRealistic_v5.safetensors
-aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/cyberrealistic_v32.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o cyberrealistic_v32.safetensors
-aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/chilloutmix_NiPrunedFp32.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o chilloutmix_NiPrunedFp32.safetensors
-aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/kencanmix_v20Beta.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o kencanmix_v20Beta.safetensors
-
-# Model checkpoint test
-# aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ckpt/rev-animated/resolve/main/revAnimated_v11.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o revAnimated_v11.safetensors
-# aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/realisticVisionV30_v30VAE.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o realisticVisionV30_v30VAE.safetensors
-# aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/toonyou_beta6.safetensors -d /workspace/stable-diffusion-webui/models/Stable-diffusion -o toonyou_beta6.safetensors
+./webui-init-model-fashion.sh
 
 # Controlnet
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11f1e_sd15_tile.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o control_v11f1e_sd15_tile.pth
