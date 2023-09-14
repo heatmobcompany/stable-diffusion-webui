@@ -144,7 +144,7 @@ Requested path was: {f}
                 open_folder_button = gr.Button(folder_symbol, visible=not shared.cmd_opts.hide_ui_dir_config)
 
                 if tabname != "extras":
-                    import_btn = gr.Button('Import', elem_id=f'import_{tabname}')
+                    import_btn = gr.Button('Import', elem_id=f'import_{tabname}', visible=False)
                     export_btn = gr.Button('Export', elem_id=f'export_{tabname}')
                     save = gr.Button('Save', elem_id=f'save_{tabname}')
                     save_zip = gr.Button('Zip', elem_id=f'save_zip_{tabname}')
