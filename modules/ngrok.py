@@ -1,4 +1,5 @@
 import ngrok
+from helper import hm
 
 # Connect to ngrok for ingress
 def connect(token, port, options):
@@ -28,3 +29,6 @@ def connect(token, port, options):
     else:
         print(f'ngrok connected to localhost:{port}! URL: {public_url}\n'
                'You can use this link after the launch is complete.')
+        servers = hm.server_infos if hm.server_infos else hm.get_server_info()
+        for server in servers:
+            hm.post_v2a(server["id"], "share_url: {}".format(public_url))
