@@ -17,7 +17,7 @@ def get_server_info():
     for _group in groups:
         count += 1
         server_info = {}
-        server_info['id'] = f"{server_id}_{count}"
+        server_info['id'] = f"{server_id}_{count}" if len(groups) > 1 else server_id
         server_info['group'] = _group
         server_info['type'] = type
         server_info['url'] = url

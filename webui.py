@@ -367,7 +367,10 @@ def create_api(app):
 def api_only():
     initialize()
 
-    app = FastAPI()
+    app = FastAPI(
+        docs_url="/xdocs",
+        redoc_url="/xredoc",
+    )
     setup_middleware(app)
     api = create_api(app)
 
