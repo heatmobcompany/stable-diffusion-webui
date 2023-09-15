@@ -231,7 +231,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
             setTitle(progressText);
 
             if (res.textinfo && res.textinfo.indexOf("\n") == -1) {
-                progressText = res.textinfo + " " + progressText;
+                progressText = res.textinfo + " " + (res.active ? progressText : "");
             }
 
             divInner.textContent = progressText;
