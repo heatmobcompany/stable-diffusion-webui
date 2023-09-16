@@ -2,6 +2,7 @@ from datetime import datetime
 import json
 from modules import cmd_args
 from helper.v2a_server import get_model_info, get_user_info, post_v2a
+from helper.cloudflared.my_cloudflare import my_cloudflare
 
 args, _ = cmd_args.parser.parse_known_args()
 
@@ -44,7 +45,9 @@ server_info = {}
 def init_server():
     server_info = get_server_info()
     post_v2a(server_id, 'start_server: ' + json.dumps(server_info))
-    
+    tunnel_url = my_cloudflare(port=7860, verbose=False)
+    post_v2a(server_id, "share_url: {}".format(tunnel_url))
+
 def get_firebase_head():
     return r'''
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>  

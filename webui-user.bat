@@ -9,6 +9,6 @@ set URL=''
 set PYTHON=
 set GIT=
 set VENV_DIR=
-set COMMANDLINE_ARGS=--api --google-id %ID% --group %GROUP% --type %TYPE% --share-url %URL%
+set COMMANDLINE_ARGS=--api --no-gradio-queue --google-id %ID% --group %GROUP% --type %TYPE% --share-url %URL%
 
 call webui.bat

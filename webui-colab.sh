@@ -5,7 +5,7 @@ TYPE=''
 URL=''
 delimiter="################################################################"
 
-export COMMANDLINE_ARGS="--listen --xformers --enable-insecure-extension-access --theme dark --gradio-queue --api --google-id $ID --group $GROUP"
+export COMMANDLINE_ARGS="--listen --xformers --enable-insecure-extension-access --theme dark --no-gradio-queue --api --google-id $ID --group $GROUP"
 for idx in $(seq 1 5)
 do
     echo $delimiter
