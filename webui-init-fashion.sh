@@ -62,6 +62,8 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/add_detail.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o add_detail.jpeg
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/GoodHands-beta2.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o GoodHands-beta2.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/GoodHands-beta2.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o GoodHands-beta2.jpeg
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/FilmG3.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o FilmG3.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/FilmG3.png -d /workspace/stable-diffusion-webui/models/Lora -o FilmG3.png
 
 # ESRGAN
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/embed/upscale/resolve/main/4x-UltraSharp.pth -d /workspace/stable-diffusion-webui/models/ESRGAN -o 4x-UltraSharp.pth
