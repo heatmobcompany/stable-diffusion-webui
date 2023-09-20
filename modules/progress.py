@@ -11,6 +11,7 @@ import modules.shared as shared
 from modules.shared import queue_lock
 
 current_task = None
+current_task_progress = None
 pending_tasks = {}
 images_results = {}
 failed_results = {}
@@ -21,9 +22,10 @@ recorded_results_limit = 2
 
 
 def start_task(id_task):
-    global current_task
+    global current_task, current_task_progress
 
     current_task = id_task
+    current_task_progress = None
     pending_tasks.pop(id_task, None)
 
 
@@ -109,6 +111,7 @@ def setup_progress_api(app):
 
 
 def progressapi(req: ProgressRequest):
+    global current_task_progress
     active = req.id_task == current_task
     queued = req.id_task in pending_tasks
     completed = req.id_task in finished_tasks
@@ -132,7 +135,7 @@ def progressapi(req: ProgressRequest):
         pos, total = queue_lock.get_task_position(req.id_task)
         if queued:
             textinfo = f"In queue... {pos + 1}/{total} request(s) remaining until yours" if pos >= 0 else "Waiting..."
-        return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo=textinfo, images_path=images_path, inputsinfo=inputs_info, result_info=result_info)
+        return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo=textinfo, images_path=images_path, inputsinfo=inputs_info, result_info=result_info, progress=current_task_progress)
 
     progress = 0
 
@@ -175,6 +178,7 @@ def progressapi(req: ProgressRequest):
             live_preview = None
     else:
         live_preview = None
+    current_task_progress = progress
 
     return ProgressResponse(active=active, queued=queued, completed=completed, progress=progress, eta=eta, live_preview=live_preview, id_live_preview=id_live_preview, textinfo=shared.state.textinfo if progress > 0 else "Processing...")
 
