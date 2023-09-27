@@ -1,5 +1,8 @@
 #!/bin/bash
 
+apt-get -y update
+apt-get -y install cron
+
 if ! ps -ef | grep cron | grep -v grep > /dev/null; then
     echo "Cron is not running. Starting it now..."
     cron
