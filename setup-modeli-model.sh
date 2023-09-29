@@ -22,7 +22,7 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 # Update webui-user.sh
 file_path="./webui-user.sh"
 sed -i "s|^GROUP=.*|GROUP=$group|" "$file_path"
-sed -i "s|^TYPE=.*|GROUP=$type|" "$file_path"
+sed -i "s|^TYPE=.*|TYPE=$type|" "$file_path"
 if [ -n "$id" ]; then
     sed -i "s|^ID=.*|ID=$id|" "$file_path"
 fi
