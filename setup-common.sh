@@ -1,23 +1,10 @@
 #!/usr/bin/env bash
 
-# get heatmob repo
-# cd /workspace/stable-diffusion-webui
-# git remote add heatmob git@github.com:heatmobcompany/stable-diffusion-webui.git
-# git checkout <>
-
-apt update
-apt install -y aria2
-
-# downloadextension
-# git clone https://github.com/heatmobcompany/sd-webui-controlnet /content/ui/extensions/sd-webui-controlnet
-git clone https://github.com/heatmobcompany/sd-webui-segment-anything /workspace/stable-diffusion-webui/extensions/sd-webui-segment-anything
-git clone https://github.com/heatmobcompany/sd-webui-roop /workspace/stable-diffusion-webui/extensions/sd-webui-roop
-git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable-diffusion-webui/extensions/sd-webui-adetailer
-git clone https://github.com/heatmobcompany/sd-webui-prompt-all-in-one /workspace/stable-diffusion-webui/extensions/sd-webui-prompt-all-in-one
-git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-diffusion-webui/extensions/Civitai-Helper
-git clone https://github.com/fkunn1326/openpose-editor /workspace/stable-diffusion-webui/extensions/openpose-editor
-
-# Model checkpoint: Use special script
+if ! command -v aria2c &> /dev/null; then
+    echo "aria2c is not installed. Installing it..."
+    sudo apt update
+    sudo apt install -y aria2
+fi
 
 # Controlnet
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11f1e_sd15_tile.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o control_v11f1e_sd15_tile.pth
