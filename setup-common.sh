@@ -54,6 +54,13 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/FilmG3.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o FilmG3.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/FilmG3.png -d /workspace/stable-diffusion-webui/models/Lora -o FilmG3.png
 
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/InstantPhotoX3.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o InstantPhotoX3.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/epi_noiseoffset2.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o epi_noiseoffset2.safetensors
+
+# VAE
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/kl-f8-anime2.ckpt -d /workspace/stable-diffusion-webui/models/VAE -o kl-f8-anime2.ckpt
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors -d /workspace/stable-diffusion-webui/models/VAE -o vae-ft-mse-840000-ema-pruned.safetensors
+
 # ESRGAN
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/embed/upscale/resolve/main/4x-UltraSharp.pth -d /workspace/stable-diffusion-webui/models/ESRGAN -o 4x-UltraSharp.pth
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/4x_NMKD-Siax_200k.pth -d /workspace/stable-diffusion-webui/models/ESRGAN -o 4x_NMKD-Siax_200k.pth
