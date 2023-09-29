@@ -1,23 +1,10 @@
 #!/usr/bin/env bash
 
-# get heatmob repo
-# cd /workspace/stable-diffusion-webui
-# git remote add heatmob git@github.com:heatmobcompany/stable-diffusion-webui.git
-# git checkout <>
-
-apt update
-apt install -y aria2
-
-# downloadextension
-# git clone https://github.com/heatmobcompany/sd-webui-controlnet /content/ui/extensions/sd-webui-controlnet
-git clone https://github.com/heatmobcompany/sd-webui-segment-anything /workspace/stable-diffusion-webui/extensions/sd-webui-segment-anything
-git clone https://github.com/heatmobcompany/sd-webui-roop /workspace/stable-diffusion-webui/extensions/sd-webui-roop
-git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable-diffusion-webui/extensions/sd-webui-adetailer
-git clone https://github.com/heatmobcompany/sd-webui-prompt-all-in-one /workspace/stable-diffusion-webui/extensions/sd-webui-prompt-all-in-one
-git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-diffusion-webui/extensions/Civitai-Helper
-git clone https://github.com/fkunn1326/openpose-editor /workspace/stable-diffusion-webui/extensions/openpose-editor
-
-# Model checkpoint: Use special script
+if ! command -v aria2c &> /dev/null; then
+    echo "aria2c is not installed. Installing it..."
+    sudo apt update
+    sudo apt install -y aria2
+fi
 
 # Controlnet
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11f1e_sd15_tile.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o control_v11f1e_sd15_tile.pth
@@ -66,6 +53,13 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/GoodHands-beta2.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o GoodHands-beta2.jpeg
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/FilmG3.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o FilmG3.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/FilmG3.png -d /workspace/stable-diffusion-webui/models/Lora -o FilmG3.png
+
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/InstantPhotoX3.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o InstantPhotoX3.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/epi_noiseoffset2.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o epi_noiseoffset2.safetensors
+
+# VAE
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/kl-f8-anime2.ckpt -d /workspace/stable-diffusion-webui/models/VAE -o kl-f8-anime2.ckpt
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors -d /workspace/stable-diffusion-webui/models/VAE -o vae-ft-mse-840000-ema-pruned.safetensors
 
 # ESRGAN
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/embed/upscale/resolve/main/4x-UltraSharp.pth -d /workspace/stable-diffusion-webui/models/ESRGAN -o 4x-UltraSharp.pth
