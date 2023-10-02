@@ -2,8 +2,8 @@
 
 if ! command -v aria2c &> /dev/null; then
     echo "aria2c is not installed. Installing it..."
-    sudo apt update
-    sudo apt install -y aria2
+    apt update
+    apt install -y aria2
 fi
 
 # Default values
