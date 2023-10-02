@@ -70,8 +70,8 @@ class MyPriorityQueue:
         return pos, total
 
 class PriorityLock:
-    def __init__(self):
-        print("=== Initialize queue lock ===")
+    def __init__(self, name=None):
+        print(f"=== Initialize queue lock: {name if name else 'unknown'} ===")
         self._lock = threading.Lock()
         self._wait_queue = MyPriorityQueue()
         self._locking = False
