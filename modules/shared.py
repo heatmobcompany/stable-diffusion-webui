@@ -28,7 +28,7 @@ demo = None
 
 parser = cmd_args.parser
 
-queue_lock = PriorityLock()
+queue_lock = PriorityLock("Main SD")
 
 script_loading.preload_extensions(extensions_dir, parser, extension_list=launch.list_extensions(launch.args.ui_settings_file))
 script_loading.preload_extensions(extensions_builtin_dir, parser)
