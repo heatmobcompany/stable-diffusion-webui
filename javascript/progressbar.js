@@ -148,7 +148,7 @@ function requestProgress(id_task, progressbarContainer, gallery, atEnd, onProgre
     }
 
     var fun = function (id_task, id_live_preview) {
-        request("./internal/progress", { id_task: id_task, id_live_preview: id_live_preview }, function (res) {
+        request("./internal/progress", { id_task: id_task, live_preview_enabled: true, id_live_preview: id_live_preview }, function (res) {
             if (res.completed) {
                 removeProgressBar();
                 
