@@ -57,6 +57,9 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/InstantPhotoX3.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o InstantPhotoX3.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/epi_noiseoffset2.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o epi_noiseoffset2.safetensors
 
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/evangelion_anime_style_offset.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o evangelion_anime_style_offset.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/evangelion_anime_style_offset.jpg -d /workspace/stable-diffusion-webui/models/Lora -o evangelion_anime_style_offset.jpg
+
 # VAE
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/kl-f8-anime2.ckpt -d /workspace/stable-diffusion-webui/models/VAE -o kl-f8-anime2.ckpt
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/vae-ft-mse-840000-ema-pruned.safetensors -d /workspace/stable-diffusion-webui/models/VAE -o vae-ft-mse-840000-ema-pruned.safetensors
