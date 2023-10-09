@@ -320,28 +320,17 @@ class Api:
             return jobs_info
         
         @app.get("/sdapi/v2/interrupt")
-        def interrupt_task():
-            shared.state.interrupt()
-
-        @app.get("/sdapi/v2/skip")
-        def skip_task():
-            shared.state.skip()
+        def interrupt_task(id_task: str):
+            result = False
+            if (progress.current_task and progress.current_task == id_task):
+                shared.state.interrupt()
+                result = True
+            return {"message": f"Interrupted {id_task} ", "result": result}
 
         @app.get("/sdapi/v2/cancel")
         def cancel_task(id_task: str):
             result = progress.remove_task_to_queue(id_task)
             return {"message": f"Cancelled {id_task} ", "result": result}
-
-
-        @app.get("/sdapi/v2/interrupt")
-        def interrupt_task():
-            shared.state.interrupt()
-            return {"message": "Job interrupted successfully"}
-
-        @app.get("/sdapi/v2/skip")
-        def skip_task():
-            shared.state.skip()
-            return {"message": "Job skipped successfully"}
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
@@ -468,7 +457,7 @@ class Api:
                     shared.state.begin(job=task_id)
                     task_time = progress.start_task(task_id)
                     if not task_time:
-                        raise Exception("Task has been cancelled")
+                        raise Exception(f"Task {task_id} has been cancelled")
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
@@ -541,7 +530,7 @@ class Api:
                     shared.state.begin(job=task_id)
                     task_time = progress.start_task(task_id)
                     if not task_time:
-                        raise Exception("Task has been cancelled")
+                        raise Exception(f"Task {task_id} has been cancelled")
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
@@ -582,7 +571,7 @@ class Api:
                 shared.state.begin(job=task_id)
                 task_time = progress.start_task(task_id)
                 if not task_time:
-                    raise Exception("Task has been cancelled")
+                    raise Exception(f"Task {task_id} has been cancelled")
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
@@ -616,7 +605,7 @@ class Api:
                 shared.state.begin(job=task_id)
                 task_time = progress.start_task(task_id)
                 if not task_time:
-                    raise Exception("Task has been cancelled")
+                    raise Exception(f"Task {task_id} has been cancelled")
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
