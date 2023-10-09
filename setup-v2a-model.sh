@@ -157,6 +157,23 @@ for entry in "${id_models[@]}"; do
             file=sdvn1Real_origin.safetensors
             downloadModel  $file
         fi
+        if containsSubstring "$group" "AnimeCivitaiv1"; then
+            file=KizukiAnimeCivitaiv1.safetensors
+            downloadModel  $file
+        fi
+        if containsSubstring "$group" "AnimeCivitaiv2"; then
+            file=KizukiAnimeCivitaiv2.safetensors
+            downloadModel  $file
+        fi
+        if containsSubstring "$group" "AnimeCivitaiv3"; then
+            file=KizukiAnimeCivitaiv3.safetensors
+            downloadModel  $file
+        fi
+        if containsSubstring "$group" "flat2DAnimerge"; then
+            file=flat2DAnimerge_v30.safetensors
+            downloadModel  $file
+        fi
+
     fi
 done
 
