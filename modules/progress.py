@@ -26,7 +26,7 @@ def start_task(id_task):
 
     current_task = id_task
     current_task_progress = None
-    pending_tasks.pop(id_task, None)
+    return pending_tasks.pop(id_task, None)
 
 
 def finish_task(id_task):
@@ -87,6 +87,11 @@ def get_task_info(task_id):
 def add_task_to_queue(id_job):
     pending_tasks[id_job] = time.time()
 
+def remove_task_to_queue(id_job):
+    if id_job in pending_tasks:
+        pending_tasks[id_job] = 0
+        return True
+    return False
 
 class ProgressRequest(BaseModel):
     id_task: str = Field(default=None, title="Task ID", description="id of the task to get progress for")

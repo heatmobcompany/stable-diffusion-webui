@@ -318,6 +318,20 @@ class Api:
         def statusv2api():
             jobs_info = progress.get_tasks_info()
             return jobs_info
+        
+        @app.get("/sdapi/v2/interrupt")
+        def interrupt_task():
+            shared.state.interrupt()
+
+        @app.get("/sdapi/v2/skip")
+        def skip_task():
+            shared.state.skip()
+
+        @app.get("/sdapi/v2/cancel")
+        def cancel_task(id_task: str):
+            result = progress.remove_task_to_queue(id_task)
+            return {"message": f"Cancelled {id_task} ", "result": result}
+
 
         @app.get("/sdapi/v2/interrupt")
         def interrupt_task():
@@ -452,7 +466,9 @@ class Api:
                 try:
                     print('text2imgapi start', task_id, pri)
                     shared.state.begin(job=task_id)
-                    progress.start_task(task_id)
+                    task_time = progress.start_task(task_id)
+                    if not task_time:
+                        raise Exception("Task has been cancelled")
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
@@ -523,7 +539,9 @@ class Api:
                 try:
                     print('img2imgapi start', task_id, pri)
                     shared.state.begin(job=task_id)
-                    progress.start_task(task_id)
+                    task_time = progress.start_task(task_id)
+                    if not task_time:
+                        raise Exception("Task has been cancelled")
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
@@ -562,7 +580,9 @@ class Api:
             try:
                 print('extras_single_image_api start', task_id, pri)
                 shared.state.begin(job=task_id)
-                progress.start_task(task_id)
+                task_time = progress.start_task(task_id)
+                if not task_time:
+                    raise Exception("Task has been cancelled")
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
@@ -594,7 +614,9 @@ class Api:
             try:
                 print('extras_batch_images_api start', task_id, pri)
                 shared.state.begin(job=task_id)
-                progress.start_task(task_id)
+                task_time = progress.start_task(task_id)
+                if not task_time:
+                    raise Exception("Task has been cancelled")
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
