@@ -318,6 +318,14 @@ class Api:
         def statusv2api():
             jobs_info = progress.get_tasks_info()
             return jobs_info
+        
+        @app.get("/sdapi/v2/interrupt")
+        def interrupt_task():
+            shared.state.interrupt()
+
+        @app.get("/sdapi/v2/skip")
+        def skip_task():
+            shared.state.skip()
 
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
@@ -495,6 +503,8 @@ class Api:
         args.pop('save_images', None)
         pri = args.pop('priority', 100)
         print('img2imgapi wait', task_id, pri)
+        processed = None
+        exception = None
         with QueueLock(name=task_id, pri=pri):
             with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
                 p.init_images = [decode_base64_to_image(x) for x in init_images]
@@ -512,11 +522,21 @@ class Api:
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                except Exception as e:
+                    exception = e
                 finally:
+                    if not processed:
+                        return
                     progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
                     print('img2imgapi done', task_id, pri)
+
+        if not processed:
+            if exception:
+                raise exception
+            else:
+                raise Exception("Unknown exception")
 
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
