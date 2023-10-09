@@ -319,6 +319,16 @@ class Api:
             jobs_info = progress.get_tasks_info()
             return jobs_info
 
+        @app.get("/sdapi/v2/interrupt")
+        def interrupt_task():
+            shared.state.interrupt()
+            return {"message": "Job interrupted successfully"}
+
+        @app.get("/sdapi/v2/skip")
+        def skip_task():
+            shared.state.skip()
+            return {"message": "Job skipped successfully"}
+
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)
@@ -431,6 +441,8 @@ class Api:
         args.pop('save_images', None)
         pri = args.pop('priority', 100)
         print('text2imgapi wait', task_id, pri)
+        processed = None
+        exception = None
         with QueueLock(name=task_id, pri=pri):
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
                 p.scripts = script_runner
@@ -447,12 +459,16 @@ class Api:
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                except Exception as e:
+                    exception = e
                 finally:
-                    progress.save_images_result(task_id, processed.imagespath, processed.js())
+                    if processed:
+                        progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
                     print('text2imgapi done', task_id, pri)
-
+        if not processed:
+            raise exception if exception else Exception("Unknown exception")
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
@@ -495,6 +511,8 @@ class Api:
         args.pop('save_images', None)
         pri = args.pop('priority', 100)
         print('img2imgapi wait', task_id, pri)
+        processed = None
+        exception = None
         with QueueLock(name=task_id, pri=pri):
             with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
                 p.init_images = [decode_base64_to_image(x) for x in init_images]
@@ -512,12 +530,17 @@ class Api:
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                except Exception as e:
+                    exception = e
                 finally:
-                    progress.save_images_result(task_id, processed.imagespath, processed.js())
+                    if processed:
+                        progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
                     print('img2imgapi done', task_id, pri)
 
+        if not processed:
+            raise exception if exception else Exception("Unknown exception")
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
         if not img2imgreq.include_init_images:
@@ -533,6 +556,8 @@ class Api:
 
         pri = reqDict.pop("priority", 100)
         print('extras_single_image_api wait', task_id, pri)
+        result = None
+        exception = None
         with QueueLock(name=task_id, pri=pri):
             try:
                 print('extras_single_image_api start', task_id, pri)
@@ -540,12 +565,17 @@ class Api:
                 progress.start_task(task_id)
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
+                exception = e
                 print("extras_single_image_api error:", e)
             finally:
-                progress.save_images_result(task_id, json.loads(result[-1]), None)
+                if result:
+                    progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
                 print('extras_single_image_api done', task_id, pri)
+
+        if not result:
+            raise exception if exception else Exception("Unknown exception")
 
         return models.ExtrasSingleImageResponse(image=encode_pil_to_base64(result[0][0]), html_info=result[1])
 
@@ -558,17 +588,26 @@ class Api:
         pri = reqDict.pop("priority", 100)
         
         print('extras_batch_images_api wait', task_id, pri)
+        result = None
+        exception = None
         with QueueLock(name=task_id, pri=pri):
             try:
                 print('extras_batch_images_api start', task_id, pri)
                 shared.state.begin(job=task_id)
                 progress.start_task(task_id)
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
+            except Exception as e:
+                exception = e
+                print("extras_batch_images_api error:", e)
             finally:
-                progress.save_images_result(task_id, json.loads(result[-1]), None)
+                if result:
+                    progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
                 print('extras_batch_images_api done', task_id, pri)
+
+        if not result:
+            raise exception if exception else Exception("Unknown exception")
 
         return models.ExtrasBatchImagesResponse(images=list(map(encode_pil_to_base64, result[0])), html_info=result[1])
 
