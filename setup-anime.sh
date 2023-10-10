@@ -16,5 +16,5 @@ git clone https://github.com/heatmobcompany/sd-webui-roop /workspace/stable-diff
 git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable-diffusion-webui/extensions/sd-webui-adetailer
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-"${SCRIPT_DIR}/setup-modeli-model.sh" $1 $2
+"${SCRIPT_DIR}/setup-anime-model.sh" $1 $2
 "${SCRIPT_DIR}/setup-common.sh"

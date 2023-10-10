@@ -1,17 +1,14 @@
 #!/usr/bin/env bash
 
 id_models=(
-    "v2a_1=Majicmix,Meinamix,XXMix9realistic,RevAnimated,ChilloutMix,Counterfeit"
-    "v2a_2=Majicmix,SDVN1Real,ToonYou,CyberRealistic,RealisticVision,GhostMix,KenCanMix"
-    "v2a_3=Majicmix,Meinamix,XXMix9realistic,RevAnimated,ChilloutMix,Counterfeit,MechaMix,DreamShaper,ChildrenStories,XSarchitectural"
-    "v2a_4=Majicmix,SDVN1Real,ToonYou,CyberRealistic,RealisticVision,GhostMix,KenCanMix,dvArch,NightSkyYOZORAStyle,AZovyaRPGArtistTools"
+    "anime_1=RevAnimated,Meinamix,ToonYou,DreamShaper,AnimeCivitaiv1,AnimeCivitaiv2,AnimeCivitaiv3,flat2DAnimerge"
 )
 
 # Default values
 id=$1
 url=$2
 group=""
-type="webui"
+type="anime_app"
 
 if [ -z "$id" ]; then
     echo "$1 id: is require"
