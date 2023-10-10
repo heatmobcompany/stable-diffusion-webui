@@ -392,3 +392,6 @@ def start():
         webui.api_only()
     else:
         webui.webui()
+
+if not is_installed("requests"):
+    run_pip("install requests", "requests")
