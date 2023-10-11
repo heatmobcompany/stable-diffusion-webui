@@ -45,8 +45,8 @@ warnings.filterwarnings("default" if opts.show_warnings else "ignore", category=
 mimetypes.init()
 mimetypes.add_type('application/javascript', '.js')
 
-MAX_WIDTH = 896
-MAX_HEIGHT = 896
+MAX_WIDTH = 1152
+MAX_HEIGHT = 1152
 if not cmd_opts.share and not cmd_opts.listen:
     # fix gradio phoning home
     gradio.utils.version_check = lambda: None
