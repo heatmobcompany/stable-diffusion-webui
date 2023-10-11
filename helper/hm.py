@@ -26,6 +26,7 @@ def get_server_info():
             res = get_model_info(_group)
             if (res and res['result']):
                 server_info['icon'] = res['result']['icon']
+                server_info['icon_web'] = res['result']['icon_web']
                 server_info['file'] = res['result']['file']
                 server_info['link_file'] = res['result']['link_file']
                 server_info['civitaiLink'] = res['result']['civitaiLink']
