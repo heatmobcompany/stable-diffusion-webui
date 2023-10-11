@@ -1005,7 +1005,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         images_list=output_images,
         images_path=images_path,
         seed=p.all_seeds[0],
-        info=infotexts[0],
+        info=infotexts[0] if infotexts else None,
         comments="".join(f"{comment}\n" for comment in comments),
         subseed=p.all_subseeds[0],
         index_of_first_image=index_of_first_image,
