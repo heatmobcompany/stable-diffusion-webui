@@ -7,8 +7,8 @@ function set_theme(theme) {
     }
 }
 
-window.max_w = 896
-window.max_h = 896
+window.max_w = 1152
+window.max_h = 1152
 
 document.addEventListener("DOMContentLoaded", async function() {
     await initialize();
@@ -58,8 +58,8 @@ async function check_tk() {
         if (nsfw) nsfw.disabled = true;
         else console.error('Can not get NSFW checkbox')
     } else {
-        window.max_w = 1024
-        window.max_h = 1024
+        window.max_w = 1152
+        window.max_h = 1152
     }
 
     const sizeIds = ["txt2img_width", "txt2img_height", "img2img_width", "img2img_height"]
