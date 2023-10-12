@@ -485,7 +485,7 @@ class Api:
 
         mask = img2imgreq.mask
         if mask:
-            mask = decode_base64_to_image(mask).convert("RGB")
+            mask = decode_base64_to_image(mask).convert("L")
 
         script_runner = scripts.scripts_img2img
         if not script_runner.scripts:
