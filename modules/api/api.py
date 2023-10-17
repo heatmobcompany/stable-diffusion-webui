@@ -487,7 +487,7 @@ class Api:
 
         mask = img2imgreq.mask
         if mask:
-            mask = decode_base64_to_image(mask).convert("L")
+            mask = decode_base64_to_image(mask)
 
         script_runner = scripts.scripts_img2img
         if not script_runner.scripts:
@@ -522,7 +522,7 @@ class Api:
         exception = None
         with QueueLock(name=task_id, pri=pri):
             with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
-                p.init_images = [decode_base64_to_image(x).convert("RGB") for x in init_images]
+                p.init_images = [decode_base64_to_image(x) for x in init_images]
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_img2img_grids
                 p.outpath_samples = opts.outdir_img2img_samples
