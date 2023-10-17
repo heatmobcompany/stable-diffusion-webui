@@ -66,6 +66,8 @@ def decode_base64_to_image(encoding):
         encoding = encoding.split(";")[1].split(",")[1]
     try:
         image = Image.open(BytesIO(base64.b64decode(encoding)))
+        if image.mode == 'RGBA':
+            image = image.convert("RGB")
         return image
     except Exception as e:
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
