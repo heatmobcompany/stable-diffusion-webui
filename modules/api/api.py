@@ -73,6 +73,23 @@ def decode_base64_to_image(encoding):
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
 
 
+def dialte_mask(mask, number_pixel):
+    import cv2, numpy as np
+    kernel_size = abs(number_pixel)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    if number_pixel < 0:
+        mask = cv2.erode(mask, kernel)
+    else:
+        mask = cv2.dilate(mask, kernel)
+    return mask
+
+
+def normalize_mask(mask):
+    mask = dialte_mask(mask, 8)
+    mask = dialte_mask(mask, -8)
+    return mask
+
+
 def encode_pil_to_base64(image):
     with io.BytesIO() as output_bytes:
 
@@ -516,6 +533,11 @@ class Api:
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
+        
+        is_auto_mask = args.pop('auto_mask', True)
+        if mask and not is_auto_mask:
+            mask = normalize_mask(mask)
+
         pri = args.pop('priority', 100)
         print('img2imgapi wait', task_id, pri)
         processed = None
