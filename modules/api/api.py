@@ -535,6 +535,7 @@ class Api:
         args.pop('save_images', None)
         
         is_auto_mask = args.pop('auto_mask', True)
+        print(f"Mask config, task={task_id} auto={is_auto_mask}")
         if mask and not is_auto_mask:
             mask = normalize_mask(mask)
 
