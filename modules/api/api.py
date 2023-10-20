@@ -552,6 +552,8 @@ class Api:
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_img2img_grids
                 p.outpath_samples = opts.outdir_img2img_samples
+                if mask and img2imgreq.mask_blur:
+                    p.extra_generation_params["Mask blur"] = img2imgreq.mask_blur
 
                 try:
                     print('img2imgapi start', task_id, pri)
