@@ -1,7 +1,10 @@
 #!/bin/bash
 
-apt-get -y update
-apt-get -y install cron
+if ! command -v cron &> /dev/null; then
+    echo "Cron is not installed. Installing it now..."
+    sudo apt update
+    sudo apt install cron
+fi
 
 if ! ps -ef | grep cron | grep -v grep > /dev/null; then
     echo "Cron is not running. Starting it now..."

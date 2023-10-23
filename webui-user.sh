@@ -9,6 +9,10 @@ GROUP=
 TYPE=
 URL=
 
+if [ -z "$URL" ]; then
+    URL="http://$(curl ifconfig.me --silent):3000"
+fi
+
 # Install directory without trailing slash
 install_dir="/workspace"
 
