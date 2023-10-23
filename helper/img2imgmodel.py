@@ -46,9 +46,9 @@ class Img2imgApiModel(BaseModel):
     denoising_strength: float| None
     image_cfg_scale: int | None
     # mask: str | None
-    mask_blur: int | None
-    mask_blur_x: int | None
-    mask_blur_y: int | None
+    mask_blur: float | None
+    mask_blur_x: float | None
+    mask_blur_y: float | None
     inpainting_fill: int | None
     inpaint_full_res: bool| None
     inpaint_full_res_padding: int | None
