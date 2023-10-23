@@ -4,9 +4,9 @@
 #########################################################
 
 # Group: Majicmix, RevAnimated, Meinamix, RealisticVision, CosplayMix, ...
-ID=fashion_
-GROUP=Majicmix
-TYPE=fashion_app_pod
+ID=
+GROUP=
+TYPE=
 URL=
 
 # Install directory without trailing slash
