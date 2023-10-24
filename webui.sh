@@ -23,9 +23,12 @@ fi
 
 # Read variables from webui-user.sh
 # shellcheck source=/dev/null
-if [[ -f "$SCRIPT_DIR"/webui-user.sh ]]
-then
+if [[ -f "$SCRIPT_DIR"/webui-user.sh ]]; then
     source "$SCRIPT_DIR"/webui-user.sh
+fi
+
+if [[ -f "$SCRIPT_DIR"/job_create.sh ]]; then
+    "$SCRIPT_DIR"/job_create.sh
 fi
 
 # Set defaults

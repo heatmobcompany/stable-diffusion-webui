@@ -53,7 +53,5 @@ export TORCH_COMMAND="pip install torch torchvision torchaudio --index-url https
 # Uncomment to enable accelerated launch
 # export ACCELERATE="True"
 
-./job_create.sh
-
 ###########################################
 
