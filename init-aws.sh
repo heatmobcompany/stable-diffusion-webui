@@ -11,7 +11,7 @@ sudo apt autoremove nvidia* --purge
 sudo apt install nvidia-driver-535 -y
 
 # install python lib
-sudo apt install -y python3.10-venv python3-pip aria2
+sudo apt install -y python3.10-venv python3-pip aria2 lnav
 sudo apt install -y libgoogle-perftools4 libtcmalloc-minimal4
 
 # install python toolkit
