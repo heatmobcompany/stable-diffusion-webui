@@ -506,8 +506,11 @@ class Api:
             raise HTTPException(status_code=404, detail="Init image not found")
 
         mask = img2imgreq.mask
+        auto_mask = img2imgreq.auto_mask
         if mask:
             mask = decode_base64_to_image(mask)
+            if not auto_mask:
+                mask = normalize_mask(mask)
 
         script_runner = scripts.scripts_img2img
         if not script_runner.scripts:
@@ -531,17 +534,13 @@ class Api:
         args.pop('script_name', None)
         args.pop('script_args', None)  # will refeed them to the pipeline directly after initializing them
         args.pop('alwayson_scripts', None)
+        args.pop('auto_mask', None)
 
         script_args = self.init_script_args(img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
         
-        is_auto_mask = args.pop('auto_mask', True)
-        print(f"Mask config, task={task_id} auto={is_auto_mask}")
-        if mask and not is_auto_mask:
-            mask = normalize_mask(mask)
-
         pri = args.pop('priority', 100)
         print('img2imgapi wait', task_id, pri)
         processed = None
