@@ -11,9 +11,11 @@ def get_gpu_memory_usage():
         return None, None
 
 def check_gpu_memory_usage(threshold, max_attempts, retry_interval):
+    failed_count = 0
     for _ in range(max_attempts):
         used, total = get_gpu_memory_usage()
         if used is not None and total is not None:
+            failed_count = 0
             gpu_usage_percentage = used / total
             if gpu_usage_percentage > threshold:
                 print(f"GPU memory usage is above {threshold*100}%: {gpu_usage_percentage*100}%")
@@ -22,8 +24,17 @@ def check_gpu_memory_usage(threshold, max_attempts, retry_interval):
                 print(f"GPU memory usage is below {threshold*100}%: {gpu_usage_percentage*100}%")
                 return
         else:
+            failed_count += 1
             print("Failed to retrieve GPU memory information. Retrying...")
             time.sleep(retry_interval)
+
+    if failed_count > 0:
+        print("Seems driver errors, need to restart server")
+        time.sleep(5)
+        cmd = "sudo reboot"
+        subprocess.call(cmd, shell=True)
+        time.sleep(5)
+        return
 
     print(f"GPU memory usage is consistently above {threshold*100}% after {max_attempts} attempts. Restarting sd-service...")
     # Add your code to restart the sd-service here
