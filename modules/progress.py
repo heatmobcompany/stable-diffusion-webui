@@ -103,6 +103,7 @@ class ProgressResponse(BaseModel):
     active: bool = Field(title="Whether the task is being worked on right now")
     queued: bool = Field(title="Whether the task is in queue")
     completed: bool = Field(title="Whether the task has already finished")
+    failed: bool = Field(title="Whether the task has already failed")
     progress: float = Field(default=None, title="Progress", description="The progress with a range of 0 to 1")
     eta: float = Field(default=None, title="ETA in secs")
     live_preview: str = Field(default=None, title="Live preview image", description="Current live preview; a data: uri")
@@ -141,7 +142,7 @@ def progressapi(req: ProgressRequest):
         pos, total = queue_lock.get_task_position(req.id_task)
         if queued:
             textinfo = f"In queue... {pos + 1}/{total} request(s) remaining until yours" if pos >= 0 else "Waiting..."
-        return ProgressResponse(active=active, queued=queued, completed=completed, id_live_preview=-1, textinfo=textinfo, images_path=images_path, inputsinfo=inputs_info, result_info=result_info, progress=current_task_progress)
+        return ProgressResponse(active=active, queued=queued, completed=completed, failed=failed, id_live_preview=-1, textinfo=textinfo, images_path=images_path, inputsinfo=inputs_info, result_info=result_info, progress=current_task_progress)
 
     progress = 0
 
