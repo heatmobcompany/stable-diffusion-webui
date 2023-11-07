@@ -103,7 +103,7 @@ class ProgressResponse(BaseModel):
     active: bool = Field(title="Whether the task is being worked on right now")
     queued: bool = Field(title="Whether the task is in queue")
     completed: bool = Field(title="Whether the task has already finished")
-    failed: bool = Field(title="Whether the task has already failed")
+    failed: bool | None = Field(title="Whether the task has already failed")
     progress: float = Field(default=None, title="Progress", description="The progress with a range of 0 to 1")
     eta: float = Field(default=None, title="ETA in secs")
     live_preview: str = Field(default=None, title="Live preview image", description="Current live preview; a data: uri")
