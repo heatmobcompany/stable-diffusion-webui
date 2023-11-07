@@ -375,6 +375,7 @@ def api_only():
     api = create_api(app)
     
     modules.progress.setup_progress_api(app)
+    modules.progress_extra.setup_progress_extra_api(app)
     modules.ui.setup_ui_api(app)
     
     modules.script_callbacks.app_started_callback(None, app)
@@ -446,6 +447,7 @@ def webui():
         setup_middleware(app)
 
         modules.progress.setup_progress_api(app)
+        modules.progress_extra.setup_progress_extra_api(app)
         modules.ui.setup_ui_api(app)
 
         if launch_api:

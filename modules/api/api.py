@@ -19,7 +19,7 @@ from fastapi.encoders import jsonable_encoder
 from secrets import compare_digest
 
 import modules.shared as shared
-from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors, progress, restart
+from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors, progress, progress_extra, restart
 from modules.api import models
 from modules.call_queue import QueueLock
 from modules.shared import opts
@@ -270,28 +270,28 @@ class Api:
             progress.finish_task(task_id)
         
         def extrasingletask(req: models.ExtrasSingleImageRequest, task_id):
-            progress.add_task_to_queue(task_id)
+            progress_extra.add_task_to_queue(task_id)
             try:
                 self.extras_single_image_api(req, task_id)
             except HTTPException as e:
                 print("extrasingletask HTTPException:", e.detail)
-                progress.save_failure_result(task_id, e.detail)
+                progress_extra.save_failure_result(task_id, e.detail)
             except Exception as e:
                 print("extrasingletask Exception:", e)
-                progress.save_failure_result(task_id, str(e))
-            progress.finish_task(task_id)
+                progress_extra.save_failure_result(task_id, str(e))
+            progress_extra.finish_task(task_id)
 
         def extrabatchtask(req: models.ExtrasBatchImagesRequest, task_id):
-            progress.add_task_to_queue(task_id)
+            progress_extra.add_task_to_queue(task_id)
             try:
                 self.extras_batch_images_api(req, task_id)
             except HTTPException as e:
                 print("extrabatchtask HTTPException:", e.detail)
-                progress.save_failure_result(task_id, e.detail)
+                progress_extra.save_failure_result(task_id, e.detail)
             except Exception as e:
                 print("extrabatchtask Exception:", e)
-                progress.save_failure_result(task_id, str(e))
-            progress.finish_task(task_id)
+                progress_extra.save_failure_result(task_id, str(e))
+            progress_extra.finish_task(task_id)
 
 
         @app.post("/sdapi/v2/txt2img")
@@ -594,23 +594,21 @@ class Api:
         print('extras_single_image_api wait', task_id, pri)
         result = None
         exception = None
-        with QueueLock(name=task_id, pri=pri):
-            try:
-                print('extras_single_image_api start', task_id, pri)
-                shared.state.begin(job=task_id)
-                task_time = progress.start_task(task_id)
-                if not task_time:
-                    raise Exception(f"Task {task_id} has been cancelled")
-                result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
-            except Exception as e:
-                exception = e
-                print("extras_single_image_api error:", e)
-            finally:
-                if result:
-                    progress.save_images_result(task_id, json.loads(result[-1]), None)
-                progress.finish_task(task_id)
-                shared.state.end()
-                print('extras_single_image_api done', task_id, pri)
+        try:
+            print('extras_single_image_api start', task_id, pri)
+            task_time = progress_extra.start_task(task_id)
+            if not task_time:
+                raise Exception(f"Task {task_id} has been cancelled")
+            result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
+        except Exception as e:
+            exception = e
+            print("extras_single_image_api error:", e)
+        finally:
+            if result:
+                progress_extra.save_images_result(task_id, json.loads(result[-1]))
+            progress_extra.finish_task(task_id)
+            shared.state.end()
+            print('extras_single_image_api done', task_id, pri)
 
         if not result:
             raise exception if exception else Exception("Unknown exception")
@@ -628,23 +626,22 @@ class Api:
         print('extras_batch_images_api wait', task_id, pri)
         result = None
         exception = None
-        with QueueLock(name=task_id, pri=pri):
-            try:
-                print('extras_batch_images_api start', task_id, pri)
-                shared.state.begin(job=task_id)
-                task_time = progress.start_task(task_id)
-                if not task_time:
-                    raise Exception(f"Task {task_id} has been cancelled")
-                result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
-            except Exception as e:
-                exception = e
-                print("extras_batch_images_api error:", e)
-            finally:
-                if result:
-                    progress.save_images_result(task_id, json.loads(result[-1]), None)
-                progress.finish_task(task_id)
-                shared.state.end()
-                print('extras_batch_images_api done', task_id, pri)
+        try:
+            print('extras_batch_images_api start', task_id, pri)
+            shared.state.begin(job=task_id)
+            task_time = progress_extra.start_task(task_id)
+            if not task_time:
+                raise Exception(f"Task {task_id} has been cancelled")
+            result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
+        except Exception as e:
+            exception = e
+            print("extras_batch_images_api error:", e)
+        finally:
+            if result:
+                progress_extra.save_images_result(task_id, json.loads(result[-1]))
+            progress_extra.finish_task(task_id)
+            shared.state.end()
+            print('extras_batch_images_api done', task_id, pri)
 
         if not result:
             raise exception if exception else Exception("Unknown exception")
