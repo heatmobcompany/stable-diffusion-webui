@@ -1,58 +1,90 @@
 import subprocess
 import time
 import datetime
+from enum import Enum
+import requests
+
+
+DONOTHING = 0
+RESTART_SERVICE = 1
+RESTART_DEVICE = 2
+
+Action = ["DONOTHING", "RESTART_SERVICE", "RESTART_DEVICE"]
+
 
 def get_gpu_memory_usage():
     try:
         output = subprocess.check_output(['nvidia-smi', '--query-gpu=memory.used,memory.total', '--format=csv,nounits,noheader'])
         used, total = map(int, output.decode('utf-8').strip().split(','))
         return used, total
-    except subprocess.CalledProcessError:
+    except Exception as e:
         return None, None
 
 def check_gpu_memory_usage(threshold, max_attempts, retry_interval):
     failed_count = 0
+    gpu_usage_percentage = 0
     for _ in range(max_attempts):
         used, total = get_gpu_memory_usage()
         if used is not None and total is not None:
             failed_count = 0
-            gpu_usage_percentage = used / total
+            gpu_usage_percentage = round(used / total, 3)
             if gpu_usage_percentage > threshold:
-                print(f"GPU memory usage is above {threshold*100}%: {gpu_usage_percentage*100}%")
                 time.sleep(retry_interval)
             else:
-                print(f"GPU memory usage is below {threshold*100}%: {gpu_usage_percentage*100}%")
-                return
+                return DONOTHING, gpu_usage_percentage
         else:
             failed_count += 1
-            print("Failed to retrieve GPU memory information. Retrying...")
-            time.sleep(retry_interval)
+            if failed_count > 1:
+                return RESTART_DEVICE, gpu_usage_percentage
 
-    if failed_count > 0:
-        print("Seems driver errors, need to restart server")
-        time.sleep(5)
-        cmd = "sudo reboot"
-        subprocess.call(cmd, shell=True)
-        time.sleep(5)
-        return
-
-    print(f"GPU memory usage is consistently above {threshold*100}% after {max_attempts} attempts. Restarting sd-service...")
-    # Add your code to restart the sd-service here
+    return RESTART_SERVICE, gpu_usage_percentage
+        
+def restart_service():
     cmd = "sudo service sd-service restart"
     subprocess.call(cmd, shell=True)
-    cmd = "sudo service sd-service status"
-    try:
-        status_output = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-        print(status_output.decode("utf-8"))
-    except subprocess.CalledProcessError as e:
-        # If there's an error (e.g., the service doesn't exist), print the error message
-        print(f"Error running status command: {e.output.decode('utf-8')}")
+
+def restart_device():
+    cmd = "sudo reboot"
+    subprocess.call(cmd, shell=True)
+
+
+def do_action(action):
+    if action == RESTART_SERVICE:
+        return restart_service()
+    elif action == RESTART_DEVICE:
+        return restart_device()
+
+
+def check_api_health(url, max_attempts, retry_interval):
+    failed_count = 0
+    for _ in range(max_attempts):
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                return DONOTHING
+            else:
+                failed_count += 1
+                if failed_count > 1:
+                    return RESTART_SERVICE
+                time.sleep(retry_interval)
+        except Exception as e:
+            failed_count += 1
+            if failed_count > 1:
+                return RESTART_SERVICE
+            time.sleep(retry_interval)
+
 
 if __name__ == '__main__':
-    threshold = 0.85    # 
-    max_attempts = 10   # times
-    retry_interval = 10  # seconds
+    threshold = 0.85
+    max_attempts = 10
+    retry_interval = 10
+    action1, usage = check_gpu_memory_usage(threshold, max_attempts, retry_interval)
+    
+    max_attempts = 5
+    retry_interval = 5
+    api_url = "http://localhost:3000/internal/ping"
+    action2 = check_api_health(api_url, max_attempts, retry_interval)
 
-    print(f"====== Script started at: {datetime.datetime.now()} ======")
-    check_gpu_memory_usage(threshold, max_attempts, retry_interval)
-    print(f"====== Script ended at: {datetime.datetime.now()} ======")
+    action = max(action1, action2)
+    print(f"{datetime.datetime.now()}: Action: {Action[action]}, GPU usage: {usage * 100} %, Ping: {'OK' if action2 == DONOTHING else 'NOK'}")
+    do_action(action)
