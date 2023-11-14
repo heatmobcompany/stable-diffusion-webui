@@ -5,7 +5,7 @@ import datetime
 from enum import Enum
 import requests
 import yaml
-import pytz
+from datetime import datetime, timezone, timedelta
 
 DONOTHING = 0
 RESTART_SERVICE = 1
@@ -29,7 +29,7 @@ def check_gpu_memory_usage(threshold, max_attempts, retry_interval):
         used, total = get_gpu_memory_usage()
         if used is not None and total is not None:
             failed_count = 0
-            gpu_usage_percentage = round(used / total, 3)
+            gpu_usage_percentage = round(used / total, 4)
             if gpu_usage_percentage > threshold:
                 time.sleep(retry_interval)
             else:
@@ -107,9 +107,10 @@ if __name__ == '__main__':
     action2 = check_api_health(api_url, max_attempts, retry_interval)
 
     action = max(action1, action2)
-    tz = pytz.timezone('Asia/Bangkok')
-    now = datetime.datetime.now(tz)
-    message = (f"{now}: GPU usage: {usage * 100} %, Ping: {'OK' if action2 == DONOTHING else 'NOK'}, Action: {Action[action]}")
+    utc_time = datetime.now(timezone.utc)
+    local_timezone = timezone(timedelta(hours=7))
+    local_time = utc_time.astimezone(local_timezone)
+    message = (f"{local_time}: GPU usage: {round(usage * 100, 2)} %, Ping: {'OK' if action2 == DONOTHING else 'NOK'}, Action: {Action[action]}")
     print(message)
     send_teams_message(action, message)
     do_action(action)
