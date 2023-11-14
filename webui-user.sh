@@ -4,7 +4,7 @@
 #########################################################
 
 # Group: Majicmix, RevAnimated, Meinamix, RealisticVision, CosplayMix, ...
-ID=
+ID=$(cat /workspace/config.yaml | yq .app.server_id)
 GROUP=
 TYPE=
 URL=
