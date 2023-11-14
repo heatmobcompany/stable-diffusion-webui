@@ -1,15 +1,17 @@
+import json
 import subprocess
 import time
 import datetime
 from enum import Enum
 import requests
-
+import yaml
+from datetime import datetime, timezone, timedelta
 
 DONOTHING = 0
 RESTART_SERVICE = 1
 RESTART_DEVICE = 2
 
-Action = ["DONOTHING", "RESTART_SERVICE", "RESTART_DEVICE"]
+Action = ["DO_NOTHING", "RESTART_SERVICE", "RESTART_DEVICE"]
 
 
 def get_gpu_memory_usage():
@@ -27,7 +29,7 @@ def check_gpu_memory_usage(threshold, max_attempts, retry_interval):
         used, total = get_gpu_memory_usage()
         if used is not None and total is not None:
             failed_count = 0
-            gpu_usage_percentage = round(used / total, 3)
+            gpu_usage_percentage = round(used / total, 4)
             if gpu_usage_percentage > threshold:
                 time.sleep(retry_interval)
             else:
@@ -72,6 +74,25 @@ def check_api_health(url, max_attempts, retry_interval):
             if failed_count > 1:
                 return RESTART_SERVICE
             time.sleep(retry_interval)
+            
+def send_teams_message(action, message):
+    if action == DONOTHING:
+        return
+    with open("/workspace/config.yaml", 'r') as yaml_file:
+        config_data = yaml.safe_load(yaml_file)
+        webhook_url = config_data["app"]["msteam_webhook"]
+        server_id = config_data["app"]["server_id"]
+        message = {
+            'title': f"[{server_id}] {Action[action]}",
+            'text': message,
+        }
+        payload = json.dumps(message)
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        response = requests.post(webhook_url, data=payload, headers=headers)
+        if response.status_code != 200:
+            print('Error in sending message to Teams')
 
 
 if __name__ == '__main__':
@@ -86,5 +107,10 @@ if __name__ == '__main__':
     action2 = check_api_health(api_url, max_attempts, retry_interval)
 
     action = max(action1, action2)
-    print(f"{datetime.datetime.now()}: Action: {Action[action]}, GPU usage: {usage * 100} %, Ping: {'OK' if action2 == DONOTHING else 'NOK'}")
+    utc_time = datetime.now(timezone.utc)
+    local_timezone = timezone(timedelta(hours=7))
+    local_time = utc_time.astimezone(local_timezone)
+    message = (f"{local_time}: GPU usage: {round(usage * 100, 2)} %, Ping: {'OK' if action2 == DONOTHING else 'NOK'}, Action: {Action[action]}")
+    print(message)
+    send_teams_message(action, message)
     do_action(action)

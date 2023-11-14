@@ -2,7 +2,7 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 timestamp=$(date +'%Y_%m_%d__%H_%M')
-log_file="/workspace/${timestamp}.log"
+log_file="/workspace/logs/${timestamp}.log"
 
 # Run the first script
 echo "Updating source code to latest version"

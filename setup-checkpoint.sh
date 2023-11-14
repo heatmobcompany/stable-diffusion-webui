@@ -152,6 +152,10 @@ downloadModels() {
         file=flat2DAnimerge_v30.safetensors
         downloadModel  $file
     fi
+    if containsSubstring "$group" "CyberrealisticInpaint"; then
+        file=cyberrealistic_v40-inpainting.safetensors
+        downloadModel  $file
+    fi
 }
 
 downloadModels $1
