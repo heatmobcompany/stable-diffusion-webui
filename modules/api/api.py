@@ -478,9 +478,9 @@ class Api:
                     print('text2imgapi start', task_id, pri)
                     shared.state.begin(job=task_id)
                     ad_enable = False
-                    batch_size = img2imgreq.batch_size
+                    batch_size = txt2imgreq.batch_size
                     try:
-                        ad_enable = img2imgreq.alwayson_scripts["adetailer"]["args"][0]
+                        ad_enable = txt2imgreq.alwayson_scripts["adetailer"]["args"][0]
                     except Exception as e:
                         print("No ad_enable in request")
                     if ad_enable:
