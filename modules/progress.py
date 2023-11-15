@@ -142,18 +142,28 @@ def progressapi(req: ProgressRequest):
         pos, total = queue_lock.get_task_position(req.id_task)
         if queued:
             textinfo = f"In queue... {pos + 1}/{total} request(s) remaining until yours" if pos >= 0 else "Waiting..."
-        return ProgressResponse(active=active, queued=queued, completed=completed, failed=failed, id_live_preview=-1, textinfo=textinfo, images_path=images_path, inputsinfo=inputs_info, result_info=result_info, progress=current_task_progress)
+        return ProgressResponse(active=active, queued=queued, completed=completed, failed=failed, id_live_preview=-1, textinfo=textinfo, images_path=images_path, inputsinfo=inputs_info, result_info=result_info, progress=(1 if completed else current_task_progress))
 
     progress = 0
 
     job_count, job_no = shared.state.job_count, shared.state.job_no
     sampling_steps, sampling_step = shared.state.sampling_steps, shared.state.sampling_step
 
-    if job_count > 0:
-        progress += job_no / job_count
-    if sampling_steps > 0 and job_count > 0:
-        progress += 1 / job_count * sampling_step / sampling_steps
-
+    if shared.state.adetail_task_count == 0:
+        if job_count > 0:
+            progress += job_no / job_count
+        if sampling_steps > 0 and job_count > 0:
+            progress += 1 / job_count * sampling_step / sampling_steps
+    else:
+        adetail_task_no = shared.state.adetail_task_no 
+        adetail_task_count = shared.state.adetail_task_count
+        adetail_subtask_no = shared.state.adetail_subtask_no
+        adetail_subtask_count = shared.state.adetail_subtask_count
+        if adetail_task_no == 0:
+            progress = 0.5 * sampling_step / sampling_steps
+        else:
+            progress = 0.5
+            progress += 0.5 * (((adetail_task_no-1) + ( + ((adetail_subtask_no-1) + sampling_step / sampling_steps) / adetail_subtask_count)) / adetail_task_count)
     progress = min(progress, 1)
 
     elapsed_since_start = time.time() - shared.state.time_start
