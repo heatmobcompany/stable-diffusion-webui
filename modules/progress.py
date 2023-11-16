@@ -159,11 +159,15 @@ def progressapi(req: ProgressRequest):
         adetail_task_count = shared.state.adetail_task_count
         adetail_subtask_no = shared.state.adetail_subtask_no
         adetail_subtask_count = shared.state.adetail_subtask_count
-        if adetail_task_no == 0:
-            progress = 0.5 * sampling_step / sampling_steps
+        if sampling_steps == 0 or adetail_subtask_count == 0:
+            print(f"Abnormal Sampling steps:{sampling_steps} or subtask count: {adetail_subtask_count}")
+            progress = current_task_progress
         else:
-            progress = 0.5
-            progress += 0.5 * (((adetail_task_no-1) + ( + ((adetail_subtask_no-1) + sampling_step / sampling_steps) / adetail_subtask_count)) / adetail_task_count)
+            if adetail_task_no == 0:
+                progress = 0.5 * sampling_step / sampling_steps
+            else:
+                progress = 0.5
+                progress += 0.5 * (((adetail_task_no-1) + ( + ((adetail_subtask_no-1) + sampling_step / sampling_steps) / adetail_subtask_count)) / adetail_task_count)
     progress = min(progress, 1)
 
     elapsed_since_start = time.time() - shared.state.time_start
