@@ -103,7 +103,7 @@ class State:
     adetail_task_no = 0
     adetail_task_count = 0
     adetail_subtask_no = 0
-    adetail_subtask_count = 0
+    adetail_subtask_count = 1
     processing_has_refined_job_count = False
     job_timestamp = '0'
     sampling_step = 0
@@ -191,7 +191,7 @@ class State:
         self.adetail_task_no = 0
         self.adetail_task_count = 0
         self.adetail_subtask_no = 0
-        self.adetail_subtask_count = 0
+        self.adetail_subtask_count = 1
         self.sampling_step = 0
         self.job_count = -1
         self.processing_has_refined_job_count = False
