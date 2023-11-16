@@ -148,20 +148,20 @@ def progressapi(req: ProgressRequest):
 
     job_count, job_no = shared.state.job_count, shared.state.job_no
     sampling_steps, sampling_step = shared.state.sampling_steps, shared.state.sampling_step
+    adetail_task_no = shared.state.adetail_task_no 
+    adetail_task_count = shared.state.adetail_task_count
+    adetail_subtask_no = shared.state.adetail_subtask_no
+    adetail_subtask_count = shared.state.adetail_subtask_count
 
-    if shared.state.adetail_task_count == 0:
+    if adetail_task_count == 0:
         if job_count > 0:
             progress += job_no / job_count
         if sampling_steps > 0 and job_count > 0:
             progress += 1 / job_count * sampling_step / sampling_steps
     else:
-        adetail_task_no = shared.state.adetail_task_no 
-        adetail_task_count = shared.state.adetail_task_count
-        adetail_subtask_no = shared.state.adetail_subtask_no
-        adetail_subtask_count = shared.state.adetail_subtask_count
         if sampling_steps == 0 or adetail_subtask_count == 0:
             print(f"Abnormal Sampling steps:{sampling_steps} or subtask count: {adetail_subtask_count}")
-            progress = current_task_progress
+            progress = current_task_progress if current_task_progress is not None else 0
         else:
             if adetail_task_no == 0:
                 progress = 0.5 * sampling_step / sampling_steps
