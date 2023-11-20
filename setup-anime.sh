@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 id=""
-group=RevAnimated,Meinamix,ToonYou,DreamShaper,AnimeCivitaiv1,AnimeCivitaiv2,AnimeCivitaiv3,flat2DAnimerge
+group=RevAnimated,Meinamix,ToonYou,DreamShaper,AnimeCivitaiv1,AnimeCivitaiv2,AnimeCivitaiv3,flat2DAnimerge,CyberrealisticInpaint
 type="anime_app"
 url=""
 
