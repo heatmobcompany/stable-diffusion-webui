@@ -13,7 +13,7 @@ else
 fi
 
 # Create or update the service file
-cat > "$service_file" <<EOF
+cat <<EOL | sudo tee "$service_file" >/dev/null
 [Unit]
 Description=SD Service
 After=network.target
@@ -23,14 +23,14 @@ Type=simple
 WorkingDirectory=$working_directory
 ExecStart=$script_path
 Restart=always
-RestartSec=5
+RestartSec=10
 StandardOutput=file:/workspace/logs/app.log
 StandardError=file:/workspace/logs/app.log
 User=ubuntu
 
 [Install]
 WantedBy=multi-user.target
-EOF
+EOL
 
 # Reload systemd and enable/start the service
 sudo systemctl daemon-reload
