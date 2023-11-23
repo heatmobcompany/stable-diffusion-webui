@@ -10,6 +10,7 @@ sudo apt update -y && sudo apt upgrade -y
 # install python lib
 sudo apt install -y aria2 lnav
 sudo apt install -y libgoogle-perftools4 libtcmalloc-minimal4
+sudo snap install yq
 
 pip install --upgrade pip
 pip install yq

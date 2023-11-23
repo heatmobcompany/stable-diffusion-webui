@@ -308,6 +308,10 @@ class ScriptArg(BaseModel):
     choices: Optional[List[str]] = Field(default=None, title="Choices", description="Possible values for the argument")
 
 
+class AutoBorderRequest(BaseModel):
+    image: str = Field(default=None, title="Image", description="Image to get border")
+
+
 class ScriptInfo(BaseModel):
     name: str = Field(default=None, title="Name", description="Script name")
     is_alwayson: bool = Field(default=None, title="IsAlwayson", description="Flag specifying whether this script is an alwayson script")
