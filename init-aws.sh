@@ -30,8 +30,8 @@ git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-dif
 git clone https://github.com/heatmobcompany/openpose-editor /workspace/stable-diffusion-webui/extensions/openpose-editor
 git clone https://github.com/heatmobcompany/stable-diffusion-webui-rembg /workspace/stable-diffusion-webui/extensions/stable-diffusion-webui-rembg
 
-# $SCRIPT_DIR/setup-checkpoint.sh all
-# $SCRIPT_DIR/setup-common.sh
+$SCRIPT_DIR/setup-checkpoint.sh all
+$SCRIPT_DIR/setup-common.sh
 
 # create and add config.yaml
 if [ ! -f /workspace/config.yaml ]; then
