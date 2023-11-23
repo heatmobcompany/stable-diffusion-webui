@@ -9,27 +9,27 @@ GROUP=
 TYPE=
 URL=
 
-if [ -z "$ID" ]; then
+if [ -z "$ID" ] || [ "$ID" = '""' ]; then
     ID=$(cat /workspace/config.yaml | yq .app.server_id)
 fi
 
-if [ -z "$ID" ]; then
+if [ -z "$ID" ] || [ "$ID" = '""' ]; then
     ID=$(curl ifconfig.me --silent)
 fi
 
-if [ -z "$TYPE" ]; then
+if [ -z "$TYPE" ] || [ "$TYPE" = '""' ]; then
     TYPE=$(cat /workspace/config.yaml | yq .app.server_type)
 fi
 
-if [ -z "$GROUP" ]; then
+if [ -z "$GROUP" ] || [ "$GROUP" = '""' ]; then
     GROUP=$(cat /workspace/config.yaml | yq .app.models)
 fi
 
-if [ -z "$URL" ]; then
+if [ -z "$URL" ] || [ "$URL" = '""' ]; then
     URL=$(cat /workspace/config.yaml | yq .app.url)
 fi
 
-if [ -z "$URL" ]; then
+if [ -z "$URL" ] || [ "$URL" = '""' ]; then
     URL="http://$(curl ifconfig.me --silent):3000"
 fi
 
