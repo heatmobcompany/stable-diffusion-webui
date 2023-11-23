@@ -9,6 +9,8 @@ import time
 import datetime
 import uvicorn
 import gradio as gr
+import cv2
+import numpy as np
 from threading import Lock
 from io import BytesIO
 from fastapi import APIRouter, Depends, FastAPI, BackgroundTasks, Request, Response
@@ -334,6 +336,38 @@ class Api:
             result = progress.remove_task_to_queue(id_task)
             return {"message": f"Cancelled {id_task} ", "result": result}
 
+        @app.post("/sdapi/v2/auto-border")
+        def get_auto_border(req: models.AutoBorderRequest):
+            return self.get_auto_border(req.image)
+
+    def get_auto_border(self, mask: str):
+        try:
+            mask_image = decode_base64_to_image(mask)
+            mask_image_np = np.array(mask_image)
+            return self.extract_outer_inner_border(mask_image_np)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail="Invalid encoded image") from e
+
+    def extract_outer_inner_border(mask_image, inner_thickness=5, outer_thickness=15):
+        # Remove small noise, holes, etc
+        mask_image = cv2.erode(mask_image, np.ones((4, 4), np.uint8), iterations=1)
+        mask_image = cv2.dilate(mask_image, np.ones((8, 8), np.uint8), iterations=1)
+        mask_image = cv2.erode(mask_image, np.ones((4, 4), np.uint8), iterations=1)
+
+        border_image = np.zeros_like(mask_image)
+
+        # Get outer border by dilating the mask
+        kernel_outer = np.ones((outer_thickness, outer_thickness), np.uint8)
+        outer_border = cv2.dilate(mask_image, kernel_outer, iterations=1)
+
+        # Get inner border by eroding the mask
+        kernel_inner = np.ones((inner_thickness, inner_thickness), np.uint8)
+        inner_border = cv2.erode(mask_image, kernel_inner, iterations=1)
+        
+        # Subtract inner border from outer border to get the border
+        border_image = cv2.subtract(outer_border, inner_border)
+        return border_image
+       
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)
