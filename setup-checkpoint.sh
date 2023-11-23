@@ -21,138 +21,138 @@ downloadModel() {
 }
 
 downloadModels() {
-    group=$1
-    if containsSubstring "$group" "Majicmix"; then
+    group="$1"
+    if [[ $group == *"Majicmix"* || $group == "all" ]]; then
         file=majicmixRealistic_v5.safetensors
         link=https://huggingface.co/sinkinai/majicMIX-realistic-v5/resolve/main/majicmixRealistic_v5.safetensors
         downloadModel  $file $link
     fi
-    if containsSubstring "$group" "RevAnimated"; then
+    if [[ $group == *"RevAnimated"* || $group == "all" ]]; then
         file=revAnimated_v11.safetensors
         link=https://huggingface.co/ckpt/rev-animated/resolve/main/revAnimated_v11.safetensors
         downloadModel  $file $link
     fi
-    if containsSubstring "$group" "Meinamix"; then
+    if [[ $group == *"Meinamix"* || $group == "all" ]]; then
         file=meinamix_meinaV10.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "RealisticVision"; then
+    if [[ $group == *"RealisticVision"* || $group == "all" ]]; then
         file=realisticVisionV30_v30VAE.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "CosplayMix"; then
+    if [[ $group == *"CosplayMix"* || $group == "all" ]]; then
         file=cosplaymix_v41.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "GhostMix"; then
+    if [[ $group == *"GhostMix"* || $group == "all" ]]; then
         file=ghostmix_v20Bakedvae.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "ChilloutMix"; then
+    if [[ $group == *"ChilloutMix"* || $group == "all" ]]; then
         file=chilloutmix_NiPrunedFp32.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "XXMix9realistic"; then
+    if [[ $group == *"XXMix9realistic"* || $group == "all" ]]; then
         file=xxmix9realistic_v40.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "CyberRealistic"; then
+    if [[ $group == *"CyberRealistic"* || $group == "all" ]]; then
         file=cyberrealistic_v32.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "dvArch"; then
+    if [[ $group == *"dvArch"* || $group == "all" ]]; then
         file=dvarchMultiPrompt_dvarchExterior.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "XSarchitectural"; then
+    if [[ $group == *"XSarchitectural"* || $group == "all" ]]; then
         file=xsarchitectural_v11.ckpt
         downloadModel  $file
     fi
-    if containsSubstring "$group" "ToonYou"; then
+    if [[ $group == *"ToonYou"* || $group == "all" ]]; then
         file=toonyou_beta6.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "ChildrenStories"; then
+    if [[ $group == *"ChildrenStories"* || $group == "all" ]]; then
         file=childrensStories_v1CustomA.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "MechaMix"; then
+    if [[ $group == *"MechaMix"* || $group == "all" ]]; then
         file=mechamix_v10.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "AZovyaRPGArtistTools"; then
+    if [[ $group == *"AZovyaRPGArtistTools"* || $group == "all" ]]; then
         file=aZovyaRPGArtistTools_v3.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "NightSkyYOZORAStyle"; then
+    if [[ $group == *"NightSkyYOZORAStyle"* || $group == "all" ]]; then
         file=nightSkyYOZORAStyle_yozoraV1PurnedFp16.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "DreamShaper"; then
+    if [[ $group == *"DreamShaper"* || $group == "all" ]]; then
         file=dreamshaper_8.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "AnyLoRA"; then
+    if [[ $group == *"AnyLoRA"* || $group == "all" ]]; then
         file=anyloraCheckpoint_bakedvaeBlessedFp16.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "AbsoluteReality"; then
+    if [[ $group == *"AbsoluteReality"* || $group == "all" ]]; then
         file=absolutereality_v181.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "AnyLoRAAnimeMix"; then
+    if [[ $group == *"AnyLoRAAnimeMix"* || $group == "all" ]]; then
         file=aamAnyloraAnimeMixAnime_v1.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "NeverEndingDream"; then
+    if [[ $group == *"NeverEndingDream"* || $group == "all" ]]; then
         file=neverendingDreamNED_v122BakedVae.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "KenCanMix"; then
+    if [[ $group == *"KenCanMix"* || $group == "all" ]]; then
         file=kencanmix_v20Beta.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "Counterfeit"; then
+    if [[ $group == *"Counterfeit"* || $group == "all" ]]; then
         file=CounterfeitV30_v30.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "ColoringBook"; then
+    if [[ $group == *"ColoringBook"* || $group == "all" ]]; then
         file=coloringBook_coloringBook.ckpt
         downloadModel  $file
     fi
-    if containsSubstring "$group" "BeautifulRealisticAsians"; then
+    if [[ $group == *"BeautifulRealisticAsians"* || $group == "all" ]]; then
         file=beautifulRealistic_v40.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "Photon"; then
+    if [[ $group == *"Photon"* || $group == "all" ]]; then
         file=photon_v1.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "HRA_hyperrealism"; then
+    if [[ $group == *"HRA_hyperrealism"* || $group == "all" ]]; then
         file=hraHyperrealismArt_v155.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "SDVN1Real"; then
+    if [[ $group == *"SDVN1Real"* || $group == "all" ]]; then
         file=sdvn1Real_origin.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "AnimeCivitaiv1"; then
+    if [[ $group == *"AnimeCivitaiv1"* || $group == "all" ]]; then
         file=KizukiAnimeCivitaiv1.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "AnimeCivitaiv2"; then
+    if [[ $group == *"AnimeCivitaiv2"* || $group == "all" ]]; then
         file=KizukiAnimeCivitaiv2.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "AnimeCivitaiv3"; then
+    if [[ $group == *"AnimeCivitaiv3"* || $group == "all" ]]; then
         file=KizukiAnimeCivitaiv3.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "flat2DAnimerge"; then
+    if [[ $group == *"flat2DAnimerge"* || $group == "all" ]]; then
         file=flat2DAnimerge_v30.safetensors
         downloadModel  $file
     fi
-    if containsSubstring "$group" "CyberrealisticInpaint"; then
+    if [[ $group == *"CyberrealisticInpaint"* || $group == "all" ]]; then
         file=cyberrealistic_v40-inpainting.safetensors
         downloadModel  $file
     fi

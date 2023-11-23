@@ -24,6 +24,8 @@ WorkingDirectory=$working_directory
 ExecStart=$script_path
 Restart=always
 RestartSec=5
+StandardOutput=file:/workspace/logs/app.log
+StandardError=file:/workspace/logs/app.log
 User=ubuntu
 
 [Install]

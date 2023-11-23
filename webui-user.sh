@@ -4,10 +4,30 @@
 #########################################################
 
 # Group: Majicmix, RevAnimated, Meinamix, RealisticVision, CosplayMix, ...
-ID=$(cat /workspace/config.yaml | yq .app.server_id)
+ID=
 GROUP=
 TYPE=
 URL=
+
+if [ -z "$ID" ]; then
+    ID=$(cat /workspace/config.yaml | yq .app.server_id)
+fi
+
+if [ -z "$ID" ]; then
+    ID=$(curl ifconfig.me --silent)
+fi
+
+if [ -z "$TYPE" ]; then
+    TYPE=$(cat /workspace/config.yaml | yq .app.server_type)
+fi
+
+if [ -z "$GROUP" ]; then
+    GROUP=$(cat /workspace/config.yaml | yq .app.models)
+fi
+
+if [ -z "$URL" ]; then
+    URL=$(cat /workspace/config.yaml | yq .app.url)
+fi
 
 if [ -z "$URL" ]; then
     URL="http://$(curl ifconfig.me --silent):3000"

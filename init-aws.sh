@@ -1,24 +1,39 @@
 #!/usr/bin/env bash
 
-### Need install these command the first time 
-# sudo apt-get update -y
-# sudo apt-get upgrade -y linux-aws
-# sudo reboot
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# install ndvia drivers
 sudo apt update -y && sudo apt upgrade -y
-sudo apt autoremove nvidia* --purge
-sudo apt install nvidia-driver-535 -y
+# install ndvia drivers
+# sudo apt autoremove nvidia* --purge
+# sudo apt install nvidia-driver-535 -y
 
 # install python lib
-sudo apt install -y python3.10-venv python3-pip aria2 lnav
+sudo apt install -y aria2 lnav
 sudo apt install -y libgoogle-perftools4 libtcmalloc-minimal4
 
-# install python toolkit
-sudo apt-get install -y unzip gcc make linux-headers-$(uname -r)
-cd
-wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
-sudo sh cuda_11.8.0_520.61.05_linux.run --silent --override --toolkit
+pip install --upgrade pip
+pip install yq
 
-# reboot to apply changes
-sudo reboot
+# create /workspace/logs if not exist
+mkdir -p /workspace/logs
+
+# setup sd-service
+$SCRIPT_DIR/sd-service.sh
+
+# setup extension
+git clone https://github.com/heatmobcompany/sd-webui-controlnet /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet
+git clone https://github.com/heatmobcompany/sd-webui-segment-anything /workspace/stable-diffusion-webui/extensions/sd-webui-segment-anything
+git clone https://github.com/heatmobcompany/sd-webui-roop /workspace/stable-diffusion-webui/extensions/sd-webui-roop
+git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable-diffusion-webui/extensions/sd-webui-adetailer
+git clone https://github.com/heatmobcompany/sd-webui-prompt-all-in-one /workspace/stable-diffusion-webui/extensions/sd-webui-prompt-all-in-one
+git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-diffusion-webui/extensions/Civitai-Helper
+git clone https://github.com/heatmobcompany/openpose-editor /workspace/stable-diffusion-webui/extensions/openpose-editor
+git clone https://github.com/heatmobcompany/stable-diffusion-webui-rembg /workspace/stable-diffusion-webui/extensions/stable-diffusion-webui-rembg
+
+$SCRIPT_DIR/setup-checkpoint.sh all
+$SCRIPT_DIR/setup-common.sh
+
+# create and add config.yaml
+if [ ! -f /workspace/config.yaml ]; then
+    cp /workspace/stable-diffusion-webui/config.yaml /workspace/config.yaml
+fi
