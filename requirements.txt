@@ -31,3 +31,4 @@ torch
 torchdiffeq
 torchsde
 transformers==4.25.1
+httpx==0.24.1

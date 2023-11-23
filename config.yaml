@@ -1,0 +1,8 @@
+app:
+  server_id: ""
+  server_type: "default"
+  models: "Majicmix"
+  url: ""
+  app_name: ""
+  source_branch: "pod_staging"
+  msteam_webhook: "https://heatmob.webhook.office.com/webhookb2/a180bbf6-f782-4531-b079-6f41f254e3ce@d56e9436-ed03-4a32-a96a-5eaeaab6c008/IncomingWebhook/b89e76c8d5734a8090838f1b8e8d7bf9/4e1ee873-eb30-4b4f-8725-bca585a1baef"
