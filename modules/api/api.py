@@ -363,11 +363,11 @@ class Api:
 
     def get_auto_border(self, mask: str):
         try:
-            mask_image = decode_base64_to_image(mask)
-            mask_image_np = np.array(mask_image)
+            mask_image = decode_base64_to_image(mask).convert("RGB")
+            mask_image_np = np.array(mask_image).astype(np.uint8)
             return self.extract_outer_inner_border(mask_image_np)
         except Exception as e:
-            raise HTTPException(status_code=500, detail="Invalid encoded image") from e
+            raise HTTPException(status_code=500, detail=str(e)) from e
 
     def extract_outer_inner_border(self, mask_image, inner_thickness=5, outer_thickness=15):
         # Remove small noise, holes, etc
