@@ -348,7 +348,7 @@ class Api:
         except Exception as e:
             raise HTTPException(status_code=500, detail="Invalid encoded image") from e
 
-    def extract_outer_inner_border(mask_image, inner_thickness=5, outer_thickness=15):
+    def extract_outer_inner_border(self, mask_image, inner_thickness=5, outer_thickness=15):
         # Remove small noise, holes, etc
         mask_image = cv2.erode(mask_image, np.ones((4, 4), np.uint8), iterations=1)
         mask_image = cv2.dilate(mask_image, np.ones((8, 8), np.uint8), iterations=1)
@@ -366,7 +366,9 @@ class Api:
         
         # Subtract inner border from outer border to get the border
         border_image = cv2.subtract(outer_border, inner_border)
-        return border_image
+        _, buffer = cv2.imencode('.png', border_image)
+        base64_image = base64.b64encode(buffer).decode('utf-8')
+        return base64_image
        
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
