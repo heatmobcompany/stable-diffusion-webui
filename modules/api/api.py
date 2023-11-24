@@ -338,7 +338,8 @@ class Api:
 
         @app.post("/sdapi/v2/auto-border")
         def get_auto_border(req: models.AutoBorderRequest):
-            return self.get_auto_border(req.image)
+            result = self.get_auto_border(req.image)
+            return  {"message": f"Successfully", "result": result}
 
     def get_auto_border(self, mask: str):
         try:
