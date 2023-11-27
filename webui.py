@@ -54,7 +54,7 @@ startup_timer.record("import ldm")
 
 from modules import extra_networks
 from modules.call_queue import wrap_gradio_gpu_call, wrap_queued_call  # noqa: F401
-from modules.shared import queue_lock
+from modules.shared import sd_queue_lock
 
 # Truncate version number of nightly/local build of PyTorch to not cause exceptions with CodeFormer or Safetensors
 if ".dev" in torch.__version__ or "+git" in torch.__version__:
@@ -360,7 +360,7 @@ def configure_cors_middleware(app):
 
 def create_api(app):
     from modules.api.api import Api
-    api = Api(app, queue_lock)
+    api = Api(app, sd_queue_lock)
     return api
 
 

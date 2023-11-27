@@ -1,28 +1,17 @@
 from functools import wraps
 import html
-import threading
 import time
+
+from modules.queue_lock import QueueLock
 from helper.hm import get_user_priority
 
 from modules import shared, progress, errors, devices
-from modules.priority_lock import PriorityLock
-from modules.shared import queue_lock
+from modules.shared import sd_queue_lock
 
-class QueueLock:
-    def __init__(self, pri=100, name=None):
-        self._priority = pri
-        self._name = name
-
-    def __enter__(self):
-        queue_lock.acquire(self._priority, self._name)
-        return self
-
-    def __exit__(self, exc_type, exc_value, traceback):
-        queue_lock.release()
 
 def wrap_queued_call(func):
     def f(*args, **kwargs):
-        with QueueLock():
+        with QueueLock(sd_queue_lock):
             res = func(*args, **kwargs)
 
         return res
@@ -46,7 +35,7 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
             token = args[1].replace('token:', '')
             pri, name = get_user_priority(token)
         print('wrap_gradio_gpu_call wait', pri, name, id_task)
-        with QueueLock(pri, id_task):
+        with QueueLock(sd_queue_lock, pri, id_task):
             shared.state.begin(job=id_task)
             print('wrap_gradio_gpu_call start', pri, name, id_task)
             progress.start_task(id_task)
