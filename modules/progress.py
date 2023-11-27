@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 from modules.shared import opts
 
 import modules.shared as shared
-from modules.shared import queue_lock
+from modules.shared import sd_queue_lock
 
 current_task = None
 current_task_progress = None
@@ -75,7 +75,7 @@ def get_task_info(task_id):
     completed = task_id in finished_tasks
     pos, total = None, None
     if not active:
-        pos, total = queue_lock.get_task_position(task_id)
+        pos, total = sd_queue_lock.get_task_position(task_id)
     ret = {}
     ret['active'] = active
     ret['queued'] = queued
@@ -139,7 +139,7 @@ def progressapi(req: ProgressRequest):
         textinfo = "Failed"
         result_info =  failed_results[req.id_task]
     if not active:
-        pos, total = queue_lock.get_task_position(req.id_task)
+        pos, total = sd_queue_lock.get_task_position(req.id_task)
         if queued:
             textinfo = f"In queue... {pos + 1}/{total} request(s) remaining until yours" if pos >= 0 else "Waiting..."
         return ProgressResponse(active=active, queued=queued, completed=completed, failed=failed, id_live_preview=-1, textinfo=textinfo, images_path=images_path, inputsinfo=inputs_info, result_info=result_info, progress=(1 if completed else current_task_progress))
