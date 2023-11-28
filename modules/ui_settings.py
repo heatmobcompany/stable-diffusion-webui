@@ -107,7 +107,7 @@ class UiSettings:
         with gr.Blocks(analytics_enabled=False) as settings_interface:
             with gr.Row():
                 with gr.Column(scale=6):
-                    self.submit = gr.Button(value="Apply settings", variant='primary', elem_id="settings_submit", interactive=False)
+                    self.submit = gr.Button(value="Apply settings", variant='primary', elem_id="settings_submit", interactive=True)
                 with gr.Column():
                     restart_gradio = gr.Button(value='Reload UI', variant='primary', elem_id="settings_restart_gradio", interactive=False)
 
