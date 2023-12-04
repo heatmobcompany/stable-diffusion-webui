@@ -22,6 +22,10 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lll
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15_softedge.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o control_v11p_sd15_softedge.pth &\
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/ControlNet-v1-1/resolve/main/control_v11p_sd15s2_lineart_anime.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o control_v11p_sd15s2_lineart_anime.pth
 
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_sd15.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o ip-adapter_sd15.pth
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_sd15_plus.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o ip-adapter_sd15_plus.pth
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lllyasviel/sd_control_collection/resolve/main/ip-adapter_xl.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o ip-adapter_xl.pth
+
 # Lora
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Naruto.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o Naruto.safetensors &\
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/Naruto.jpeg -d /workspace/stable-diffusion-webui/models/Lora -o Naruto.jpeg &\
