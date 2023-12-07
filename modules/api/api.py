@@ -89,8 +89,8 @@ def dialte_mask(mask, number_pixel):
 def normalize_mask(mask):
     import numpy as np
     mask_array = np.array(mask)
-    mask_array = dialte_mask(mask_array, 8)
-    mask_array = dialte_mask(mask_array, -10)
+    mask_array = dialte_mask(mask_array, 5)
+    mask_array = dialte_mask(mask_array, -5)
     mask = Image.fromarray(mask_array)
     return mask
 
