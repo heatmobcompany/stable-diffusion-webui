@@ -75,6 +75,26 @@ def decode_base64_to_image(encoding):
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
 
 
+def dialte_mask(mask, number_pixel):
+    import cv2, numpy as np
+    kernel_size = abs(number_pixel)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    if number_pixel < 0:
+        mask = cv2.erode(mask, kernel)
+    else:
+        mask = cv2.dilate(mask, kernel)
+    return mask
+
+
+def normalize_mask(mask):
+    import numpy as np
+    mask_array = np.array(mask)
+    mask_array = dialte_mask(mask_array, 8)
+    mask_array = dialte_mask(mask_array, -10)
+    mask = Image.fromarray(mask_array)
+    return mask
+
+
 def encode_pil_to_base64(image):
     with io.BytesIO() as output_bytes:
 
@@ -531,8 +551,11 @@ class Api:
             raise HTTPException(status_code=404, detail="Init image not found")
 
         mask = img2imgreq.mask
+        auto_mask = img2imgreq.auto_mask
         if mask:
             mask = decode_base64_to_image(mask)
+            if not auto_mask:
+                mask = normalize_mask(mask)
 
         script_runner = scripts.scripts_img2img
         if not script_runner.scripts:
@@ -556,11 +579,13 @@ class Api:
         args.pop('script_name', None)
         args.pop('script_args', None)  # will refeed them to the pipeline directly after initializing them
         args.pop('alwayson_scripts', None)
+        args.pop('auto_mask', None)
 
         script_args = self.init_script_args(img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
+        
         pri = args.pop('priority', 100)
         print('img2imgapi wait', task_id, pri)
         processed = None
@@ -571,6 +596,8 @@ class Api:
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_img2img_grids
                 p.outpath_samples = opts.outdir_img2img_samples
+                if mask and img2imgreq.mask_blur:
+                    p.extra_generation_params["Mask blur"] = img2imgreq.mask_blur
 
                 try:
                     print('img2imgapi start', task_id, pri)
