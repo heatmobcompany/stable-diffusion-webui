@@ -369,7 +369,7 @@ class Api:
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
-    def extract_outer_inner_border(self, mask_image, inner_thickness=5, outer_thickness=15):
+    def extract_outer_inner_border(self, mask_image, inner_thickness=15, outer_thickness=25):
         # Remove small noise, holes, etc
         mask_image = cv2.erode(mask_image, np.ones((4, 4), np.uint8), iterations=1)
         mask_image = cv2.dilate(mask_image, np.ones((8, 8), np.uint8), iterations=1)
