@@ -88,3 +88,4 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/Shi
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/FastNegativeV2.pt -d /workspace/stable-diffusion-webui/embeddings -o FastNegativeV2.pt
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/negative_hand-neg.pt -d /workspace/stable-diffusion-webui/embeddings -o negative_hand-neg.pt
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/verybadimagenegative_v1.3.pt -d /workspace/stable-diffusion-webui/embeddings -o verybadimagenegative_v1.3.pt
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/easynegative.safetensors -d /workspace/stable-diffusion-webui/embeddings -o easynegative.safetensors
