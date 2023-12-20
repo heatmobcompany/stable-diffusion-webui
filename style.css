@@ -4,6 +4,16 @@
 
 /* general gradio fixes */
 
+/* Hidden PNG Info, Checkpoint Merger, Train, Extensions, Settings */
+#tabs > div:first-child > button:not(:nth-child(-n+3)):not(:nth-child(n+6)) {
+    display: none;
+}
+
+/* Hidden Batch Process, Batch From Directory  */
+#mode_extras > div:first-child > button:not(:nth-child(-n+1)):not(:nth-child(n+4)) {
+    display: none;
+}
+
 :root, .dark{
     --checkbox-label-gap: 0.25em 0.1em;
     --section-header-text-size: 12pt;

@@ -289,7 +289,7 @@ function replaceAll(input, from, to) {
 function submit() {
     // console.log('Submit txt2img')
     window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'txt2img_generate', button_text: 'Generate' } }, "*");
-    // checkCredit();
+    checkCredit();
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
@@ -324,7 +324,7 @@ function submit_img2img() {
     // console.log('Submit img2img')
     window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'img2img_generate', button_text: 'Generate' } }, "*");
 
-    // checkCredit();
+    checkCredit();
     showSubmitButtons('img2img', false);
 
     var id = randomId();
@@ -360,7 +360,7 @@ function submit_extras() {
     // console.log('Submit extras')
     window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'extras_generate', button_text: 'Generate' } }, "*");
 
-    // checkCredit();
+    checkCredit();
 
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
