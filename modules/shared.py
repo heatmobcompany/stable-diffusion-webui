@@ -421,8 +421,8 @@ options_templates.update(options_section(('training', "Training"), {
 }))
 
 options_templates.update(options_section(('sd', "Stable Diffusion"), {
-    "sd_model_checkpoint": OptionInfo(None, "Model checkpoint", gr.Textbox, lambda: { "interactive": False, "visible": False}),
-    # "sd_model_checkpoint": OptionInfo(None, "Stable Diffusion checkpoint", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
+    # "sd_model_checkpoint": OptionInfo(None, "Model checkpoint", gr.Textbox, lambda: { "interactive": False, "visible": False}),
+    "sd_model_checkpoint": OptionInfo(None, "Stable Diffusion checkpoint", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_cache": OptionInfo(0, "Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
     "sd_vae_checkpoint_cache": OptionInfo(0, "VAE Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
     "sd_vae": OptionInfo("Automatic", "SD VAE", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list).info("choose VAE model: Automatic = use one with same filename as checkpoint; None = use VAE from checkpoint"),
