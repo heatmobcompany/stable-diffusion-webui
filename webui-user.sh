@@ -3,7 +3,6 @@
 # Uncomment and change the variables below to your need:#
 #########################################################
 
-# Group: Majicmix, RevAnimated, Meinamix, RealisticVision, CosplayMix, ...
 ID=
 GROUP=
 TYPE=
@@ -20,9 +19,15 @@ fi
 if [ -z "$TYPE" ] || [ "$TYPE" = '""' ]; then
     TYPE=$(cat /workspace/config.yaml | yq .app.server_type)
 fi
+if [ -z "$TYPE" ] || [ "$TYPE" = '""' ]; then
+    TYPE="not_set"
+fi
 
 if [ -z "$GROUP" ] || [ "$GROUP" = '""' ]; then
     GROUP=$(cat /workspace/config.yaml | yq .app.models)
+fi
+if [ -z "$GROUP" ] || [ "$GROUP" = '""' ]; then
+    GROUP="Majicmix"
 fi
 
 if [ -z "$URL" ] || [ "$URL" = '""' ]; then
