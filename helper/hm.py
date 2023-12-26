@@ -55,6 +55,9 @@ server_info = {}
 server_infos = []
 def init_server():
     server_infos = get_server_info()
+    if not server_infos or len(server_infos) == 0:
+        return
+    global server_info
     server_info = server_infos[0]
     for server in server_infos:
         post_v2a(server["id"], 'start_server: ' + json.dumps(server))

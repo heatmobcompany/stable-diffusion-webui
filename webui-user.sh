@@ -3,10 +3,10 @@
 # Uncomment and change the variables below to your need:#
 #########################################################
 
-ID=
-GROUP=
-TYPE=
-URL=
+ID=$SD_ID
+GROUP=$SD_GROUP
+TYPE=$SD_TYPE
+URL=$SD_URL
 
 if [ -z "$ID" ] || [ "$ID" = '""' ]; then
     ID=$(cat /workspace/config.yaml | yq .app.server_id)

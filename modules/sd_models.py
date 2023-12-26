@@ -119,14 +119,19 @@ def list_models():
     checkpoint_aliases.clear()
 
     cmd_ckpt = shared.cmd_opts.ckpt
-    if shared.cmd_opts.no_download_sd_model or cmd_ckpt != shared.sd_model_file or os.path.exists(cmd_ckpt):
-        model_url = None
-    else:
-        model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
+    model_url = None
+    # if shared.cmd_opts.no_download_sd_model or cmd_ckpt != shared.sd_model_file or os.path.exists(cmd_ckpt):
+    #     model_url = None
+    # else:
+    #     model_url = "https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.safetensors"
 
-    download_name = ''
+    download_name = '.cpkt'
     if hm.args.group:
-        server_info = hm.server_info if hm.server_info and hm.server_info['file'] else hm.get_server_info()[0]
+        server_info = hm.server_info 
+        if not server_info:
+            server_infos = hm.get_server_info()
+            if len(server_infos) > 0:
+                server_info = server_infos[0]
         if server_info:
             download_name = server_info['file']
             model_url = server_info['link_file']
