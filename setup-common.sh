@@ -82,6 +82,7 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/Bin
 
 # Segment anything
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/spaces/abhishek/StableSAM/resolve/main/sam_vit_h_4b8939.pth -d /workspace/stable-diffusion-webui/models/sam -o sam_vit_h_4b8939.pth &\
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/lkeab/hq-sam/resolve/main/sam_hq_vit_h.pth -d /workspace/stable-diffusion-webui/models/sam -o sam_hq_vit_h.pth &\
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ShilongLiu/GroundingDINO/resolve/main/groundingdino_swint_ogc.pth -d /workspace/stable-diffusion-webui/extensions/sd-webui-segment-anything/models/grounding-dino -o groundingdino_swint_ogc.pth
 
 # embeddings
