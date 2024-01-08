@@ -22,6 +22,7 @@ After=network.target
 Type=simple
 WorkingDirectory=$working_directory
 ExecStart=$script_path
+ExecStop=$script_path stop
 Restart=always
 RestartSec=10
 StandardOutput=file:/workspace/logs/app.log
