@@ -8,18 +8,14 @@ sudo apt update -y && sudo apt upgrade -y
 # sudo apt install nvidia-driver-535 -y
 
 # install python lib
-sudo apt install -y aria2 lnav
+sudo apt install -y aria2 lnav jq
 sudo apt install -y libgoogle-perftools4 libtcmalloc-minimal4
 sudo snap install yq
 
 pip install --upgrade pip
-pip install yq
 
 # create /workspace/logs if not exist
 mkdir -p /workspace/logs
-
-# setup sd-service
-$SCRIPT_DIR/sd-service.sh
 
 # setup extension
 git clone https://github.com/heatmobcompany/sd-webui-controlnet /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet
@@ -32,7 +28,7 @@ git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-dif
 git clone https://github.com/heatmobcompany/stable-diffusion-webui-rembg /workspace/stable-diffusion-webui/extensions/stable-diffusion-webui-rembg
 git clone https://github.com/heatmobcompany/sd-webui-openpose-editor /workspace/stable-diffusion-webui/extensions/sd-webui-openpose-editor
 
-$SCRIPT_DIR/setup-checkpoint.sh all
+# $SCRIPT_DIR/setup-checkpoint.sh all
 $SCRIPT_DIR/setup-common.sh
 
 # create and add config.yaml
@@ -41,3 +37,4 @@ if [ ! -f /workspace/config.yaml ]; then
 fi
 
 $SCRIPT_DIR/job_healthcheck.sh install
+$SCRIPT_DIR/sd-service.sh
