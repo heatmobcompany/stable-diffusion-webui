@@ -118,6 +118,7 @@ StableDiffusionImg2ImgProcessingAPI = PydanticModelGenerator(
     [
         {"key": "priority", "type": int, "default": 100},
         {"key": "auto_mask", "type": bool, "default": True},
+        {"key": "boxed_mask", "type": bool, "default": False},
         {"key": "sampler_index", "type": str, "default": "Euler"},
         {"key": "init_images", "type": list, "default": None},
         {"key": "denoising_strength", "type": float, "default": 0.75},
