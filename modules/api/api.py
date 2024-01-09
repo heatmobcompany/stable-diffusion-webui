@@ -29,7 +29,7 @@ from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusion
 from modules.textual_inversion.textual_inversion import create_embedding, train_embedding
 from modules.textual_inversion.preprocess import preprocess
 from modules.hypernetworks.hypernetwork import create_hypernetwork, train_hypernetwork
-from PIL import PngImagePlugin,Image
+from PIL import PngImagePlugin,Image, ImageDraw
 from modules.sd_models import checkpoints_list, unload_model_weights, reload_model_weights, checkpoint_aliases
 from modules.sd_vae import vae_dict
 from modules.sd_models_config import find_checkpoint_config_near_filename
@@ -94,6 +94,12 @@ def normalize_mask(mask):
     mask = Image.fromarray(mask_array)
     return mask
 
+def create_bounded_box(mask_image):
+    bbox = mask_image.getbbox()
+    boxed_mask = Image.new("RGB", mask_image.size, "black")
+    draw = ImageDraw.Draw(boxed_mask)
+    draw.rectangle(bbox, fill="white")
+    return boxed_mask
 
 def encode_pil_to_base64(image):
     with io.BytesIO() as output_bytes:
@@ -552,10 +558,14 @@ class Api:
 
         mask = img2imgreq.mask
         auto_mask = img2imgreq.auto_mask
+        boxed_mask = img2imgreq.boxed_mask
         if mask:
             mask = decode_base64_to_image(mask)
             if not auto_mask:
                 mask = normalize_mask(mask)
+            if boxed_mask:
+                mask = create_bounded_box(mask)
+                print(encode_pil_to_base64(mask))
 
         script_runner = scripts.scripts_img2img
         if not script_runner.scripts:
@@ -580,6 +590,7 @@ class Api:
         args.pop('script_args', None)  # will refeed them to the pipeline directly after initializing them
         args.pop('alwayson_scripts', None)
         args.pop('auto_mask', None)
+        args.pop('boxed_mask', None)
 
         script_args = self.init_script_args(img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
 
