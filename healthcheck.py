@@ -106,6 +106,21 @@ def send_webhook_message(action, message):
         except Exception as e:
             print("Exception while sending message to Teams")
             pass
+        
+def get_latest_action():
+    with open("/workspace/logs/healthcheck.log", "r") as f:
+        lines = f.readlines()
+        lastLineResult = None
+        for line in reversed(lines):
+            if "GPU usage" in line:
+                lastLineResult = line
+                break
+        if lastLineResult is None:
+            return None
+        for action in Action:
+            if action in lastLineResult:
+                return action
+        return None
 
 if __name__ == '__main__':
     action0 = check_internet_connection()
@@ -119,8 +134,13 @@ if __name__ == '__main__':
     retry_interval = 5
     api_url = "http://localhost:3000/internal/ping"
     action2 = check_api_health(api_url, max_attempts, retry_interval)
+    
+    action3 = DONOTHING
+    last_action = get_latest_action()
+    if last_action == Action[RESTART_SERVICE] or last_action == Action[RESTART_DEVICE]:
+        action3 = RESTART_DEVICE
 
-    action = max(action0, action1, action2)
+    action = max(action0, action1, action2, action3)
     utc_time = datetime.now(timezone.utc)
     local_timezone = timezone(timedelta(hours=7))
     local_time = utc_time.astimezone(local_timezone)
