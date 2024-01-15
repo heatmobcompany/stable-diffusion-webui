@@ -311,6 +311,9 @@ class ScriptArg(BaseModel):
 
 class AutoBorderRequest(BaseModel):
     image: str = Field(default=None, title="Image", description="Image to get border")
+    thickness: int = Field(default=15, title="Thickness", description="Thickness of the border")
+    inner_thickness: int = Field(default=0, title="Inner thickness", description="Inner thickness of the border")
+    outer_thickness: int = Field(default=0, title="Outer thickness", description="Outer thickness of the border")
 
 
 class ScriptInfo(BaseModel):
