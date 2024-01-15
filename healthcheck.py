@@ -135,16 +135,15 @@ if __name__ == '__main__':
     api_url = "http://localhost:3000/internal/ping"
     action2 = check_api_health(api_url, max_attempts, retry_interval)
     
-    action3 = DONOTHING
+    action = max(action0, action1, action2)
     last_action = get_latest_action()
-    if last_action == Action[RESTART_SERVICE] or last_action == Action[RESTART_DEVICE]:
-        action3 = RESTART_DEVICE
+    if action is not DONOTHING and ( last_action == Action[RESTART_SERVICE] or last_action == Action[RESTART_DEVICE]):
+        action = RESTART_DEVICE
 
-    action = max(action0, action1, action2, action3)
     utc_time = datetime.now(timezone.utc)
     local_timezone = timezone(timedelta(hours=7))
     local_time = utc_time.astimezone(local_timezone)
     message = (f"{local_time}: GPU usage: {round(usage * 100, 2)} %, Ping: {'OK' if action2 == DONOTHING else 'NOK'}, Action: {Action[action]}")
     print(message)
-    send_webhook_message(action, message)
-    do_action(action)
+    # send_webhook_message(action, message)
+    # do_action(action)
