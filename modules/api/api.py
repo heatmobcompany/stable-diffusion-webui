@@ -364,14 +364,16 @@ class Api:
 
         @app.post("/sdapi/v2/auto-border")
         def get_auto_border(req: models.AutoBorderRequest):
-            result = self.get_auto_border(req.image)
+            inner_thickness = req.inner_thickness if req.inner_thickness else req.thickness
+            outer_thickness = req.outer_thickness if req.outer_thickness else req.thickness
+            result = self.get_auto_border(req.image, inner_thickness, outer_thickness)
             return  {"message": f"Successfully", "result": result}
 
-    def get_auto_border(self, mask: str):
+    def get_auto_border(self, mask: str, inner_thickness=15, outer_thickness=15):
+        mask_image = decode_base64_to_image(mask).convert("RGB")
         try:
-            mask_image = decode_base64_to_image(mask).convert("RGB")
             mask_image_np = np.array(mask_image).astype(np.uint8)
-            return self.extract_outer_inner_border(mask_image_np)
+            return self.extract_outer_inner_border(mask_image_np, inner_thickness, outer_thickness)
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e)) from e
 
