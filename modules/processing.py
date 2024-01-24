@@ -481,8 +481,9 @@ class StableDiffusionProcessing:
 
 
 class Processed:
-    def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments=""):
+    def __init__(self, p: StableDiffusionProcessing, images_list, seed=-1, info="", subseed=None, all_prompts=None, all_negative_prompts=None, all_seeds=None, all_subseeds=None, index_of_first_image=0, infotexts=None, comments="", images_path=[]):
         self.images = images_list
+        self.imagespath = images_path
         self.prompt = p.prompt
         self.negative_prompt = p.negative_prompt
         self.seed = seed
@@ -499,6 +500,16 @@ class Processed:
         self.batch_size = p.batch_size
         self.restore_faces = p.restore_faces
         self.face_restoration_model = opts.face_restoration_model if p.restore_faces else None
+
+        self.tiling = p.tiling
+        self.resize_mode = p.resize_mode if hasattr(p, "resize_mode") else None
+        self.mask_blur_x = p.mask_blur_x if hasattr(p, "mask_blur_x") else None
+        self.mask_blur_y = p.mask_blur_y if hasattr(p, "mask_blur_y") else None
+        self.inpainting_mask_invert = p.inpainting_mask_invert if hasattr(p, "inpainting_mask_invert") else None
+        self.inpainting_fill = p.inpainting_fill if hasattr(p, "inpainting_fill") else None
+        self.inpaint_full_res = p.inpaint_full_res if hasattr(p, "inpaint_full_res") else None
+        self.inpaint_full_res_padding = p.inpaint_full_res_padding if hasattr(p, "inpaint_full_res_padding") else None
+		
         self.sd_model_name = p.sd_model_name
         self.sd_model_hash = p.sd_model_hash
         self.sd_vae_name = p.sd_vae_name
@@ -554,6 +565,16 @@ class Processed:
             "batch_size": self.batch_size,
             "restore_faces": self.restore_faces,
             "face_restoration_model": self.face_restoration_model,
+
+            "tiling": self.tiling,
+            "resize_mode": self.resize_mode,
+            "mask_blur_x" : self.mask_blur_x,
+            "mask_blur_y" : self.mask_blur_y,
+            "inpainting_mask_invert" : self.inpainting_mask_invert,
+            "inpainting_fill" : self.inpainting_fill,
+            "inpaint_full_res" : self.inpaint_full_res,
+            "inpaint_full_res_padding" : self.inpaint_full_res_padding,
+			
             "sd_model_name": self.sd_model_name,
             "sd_model_hash": self.sd_model_hash,
             "sd_vae_name": self.sd_vae_name,
@@ -564,6 +585,7 @@ class Processed:
             "extra_generation_params": self.extra_generation_params,
             "index_of_first_image": self.index_of_first_image,
             "infotexts": self.infotexts,
+            "infotexts_2": [self.infotext2(self, False), self.infotext2(self, True)],
             "styles": self.styles,
             "job_timestamp": self.job_timestamp,
             "clip_skip": self.clip_skip,
@@ -575,6 +597,10 @@ class Processed:
 
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
+
+    
+    def infotext2(self, p: StableDiffusionProcessing, is_simple):
+        return create_infotext_2(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=0, iteration=0 // self.batch_size, is_simple=is_simple)
 
     def get_token_merging_ratio(self, for_hr=False):
         return self.token_merging_ratio_hr if for_hr else self.token_merging_ratio
@@ -707,6 +733,76 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
     return f"{prompt_text}{negative_prompt_text}\n{generation_params_text}".strip()
 
 
+def create_infotext_2(p, all_prompts, all_seeds, all_subseeds, comments=None, iteration=0, position_in_batch=0, use_main_prompt=False, index=None, all_negative_prompts=None, is_simple=False):
+    if index is None:
+        index = position_in_batch + iteration * p.batch_size
+
+    if all_negative_prompts is None:
+        all_negative_prompts = p.all_negative_prompts
+
+    clip_skip = getattr(p, 'clip_skip', opts.CLIP_stop_at_last_layers)
+    enable_hr = getattr(p, 'enable_hr', False)
+    token_merging_ratio = p.get_token_merging_ratio()
+    token_merging_ratio_hr = p.get_token_merging_ratio(for_hr=True)
+
+    uses_ensd = opts.eta_noise_seed_delta != 0
+    if uses_ensd:
+        uses_ensd = sd_samplers_common.is_sampler_using_eta_noise_seed_delta(p)
+
+    tiling = p.tiling
+    resize_mode = p.resize_mode if hasattr(p, "resize_mode") else None
+    mask_blur_x = p.mask_blur_x if hasattr(p, "mask_blur_x") else None
+    mask_blur_y = p.mask_blur_y if hasattr(p, "mask_blur_y") else None
+    inpainting_mask_invert = p.inpainting_mask_invert if hasattr(p, "inpainting_mask_invert") else None
+    inpainting_fill = p.inpainting_fill if hasattr(p, "inpainting_fill") else None
+    inpaint_full_res = p.inpaint_full_res if hasattr(p, "inpaint_full_res") else None
+    inpaint_full_res_padding = p.inpaint_full_res_padding if hasattr(p, "inpaint_full_res_padding") else None
+    img2img_params = {
+        "Tiling" : tiling,
+        "Resize mode": resize_mode,
+        "Mask blur" : f"{mask_blur_x}x{mask_blur_y}",
+        "Mask mode" : inpainting_mask_invert,
+        "Masked content" : inpainting_fill,
+        "Inpaint area" : inpaint_full_res,
+        "Only masked padding" : inpaint_full_res_padding,
+    }
+
+    generation_params = {
+        "Steps": p.steps,
+        "Sampler": p.sampler_name,
+        "CFG scale": p.cfg_scale,
+        "Image CFG scale": getattr(p, 'image_cfg_scale', None),
+        "Seed": p.all_seeds[0] if use_main_prompt else all_seeds[index],
+        "Face restoration": (opts.face_restoration_model if p.restore_faces else None),
+        "Size": f"{p.width}x{p.height}",
+        "Model hash": getattr(p, 'sd_model_hash', None if not opts.add_model_hash_to_info or not shared.sd_model.sd_model_hash else shared.sd_model.sd_model_hash),
+        "Model": (None if not opts.add_model_name_to_info else shared.sd_model.sd_checkpoint_info.name_for_extra),
+        "Variation seed": (None if p.subseed_strength == 0 else (p.all_subseeds[0] if use_main_prompt else all_subseeds[index])),
+        "Variation seed strength": (None if p.subseed_strength == 0 else p.subseed_strength),
+        "Seed resize from": (None if p.seed_resize_from_w <= 0 or p.seed_resize_from_h <= 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}"),
+        "Denoising strength": getattr(p, 'denoising_strength', None),
+        "Conditional mask weight": getattr(p, "inpainting_mask_weight", shared.opts.inpainting_mask_weight) if p.is_using_inpainting_conditioning else None,
+        "Clip skip": None if clip_skip <= 1 else clip_skip,
+        "ENSD": opts.eta_noise_seed_delta if uses_ensd else None,
+        "Token merging ratio": None if token_merging_ratio == 0 else token_merging_ratio,
+        "Token merging ratio hr": None if not enable_hr or token_merging_ratio_hr == 0 else token_merging_ratio_hr,
+        "Init image hash": getattr(p, 'init_img_hash', None),
+        "RNG": opts.randn_source if opts.randn_source != "GPU" else None,
+        "NGMS": None if p.s_min_uncond == 0 else p.s_min_uncond,
+        "img2img" : None if is_simple or not inpaint_full_res_padding else img2img_params,
+        "extras": None if is_simple or not p.extra_generation_params else p.extra_generation_params,
+        "Version": program_version() if opts.add_version_to_infotext else None,
+        "User": p.user if opts.add_user_name_to_info else None,
+    }
+    
+    generation_params_text = ", ".join([k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in generation_params.items() if v is not None])
+
+    prompt_text = p.main_prompt if use_main_prompt else all_prompts[index]
+    negative_prompt_text = f"\nNegative prompt: {p.main_negative_prompt if use_main_prompt else all_negative_prompts[index]}" if all_negative_prompts[index] else ""
+
+    return f"{prompt_text}{negative_prompt_text}\n{generation_params_text}".strip()
+
+
 def process_images(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None:
         p.scripts.before_process(p)
@@ -799,6 +895,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
     infotexts = []
     output_images = []
+    images_path = []
+
     with torch.no_grad(), p.sd_model.ema_scope():
         with devices.autocast():
             p.init(p.all_prompts, p.all_seeds, p.all_subseeds)
@@ -931,7 +1029,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 image = apply_overlay(image, p.paste_to, i, p.overlay_images)
 
                 if save_samples:
-                    images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], opts.samples_format, info=infotext(i), p=p)
+                    img_path, _ = images.save_image(image, p.outpath_samples, "", p.seeds[i], p.prompts[i], opts.samples_format, info=infotext(i), p=p)
+                    images_path.append(img_path)
 
                 text = infotext(i)
                 infotexts.append(text)
@@ -985,6 +1084,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     res = Processed(
         p,
         images_list=output_images,
+        images_path=images_path,
         seed=p.all_seeds[0],
         info=infotexts[0],
         subseed=p.all_subseeds[0],
@@ -1348,9 +1448,9 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
     denoising_strength: float = 0.75
     image_cfg_scale: float = None
     mask: Any = None
-    mask_blur_x: int = 4
-    mask_blur_y: int = 4
-    mask_blur: int = None
+    mask_blur_x: float = 4
+    mask_blur_y: float = 4
+    mask_blur: float = None
     inpainting_fill: int = 0
     inpaint_full_res: bool = True
     inpaint_full_res_padding: int = 0

@@ -2,14 +2,15 @@ from functools import wraps
 import html
 import time
 
-from modules import shared, progress, errors, devices, fifo_lock
+from modules.queue_lock import QueueLock
 
-queue_lock = fifo_lock.FIFOLock()
+from modules import shared, progress, errors, devices
+from modules.shared import sd_queue_lock
 
 
 def wrap_queued_call(func):
     def f(*args, **kwargs):
-        with queue_lock:
+        with QueueLock(sd_queue_lock):
             res = func(*args, **kwargs)
 
         return res
@@ -28,18 +29,27 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
         else:
             id_task = None
 
-        with queue_lock:
+        pri, name = 100, None
+        # if args and type(args[1]) == str and args[1].startswith("token:"):
+            # token = args[1].replace('token:', '')
+            # pri, name = get_user_priority(token)
+        print('wrap_gradio_gpu_call wait', pri, name, id_task)
+        with QueueLock(sd_queue_lock, pri, id_task):
             shared.state.begin(job=id_task)
+            print('wrap_gradio_gpu_call start', pri, name, id_task)
             progress.start_task(id_task)
 
             try:
                 res = func(*args, **kwargs)
                 progress.record_results(id_task, res)
+            except Exception as e:
+                progress.save_failure_result(id_task, str(e))
+                raise e
             finally:
                 progress.finish_task(id_task)
 
             shared.state.end()
-
+            print('wrap_gradio_gpu_call done', pri, name, id_task)
         return res
 
     return wrap_gradio_call(f, extra_outputs=extra_outputs, add_stats=True)

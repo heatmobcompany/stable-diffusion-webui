@@ -7,6 +7,8 @@ import uvicorn
 import ipaddress
 import requests
 import gradio as gr
+import cv2
+import numpy as np
 from threading import Lock
 from io import BytesIO
 from fastapi import APIRouter, Depends, FastAPI, Request, Response
@@ -19,7 +21,8 @@ from secrets import compare_digest
 import modules.shared as shared
 from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors, restart, shared_items, script_callbacks, generation_parameters_copypaste, sd_models
 from modules.api import models
-from modules.shared import opts
+from modules.call_queue import QueueLock
+from modules.shared import opts, sd_queue_lock, extras_queue_lock
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
 from modules.textual_inversion.textual_inversion import create_embedding, train_embedding
 from modules.hypernetworks.hypernetwork import create_hypernetwork, train_hypernetwork
@@ -94,10 +97,38 @@ def decode_base64_to_image(encoding):
         encoding = encoding.split(";")[1].split(",")[1]
     try:
         image = Image.open(BytesIO(base64.b64decode(encoding)))
+        if image.mode == 'RGBA':
+            image = image.convert("RGB")
         return image
     except Exception as e:
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
 
+
+def dialte_mask(mask, number_pixel):
+    import cv2, numpy as np
+    kernel_size = abs(number_pixel)
+    kernel = np.ones((kernel_size, kernel_size), np.uint8)
+    if number_pixel < 0:
+        mask = cv2.erode(mask, kernel)
+    else:
+        mask = cv2.dilate(mask, kernel)
+    return mask
+
+
+def normalize_mask(mask):
+    import numpy as np
+    mask_array = np.array(mask)
+    mask_array = dialte_mask(mask_array, 5)
+    mask_array = dialte_mask(mask_array, -5)
+    mask = Image.fromarray(mask_array)
+    return mask
+
+def create_bounded_box(mask_image):
+    bbox = mask_image.getbbox()
+    boxed_mask = Image.new("RGB", mask_image.size, "black")
+    draw = ImageDraw.Draw(boxed_mask)
+    draw.rectangle(bbox, fill="white")
+    return boxed_mask
 
 def encode_pil_to_base64(image):
     with io.BytesIO() as output_bytes:
@@ -208,8 +239,9 @@ class Api:
         self.app = app
         self.queue_lock = queue_lock
         api_middleware(self.app)
-        self.add_api_route("/sdapi/v1/txt2img", self.text2imgapi, methods=["POST"], response_model=models.TextToImageResponse)
-        self.add_api_route("/sdapi/v1/img2img", self.img2imgapi, methods=["POST"], response_model=models.ImageToImageResponse)
+        self.add_api_v2(app)
+        # self.add_api_route("/sdapi/v1/txt2img", self.text2imgapi, methods=["POST"], response_model=models.TextToImageResponse)
+        # self.add_api_route("/sdapi/v1/img2img", self.img2imgapi, methods=["POST"], response_model=models.ImageToImageResponse)
         self.add_api_route("/sdapi/v1/extra-single-image", self.extras_single_image_api, methods=["POST"], response_model=models.ExtrasSingleImageResponse)
         self.add_api_route("/sdapi/v1/extra-batch-images", self.extras_batch_images_api, methods=["POST"], response_model=models.ExtrasBatchImagesResponse)
         self.add_api_route("/sdapi/v1/png-info", self.pnginfoapi, methods=["POST"], response_model=models.PNGInfoResponse)
@@ -251,6 +283,152 @@ class Api:
         self.default_script_arg_txt2img = []
         self.default_script_arg_img2img = []
 
+    def add_api_v2(self, app):
+        def text2imgtask(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.text2imgapi(txt2imgreq, task_id)
+            except HTTPException as e:
+                print("text2imgtask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("text2imgtask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+
+        def img2imgtask(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.img2imgapi(img2imgreq, task_id)
+            except HTTPException as e:
+                print("img2imgtask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("img2imgtask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+        
+        def extrasingletask(req: models.ExtrasSingleImageRequest, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.extras_single_image_api_v2(req, task_id)
+            except HTTPException as e:
+                print("extrasingletask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("extrasingletask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+
+        def extrabatchtask(req: models.ExtrasBatchImagesRequest, task_id):
+            progress.add_task_to_queue(task_id)
+            try:
+                self.extras_batch_images_api_v2(req, task_id)
+            except HTTPException as e:
+                print("extrabatchtask HTTPException:", e.detail)
+                progress.save_failure_result(task_id, e.detail)
+            except Exception as e:
+                print("extrabatchtask Exception:", e)
+                progress.save_failure_result(task_id, str(e))
+            progress.finish_task(task_id)
+
+
+        @app.post("/sdapi/v2/txt2img")
+        def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            thread = threading.Thread(target=text2imgtask, args=(txt2imgreq, task_id))
+            thread.start()
+            # background_tasks.add_task(self.text2imgapi, txt2imgreq, task_id)
+            return response
+
+        @app.post("/sdapi/v2/img2img")
+        def img2imgv2api(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            thread = threading.Thread(target=img2imgtask, args=(img2imgreq, task_id))
+            thread.start()
+            # background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
+            return response
+
+        @app.post("/sdapi/v2/extra-single-image")
+        def extrasinglev2api(req: models.ExtrasSingleImageRequest):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            thread = threading.Thread(target=extrasingletask, args=(req, task_id))
+            thread.start()
+            return response
+        
+        @app.post("/sdapi/v2/extra-batch-images")
+        def extrabatchv2api(req: models.ExtrasBatchImagesRequest):
+            task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
+            task_id = f'task({task_id})'
+            response = {"message": "Job created successfully",
+                        'task_id': task_id}
+            thread = threading.Thread(target=extrabatchtask, args=(req, task_id))
+            thread.start()
+            return response
+
+        @app.get("/sdapi/v2/progress")
+        def statusv2api():
+            jobs_info = progress.get_tasks_info()
+            return jobs_info
+        
+        @app.get("/sdapi/v2/interrupt")
+        def interrupt_task(id_task: str):
+            result = False
+            if (progress.current_task and progress.current_task == id_task):
+                shared.state.interrupt()
+                result = True
+            return {"message": f"Interrupted {id_task} ", "result": result}
+
+        @app.get("/sdapi/v2/cancel")
+        def cancel_task(id_task: str):
+            result = progress.remove_task_to_queue(id_task)
+            return {"message": f"Cancelled {id_task} ", "result": result}
+
+        @app.post("/sdapi/v2/auto-border")
+        def get_auto_border(req: models.AutoBorderRequest):
+            inner_thickness = req.inner_thickness if req.inner_thickness else req.thickness
+            outer_thickness = req.outer_thickness if req.outer_thickness else req.thickness
+            result = self.get_auto_border(req.image, inner_thickness, outer_thickness)
+            return  {"message": f"Successfully", "result": result}
+
+    def get_auto_border(self, mask: str, inner_thickness=15, outer_thickness=15):
+        mask_image = decode_base64_to_image(mask).convert("RGB")
+        try:
+            mask_image_np = np.array(mask_image).astype(np.uint8)
+            return self.extract_outer_inner_border(mask_image_np, inner_thickness, outer_thickness)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e)) from e
+
+    def extract_outer_inner_border(self, mask_image, inner_thickness=15, outer_thickness=15):
+        # Remove small noise, holes, etc
+        mask_image = dialte_mask(mask_image, 5)
+        mask_image = dialte_mask(mask_image, -5)
+
+        border_image = np.zeros_like(mask_image)
+
+        # Get outer border by dilating the mask
+        kernel_outer = np.ones((outer_thickness, outer_thickness), np.uint8)
+        outer_border = cv2.dilate(mask_image, kernel_outer, iterations=1)
+
+        # Get inner border by eroding the mask
+        kernel_inner = np.ones((inner_thickness, inner_thickness), np.uint8)
+        inner_border = cv2.erode(mask_image, kernel_inner, iterations=1)
+        
+        # Subtract inner border from outer border to get the border
+        border_image = cv2.subtract(outer_border, inner_border)
+        _, buffer = cv2.imencode('.png', border_image)
+        base64_image = base64.b64encode(buffer).decode('utf-8')
+        return base64_image
+       
     def add_api_route(self, path: str, endpoint, **kwargs):
         if shared.cmd_opts.api_auth:
             return self.app.add_api_route(path, endpoint, dependencies=[Depends(self.auth)], **kwargs)
@@ -335,7 +513,7 @@ class Api:
                         script_args[alwayson_script.args_from + idx] = request.alwayson_scripts[alwayson_script_name]["args"][idx]
         return script_args
 
-    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+    def text2imgapi(self, txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI, task_id=None):
         script_runner = scripts.scripts_txt2img
         if not script_runner.scripts:
             script_runner.initialize_scripts(False)
@@ -361,8 +539,11 @@ class Api:
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
-
-        with self.queue_lock:
+        pri = args.pop('priority', 100)
+        print('text2imgapi wait', task_id, pri)
+        processed = None
+        exception = None
+        with QueueLock(sd_queue_lock, name=task_id, pri=pri):
             with closing(StableDiffusionProcessingTxt2Img(sd_model=shared.sd_model, **args)) as p:
                 p.is_api = True
                 p.scripts = script_runner
@@ -370,29 +551,55 @@ class Api:
                 p.outpath_samples = opts.outdir_txt2img_samples
 
                 try:
-                    shared.state.begin(job="scripts_txt2img")
+                    print('text2imgapi start', task_id, pri)
+                    shared.state.begin(job=task_id)
+                    ad_enable = False
+                    batch_size = txt2imgreq.batch_size
+                    try:
+                        ad_enable = txt2imgreq.alwayson_scripts["adetailer"]["args"][0]
+                    except Exception as e:
+                        print("No ad_enable in request")
+                    if ad_enable:
+                        shared.state.adetail_task_count = batch_size
+                    task_time = progress.start_task(task_id)
+                    if not task_time:
+                        raise Exception(f"Task {task_id} has been cancelled")
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_txt2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                except Exception as e:
+                    exception = e
                 finally:
+                    if processed:
+                        progress.save_images_result(task_id, processed.imagespath, processed.js())
+                    progress.finish_task(task_id)
                     shared.state.end()
                     shared.total_tqdm.clear()
-
+                    print('text2imgapi done', task_id, pri)
+        if not processed:
+            raise exception if exception else Exception("Unknown exception")
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
-    def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+    def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, task_id=None):
         init_images = img2imgreq.init_images
         if init_images is None:
             raise HTTPException(status_code=404, detail="Init image not found")
 
         mask = img2imgreq.mask
+        auto_mask = img2imgreq.auto_mask
+        boxed_mask = img2imgreq.boxed_mask
         if mask:
             mask = decode_base64_to_image(mask)
+            if not auto_mask:
+                mask = normalize_mask(mask)
+            if boxed_mask:
+                mask = create_bounded_box(mask)
+                print(encode_pil_to_base64(mask))
 
         script_runner = scripts.scripts_img2img
         if not script_runner.scripts:
@@ -416,32 +623,60 @@ class Api:
         args.pop('script_name', None)
         args.pop('script_args', None)  # will refeed them to the pipeline directly after initializing them
         args.pop('alwayson_scripts', None)
+        args.pop('auto_mask', None)
+        args.pop('boxed_mask', None)
 
         script_args = self.init_script_args(img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
 
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
-
-        with self.queue_lock:
+        
+        pri = args.pop('priority', 100)
+        print('img2imgapi wait', task_id, pri)
+        processed = None
+        exception = None
+        with QueueLock(sd_queue_lock, name=task_id, pri=pri):
             with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
                 p.init_images = [decode_base64_to_image(x) for x in init_images]
                 p.is_api = True
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_img2img_grids
                 p.outpath_samples = opts.outdir_img2img_samples
+                if mask and img2imgreq.mask_blur:
+                    p.extra_generation_params["Mask blur"] = img2imgreq.mask_blur
 
                 try:
-                    shared.state.begin(job="scripts_img2img")
+                    print('img2imgapi start', task_id, pri)
+                    shared.state.begin(job=task_id)
+                    ad_enable = False
+                    batch_size = img2imgreq.batch_size
+                    try:
+                        ad_enable = img2imgreq.alwayson_scripts["adetailer"]["args"][0]
+                    except Exception as e:
+                        print("No ad_enable in request")
+                    if ad_enable:
+                        shared.state.adetail_task_count = batch_size
+                    task_time = progress.start_task(task_id)
+                    if not task_time:
+                        raise Exception(f"Task {task_id} has been cancelled")
                     if selectable_scripts is not None:
                         p.script_args = script_args
                         processed = scripts.scripts_img2img.run(p, *p.script_args) # Need to pass args as list here
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
+                except Exception as e:
+                    exception = e
                 finally:
+                    if processed:
+                        progress.save_images_result(task_id, processed.imagespath, processed.js())
+                    progress.finish_task(task_id)
                     shared.state.end()
                     shared.total_tqdm.clear()
+                    print('img2imgapi done', task_id, pri)
 
+        if not processed:
+            raise exception if exception else Exception("Unknown exception")
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
 
         if not img2imgreq.include_init_images:
@@ -450,24 +685,107 @@ class Api:
 
         return models.ImageToImageResponse(images=b64images, parameters=vars(img2imgreq), info=processed.js())
 
-    def extras_single_image_api(self, req: models.ExtrasSingleImageRequest):
+    def extras_single_image_api(self, req: models.ExtrasSingleImageRequest, task_id=None):
         reqDict = setUpscalers(req)
 
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
-        with self.queue_lock:
-            result = postprocessing.run_extras(extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=False, **reqDict)
+        pri = reqDict.pop("priority", 100)
+        print('extras_single_image_api wait', task_id, pri)
+        result = None
+        with QueueLock(extras_queue_lock, name=task_id, pri=pri):
+            print('extras_single_image_api start', task_id, pri)
+            result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
+            print('extras_single_image_api done', task_id, pri)
+        if not result:
+            raise  Exception("None result")
 
         return models.ExtrasSingleImageResponse(image=encode_pil_to_base64(result[0][0]), html_info=result[1])
 
-    def extras_batch_images_api(self, req: models.ExtrasBatchImagesRequest):
+    def extras_batch_images_api(self, req: models.ExtrasBatchImagesRequest, task_id=None):
         reqDict = setUpscalers(req)
 
         image_list = reqDict.pop('imageList', [])
         image_folder = [decode_base64_to_image(x.data) for x in image_list]
 
-        with self.queue_lock:
-            result = postprocessing.run_extras(extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=False, **reqDict)
+        pri = reqDict.pop("priority", 100)
+        
+        print('extras_batch_images_api wait', task_id, pri)
+        result = None
+        with QueueLock(extras_queue_lock, name=task_id, pri=pri):
+            print('extras_batch_images_api start', task_id, pri)
+            result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
+            print('extras_batch_images_api done', task_id, pri)
+
+        if not result:
+            raise Exception("None result")
+
+        return models.ExtrasBatchImagesResponse(images=list(map(encode_pil_to_base64, result[0])), html_info=result[1])
+
+
+    def extras_single_image_api_v2(self, req: models.ExtrasSingleImageRequest, task_id=None):
+        reqDict = setUpscalers(req)
+
+        reqDict['image'] = decode_base64_to_image(reqDict['image'])
+
+        pri = reqDict.pop("priority", 100)
+        print('extras_single_image_api wait', task_id, pri)
+        result = None
+        exception = None
+        with QueueLock(extras_queue_lock, name=task_id, pri=pri):
+            try:
+                print('extras_single_image_api start', task_id, pri)
+                shared.state.begin(job=task_id)
+                task_time = progress.start_task(task_id)
+                if not task_time:
+                    raise Exception(f"Task {task_id} has been cancelled")
+                result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
+            except Exception as e:
+                exception = e
+                print("extras_single_image_api error:", e)
+            finally:
+                if result:
+                    progress.save_images_result(task_id, json.loads(result[-1]), None)
+                progress.finish_task(task_id)
+                shared.state.end()
+                print('extras_single_image_api done', task_id, pri)
+
+        if not result:
+            raise exception if exception else Exception("Unknown exception")
+
+        return models.ExtrasSingleImageResponse(image=encode_pil_to_base64(result[0][0]), html_info=result[1])
+
+    def extras_batch_images_api_v2(self, req: models.ExtrasBatchImagesRequest, task_id=None):
+        reqDict = setUpscalers(req)
+
+        image_list = reqDict.pop('imageList', [])
+        image_folder = [decode_base64_to_image(x.data) for x in image_list]
+
+        pri = reqDict.pop("priority", 100)
+        
+        print('extras_batch_images_api wait', task_id, pri)
+        result = None
+        exception = None
+        with QueueLock(extras_queue_lock, name=task_id, pri=pri):
+            try:
+                print('extras_batch_images_api start', task_id, pri)
+                shared.state.begin(job=task_id)
+                task_time = progress.start_task(task_id)
+                if not task_time:
+                    raise Exception(f"Task {task_id} has been cancelled")
+                result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
+            except Exception as e:
+                exception = e
+                print("extras_batch_images_api error:", e)
+            finally:
+                if result:
+                    progress.save_images_result(task_id, json.loads(result[-1]), None)
+                progress.finish_task(task_id)
+                shared.state.end()
+                print('extras_batch_images_api done', task_id, pri)
+
+        if not result:
+            raise exception if exception else Exception("Unknown exception")
 
         return models.ExtrasBatchImagesResponse(images=list(map(encode_pil_to_base64, result[0])), html_info=result[1])
 
@@ -522,7 +840,7 @@ class Api:
         img = img.convert('RGB')
 
         # Override object param
-        with self.queue_lock:
+        with QueueLock(sd_queue_lock):
             if interrogatereq.model == "clip":
                 processed = shared.interrogator.interrogate(img)
             elif interrogatereq.model == "deepdanbooru":
@@ -644,11 +962,11 @@ class Api:
         }
 
     def refresh_checkpoints(self):
-        with self.queue_lock:
+        with QueueLock(sd_queue_lock):
             shared.refresh_checkpoints()
 
     def refresh_vae(self):
-        with self.queue_lock:
+        with QueueLock(sd_queue_lock):
             shared_items.refresh_vae_list()
 
     def create_embedding(self, args: dict):

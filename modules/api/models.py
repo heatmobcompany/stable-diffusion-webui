@@ -101,6 +101,7 @@ StableDiffusionTxt2ImgProcessingAPI = PydanticModelGenerator(
     "StableDiffusionProcessingTxt2Img",
     StableDiffusionProcessingTxt2Img,
     [
+        {"key": "priority", "type": int, "default": 100},
         {"key": "sampler_index", "type": str, "default": "Euler"},
         {"key": "script_name", "type": str, "default": None},
         {"key": "script_args", "type": list, "default": []},
@@ -114,6 +115,9 @@ StableDiffusionImg2ImgProcessingAPI = PydanticModelGenerator(
     "StableDiffusionProcessingImg2Img",
     StableDiffusionProcessingImg2Img,
     [
+        {"key": "priority", "type": int, "default": 100},
+        {"key": "auto_mask", "type": bool, "default": True},
+        {"key": "boxed_mask", "type": bool, "default": False},
         {"key": "sampler_index", "type": str, "default": "Euler"},
         {"key": "init_images", "type": list, "default": None},
         {"key": "denoising_strength", "type": float, "default": 0.75},
@@ -138,6 +142,7 @@ class ImageToImageResponse(BaseModel):
     info: str
 
 class ExtrasBaseRequest(BaseModel):
+    priority: int = Field(default=100, title="Priority", description="Priority for the job in queue")
     resize_mode: Literal[0, 1] = Field(default=0, title="Resize Mode", description="Sets the resize mode: 0 to upscale by upscaling_resize amount, 1 to upscale up to upscaling_resize_h x upscaling_resize_w.")
     show_extras_results: bool = Field(default=True, title="Show results", description="Should the backend return the generated image?")
     gfpgan_visibility: float = Field(default=0, title="GFPGAN Visibility", ge=0, le=1, allow_inf_nan=False, description="Sets the visibility of GFPGAN, values should be between 0 and 1.")
@@ -300,6 +305,13 @@ class ScriptArg(BaseModel):
     maximum: Optional[Any] = Field(default=None, title="Minimum", description="Maximum allowed value for the argumentin UI")
     step: Optional[Any] = Field(default=None, title="Minimum", description="Step for changing value of the argumentin UI")
     choices: Optional[list[str]] = Field(default=None, title="Choices", description="Possible values for the argument")
+
+
+class AutoBorderRequest(BaseModel):
+    image: str = Field(default=None, title="Image", description="Image to get border")
+    thickness: int = Field(default=15, title="Thickness", description="Thickness of the border")
+    inner_thickness: int = Field(default=0, title="Inner thickness", description="Inner thickness of the border")
+    outer_thickness: int = Field(default=0, title="Outer thickness", description="Outer thickness of the border")
 
 
 class ScriptInfo(BaseModel):
