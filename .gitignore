@@ -38,3 +38,5 @@ notification.mp3
 /package-lock.json
 /.coverage*
 4.8.0
+=4.8.0
+job_clean_outputs.log
