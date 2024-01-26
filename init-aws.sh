@@ -27,6 +27,7 @@ git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-dif
 # git clone https://github.com/heatmobcompany/openpose-editor /workspace/stable-diffusion-webui/extensions/openpose-editor
 git clone https://github.com/heatmobcompany/stable-diffusion-webui-rembg /workspace/stable-diffusion-webui/extensions/stable-diffusion-webui-rembg
 git clone https://github.com/heatmobcompany/sd-webui-openpose-editor /workspace/stable-diffusion-webui/extensions/sd-webui-openpose-editor
+git clone https://github.com/heatmobcompany/sd-webui-inpaint-anything /workspace/stable-diffusion-webui/extensions/sd-webui-inpaint-anything
 
 # $SCRIPT_DIR/setup-checkpoint.sh all
 $SCRIPT_DIR/setup-common.sh
