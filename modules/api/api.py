@@ -39,6 +39,8 @@ from typing import Dict, List, Any
 import piexif
 import piexif.helper
 from contextlib import closing
+import urllib.request
+import requests
 
 
 def script_name_to_index(name, scripts):
@@ -63,13 +65,35 @@ def setUpscalers(req: dict):
     return reqDict
 
 
+def image_url_to_base64(image_url):
+    print("Get image from url:", image_url)
+    try:
+        response = requests.get(image_url)
+        response.raise_for_status()
+        base64_data = base64.b64encode(response.content).decode('utf-8')
+        return base64_data
+    except Exception as e:
+        print("Error", e)
+        return None
+
+
+def convert_1bit_to_rgb(input_image):
+    rgb_image = Image.new("RGB", input_image.size)
+    rgb_image.paste(input_image, (0, 0))
+    return rgb_image
+
+
 def decode_base64_to_image(encoding):
+    if encoding.startswith("http"):
+        encoding = image_url_to_base64(encoding)
     if encoding.startswith("data:image/"):
         encoding = encoding.split(";")[1].split(",")[1]
     try:
         image = Image.open(BytesIO(base64.b64decode(encoding)))
         if image.mode == 'RGBA':
             image = image.convert("RGB")
+        if image.mode == '1':
+            image = convert_1bit_to_rgb(image)
         return image
     except Exception as e:
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
