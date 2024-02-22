@@ -2,6 +2,8 @@ from datetime import datetime
 import json
 from modules import cmd_args
 from helper.v2a_server import get_model_info, get_user_info, post_v2a
+from helper.logging import Logger
+logger = Logger("HM")
 
 args, _ = cmd_args.parser.parse_known_args()
 
@@ -32,7 +34,7 @@ def get_server_info():
                 server_info['civitaiLink'] = res['result']['civitaiLink']
                 server_infos.append(server_info)
         except Exception as e:
-            print(f"Error: load style info: {_group} {e}")
+            logger.error(f"Error: load style info: {_group} {e}")
 
     return server_infos
 
@@ -48,7 +50,7 @@ def get_user_priority(token):
         if expires_datetime > current_datetime and coins > 0:
             pri = 50 # Subscription priority
     except Exception as e:
-        print(f"Error: parse user data: {e}")
+        logger.error(f"Error: parse user data: {e}")
     return pri, name # Default priority
 
 server_info = {}

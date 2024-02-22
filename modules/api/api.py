@@ -39,9 +39,10 @@ from typing import Dict, List, Any
 import piexif
 import piexif.helper
 from contextlib import closing
-import urllib.request
 import requests
 
+from helper.logging import Logger
+logger = Logger("API")
 
 def script_name_to_index(name, scripts):
     try:
@@ -66,14 +67,14 @@ def setUpscalers(req: dict):
 
 
 def image_url_to_base64(image_url):
-    print("Get image from url:", image_url)
+    logger.info("Get image from url:", image_url)
     try:
         response = requests.get(image_url)
         response.raise_for_status()
         base64_data = base64.b64encode(response.content).decode('utf-8')
         return base64_data
     except Exception as e:
-        print("Error", e)
+        logger.error("Error", e)
         return None
 
 
@@ -177,7 +178,7 @@ def api_middleware(app: FastAPI):
         res.headers["X-Process-Time"] = duration
         endpoint = req.scope.get('path', 'err')
         if shared.cmd_opts.api_log and endpoint.startswith('/sdapi'):
-            print('API {t} {code} {prot}/{ver} {method} {endpoint} {cli} {duration}'.format(
+            logger.info('API {t} {code} {prot}/{ver} {method} {endpoint} {cli} {duration}'.format(
                 t=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),
                 code=res.status_code,
                 ver=req.scope.get('http_version', '0.0'),
@@ -199,7 +200,7 @@ def api_middleware(app: FastAPI):
         if not isinstance(e, HTTPException):  # do not print backtrace on known httpexceptions
             message = f"API error: {request.method}: {request.url} {err}"
             if rich_available:
-                print(message)
+                logger.info(message)
                 console.print_exception(show_locals=True, max_frames=2, extra_lines=1, suppress=[anyio, starlette], word_wrap=False, width=min([console.width, 200]))
             else:
                 errors.report(message, exc_info=True)
@@ -282,10 +283,10 @@ class Api:
             try:
                 self.text2imgapi(txt2imgreq, task_id)
             except HTTPException as e:
-                print("text2imgtask HTTPException:", e.detail)
+                logger.error("text2imgtask HTTPException:", e.detail)
                 progress.save_failure_result(task_id, e.detail)
             except Exception as e:
-                print("text2imgtask Exception:", e)
+                logger.error("text2imgtask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
             progress.finish_task(task_id)
 
@@ -294,10 +295,10 @@ class Api:
             try:
                 self.img2imgapi(img2imgreq, task_id)
             except HTTPException as e:
-                print("img2imgtask HTTPException:", e.detail)
+                logger.error("img2imgtask HTTPException:", e.detail)
                 progress.save_failure_result(task_id, e.detail)
             except Exception as e:
-                print("img2imgtask Exception:", e)
+                logger.error("img2imgtask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
             progress.finish_task(task_id)
         
@@ -306,10 +307,10 @@ class Api:
             try:
                 self.extras_single_image_api_v2(req, task_id)
             except HTTPException as e:
-                print("extrasingletask HTTPException:", e.detail)
+                logger.error("extrasingletask HTTPException:", e.detail)
                 progress.save_failure_result(task_id, e.detail)
             except Exception as e:
-                print("extrasingletask Exception:", e)
+                logger.error("extrasingletask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
             progress.finish_task(task_id)
 
@@ -318,10 +319,10 @@ class Api:
             try:
                 self.extras_batch_images_api_v2(req, task_id)
             except HTTPException as e:
-                print("extrabatchtask HTTPException:", e.detail)
+                logger.error("extrabatchtask HTTPException:", e.detail)
                 progress.save_failure_result(task_id, e.detail)
             except Exception as e:
-                print("extrabatchtask Exception:", e)
+                logger.error("extrabatchtask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
             progress.finish_task(task_id)
 
@@ -533,7 +534,7 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
         pri = args.pop('priority', 100)
-        print('text2imgapi wait', task_id, pri)
+        logger.info('text2imgapi wait', task_id, pri)
         processed = None
         exception = None
         with QueueLock(sd_queue_lock, name=task_id, pri=pri):
@@ -543,14 +544,14 @@ class Api:
                 p.outpath_samples = opts.outdir_txt2img_samples
 
                 try:
-                    print('text2imgapi start', task_id, pri)
+                    logger.info('text2imgapi start', task_id, pri)
                     shared.state.begin(job=task_id)
                     ad_enable = False
                     batch_size = txt2imgreq.batch_size
                     try:
                         ad_enable = txt2imgreq.alwayson_scripts["adetailer"]["args"][0]
                     except Exception as e:
-                        print("No ad_enable in request")
+                        logger.error("No ad_enable in request")
                     if ad_enable:
                         shared.state.adetail_task_count = batch_size
                     task_time = progress.start_task(task_id)
@@ -569,7 +570,7 @@ class Api:
                         progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
-                    print('text2imgapi done', task_id, pri)
+                    logger.info('text2imgapi done', task_id, pri)
         if not processed:
             raise exception if exception else Exception("Unknown exception")
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
@@ -590,7 +591,6 @@ class Api:
                 mask = normalize_mask(mask)
             if boxed_mask:
                 mask = create_bounded_box(mask)
-                print(encode_pil_to_base64(mask))
 
         script_runner = scripts.scripts_img2img
         if not script_runner.scripts:
@@ -623,7 +623,7 @@ class Api:
         args.pop('save_images', None)
         
         pri = args.pop('priority', 100)
-        print('img2imgapi wait', task_id, pri)
+        logger.info('img2imgapi wait', task_id, pri)
         processed = None
         exception = None
         with QueueLock(sd_queue_lock, name=task_id, pri=pri):
@@ -636,14 +636,14 @@ class Api:
                     p.extra_generation_params["Mask blur"] = img2imgreq.mask_blur
 
                 try:
-                    print('img2imgapi start', task_id, pri)
+                    logger.info('img2imgapi start', task_id, pri)
                     shared.state.begin(job=task_id)
                     ad_enable = False
                     batch_size = img2imgreq.batch_size
                     try:
                         ad_enable = img2imgreq.alwayson_scripts["adetailer"]["args"][0]
                     except Exception as e:
-                        print("No ad_enable in request")
+                        logger.error("No ad_enable in request")
                     if ad_enable:
                         shared.state.adetail_task_count = batch_size
                     task_time = progress.start_task(task_id)
@@ -662,7 +662,7 @@ class Api:
                         progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
-                    print('img2imgapi done', task_id, pri)
+                    logger.info('img2imgapi done', task_id, pri)
 
         if not processed:
             raise exception if exception else Exception("Unknown exception")
@@ -680,12 +680,12 @@ class Api:
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
         pri = reqDict.pop("priority", 100)
-        print('extras_single_image_api wait', task_id, pri)
+        logger.info('extras_single_image_api wait', task_id, pri)
         result = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
-            print('extras_single_image_api start', task_id, pri)
+            logger.info('extras_single_image_api start', task_id, pri)
             result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
-            print('extras_single_image_api done', task_id, pri)
+            logger.info('extras_single_image_api done', task_id, pri)
         if not result:
             raise  Exception("None result")
 
@@ -699,12 +699,12 @@ class Api:
 
         pri = reqDict.pop("priority", 100)
         
-        print('extras_batch_images_api wait', task_id, pri)
+        logger.info('extras_batch_images_api wait', task_id, pri)
         result = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
-            print('extras_batch_images_api start', task_id, pri)
+            logger.info('extras_batch_images_api start', task_id, pri)
             result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
-            print('extras_batch_images_api done', task_id, pri)
+            logger.info('extras_batch_images_api done', task_id, pri)
 
         if not result:
             raise Exception("None result")
@@ -718,12 +718,12 @@ class Api:
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
         pri = reqDict.pop("priority", 100)
-        print('extras_single_image_api wait', task_id, pri)
+        logger.info('extras_single_image_api wait', task_id, pri)
         result = None
         exception = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
             try:
-                print('extras_single_image_api start', task_id, pri)
+                logger.info('extras_single_image_api start', task_id, pri)
                 shared.state.begin(job=task_id)
                 task_time = progress.start_task(task_id)
                 if not task_time:
@@ -731,13 +731,13 @@ class Api:
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
-                print("extras_single_image_api error:", e)
+                logger.error("extras_single_image_api error:", e)
             finally:
                 if result:
                     progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
-                print('extras_single_image_api done', task_id, pri)
+                logger.info('extras_single_image_api done', task_id, pri)
 
         if not result:
             raise exception if exception else Exception("Unknown exception")
@@ -752,12 +752,12 @@ class Api:
 
         pri = reqDict.pop("priority", 100)
         
-        print('extras_batch_images_api wait', task_id, pri)
+        logger.info('extras_batch_images_api wait', task_id, pri)
         result = None
         exception = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
             try:
-                print('extras_batch_images_api start', task_id, pri)
+                logger.info('extras_batch_images_api start', task_id, pri)
                 shared.state.begin(job=task_id)
                 task_time = progress.start_task(task_id)
                 if not task_time:
@@ -765,13 +765,13 @@ class Api:
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
-                print("extras_batch_images_api error:", e)
+                logger.error("extras_batch_images_api error:", e)
             finally:
                 if result:
                     progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
-                print('extras_batch_images_api done', task_id, pri)
+                logger.info('extras_batch_images_api done', task_id, pri)
 
         if not result:
             raise exception if exception else Exception("Unknown exception")
