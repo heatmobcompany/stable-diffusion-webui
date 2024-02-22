@@ -3,6 +3,7 @@ import copy
 import sys
 from modules import cmd_args
 args, _ = cmd_args.parser.parse_known_args()
+from logging.handlers import RotatingFileHandler
 
 class ColoredFormatter(logging.Formatter):
     COLORS = {
@@ -34,7 +35,7 @@ class Logger:
             self.logger.addHandler(stdout_handler)
             
             if args.log_file:
-                file_handler = logging.FileHandler(args.log_file)
+                file_handler = RotatingFileHandler(args.log_file, maxBytes=1e6, backupCount=5)
                 file_handler.setFormatter(format_log)
                 self.logger.addHandler(file_handler)
 
