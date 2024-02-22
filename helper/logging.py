@@ -41,6 +41,7 @@ class Logger:
 
         loglevel_string = level
         loglevel = getattr(logging, loglevel_string.upper(), None)
+        self.level = loglevel
         self.logger.setLevel(loglevel)
 
     def debug(self, message, *args):
