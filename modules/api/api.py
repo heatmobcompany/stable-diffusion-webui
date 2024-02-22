@@ -329,6 +329,8 @@ class Api:
 
         @app.post("/sdapi/v2/txt2img")
         def txt2imgv2api(txt2imgreq: models.StableDiffusionTxt2ImgProcessingAPI):
+            logger.info(f"===== API /sdapi/v2/txt2img start =====")
+            t = time.time()
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
@@ -336,10 +338,13 @@ class Api:
             thread = threading.Thread(target=text2imgtask, args=(txt2imgreq, task_id))
             thread.start()
             # background_tasks.add_task(self.text2imgapi, txt2imgreq, task_id)
+            logger.info("===== API /sdapi/v2/txt2img end in {:.3f} seconds =====".format(time.time() - t))
             return response
 
         @app.post("/sdapi/v2/img2img")
         def img2imgv2api(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI):
+            logger.info(f"===== API /sdapi/v2/img2img start =====")
+            t = time.time()
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
@@ -347,26 +352,33 @@ class Api:
             thread = threading.Thread(target=img2imgtask, args=(img2imgreq, task_id))
             thread.start()
             # background_tasks.add_task(self.img2imgapi, img2imgreq, task_id)
+            logger.info("===== API /sdapi/v2/img2img end in {:.3f} seconds =====".format(time.time() - t))
             return response
 
         @app.post("/sdapi/v2/extra-single-image")
         def extrasinglev2api(req: models.ExtrasSingleImageRequest):
+            logger.info(f"===== API /sdapi/v2/extra-single-image start =====")
+            t = time.time()
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
                         'task_id': task_id}
             thread = threading.Thread(target=extrasingletask, args=(req, task_id))
             thread.start()
+            logger.info("===== API /sdapi/v2/extra-single-image end in {:.3f} seconds =====".format(time.time() - t))
             return response
         
         @app.post("/sdapi/v2/extra-batch-images")
         def extrabatchv2api(req: models.ExtrasBatchImagesRequest):
+            logger.info(f"===== API /sdapi/v2/extra-batch-images start =====")
+            t = time.time()
             task_id = ''.join(random.choice(string.ascii_letters) for i in range(10))
             task_id = f'task({task_id})'
             response = {"message": "Job created successfully",
                         'task_id': task_id}
             thread = threading.Thread(target=extrabatchtask, args=(req, task_id))
             thread.start()
+            logger.info("===== API /sdapi/v2/extra-batch-image end in {:.3f} seconds =====".format(time.time() - t))
             return response
 
         @app.get("/sdapi/v2/progress")
@@ -376,6 +388,7 @@ class Api:
         
         @app.get("/sdapi/v2/interrupt")
         def interrupt_task(id_task: str):
+            logger.info(f"===== API /sdapi/v2/interrupt =====")
             result = False
             if (progress.current_task and progress.current_task == id_task):
                 shared.state.interrupt()
@@ -384,11 +397,13 @@ class Api:
 
         @app.get("/sdapi/v2/cancel")
         def cancel_task(id_task: str):
+            logger.info(f"===== API /sdapi/v2/cancel =====")
             result = progress.remove_task_to_queue(id_task)
             return {"message": f"Cancelled {id_task} ", "result": result}
 
         @app.post("/sdapi/v2/auto-border")
         def get_auto_border(req: models.AutoBorderRequest):
+            logger.info(f"===== API /sdapi/v2/auto-border =====")
             inner_thickness = req.inner_thickness if req.inner_thickness else req.thickness
             outer_thickness = req.outer_thickness if req.outer_thickness else req.thickness
             result = self.get_auto_border(req.image, inner_thickness, outer_thickness)
@@ -534,7 +549,9 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
         pri = args.pop('priority', 100)
-        logger.info('text2imgapi wait', task_id, pri)
+        logger.info(f'text2imgapi task_id={task_id}, priority={pri}')
+        logger.info('text2imgapi wait')
+        t = time.time()
         processed = None
         exception = None
         with QueueLock(sd_queue_lock, name=task_id, pri=pri):
@@ -544,14 +561,14 @@ class Api:
                 p.outpath_samples = opts.outdir_txt2img_samples
 
                 try:
-                    logger.info('text2imgapi start', task_id, pri)
+                    logger.info('text2imgapi start in {:.3f} seconds'.format(time.time() - t));t = time.time()
                     shared.state.begin(job=task_id)
                     ad_enable = False
                     batch_size = txt2imgreq.batch_size
                     try:
                         ad_enable = txt2imgreq.alwayson_scripts["adetailer"]["args"][0]
                     except Exception as e:
-                        logger.error("No ad_enable in request")
+                        logger.warning("No ad_enable in request")
                     if ad_enable:
                         shared.state.adetail_task_count = batch_size
                     task_time = progress.start_task(task_id)
@@ -570,7 +587,7 @@ class Api:
                         progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
-                    logger.info('text2imgapi done', task_id, pri)
+                    logger.info('text2imgapi done in {:.3f} seconds'.format(time.time() - t))
         if not processed:
             raise exception if exception else Exception("Unknown exception")
         b64images = list(map(encode_pil_to_base64, processed.images)) if send_images else []
@@ -623,7 +640,9 @@ class Api:
         args.pop('save_images', None)
         
         pri = args.pop('priority', 100)
-        logger.info('img2imgapi wait', task_id, pri)
+        logger.info(f'img2imgapi task_id={task_id}, priority={pri}')
+        logger.info('img2imgapi wait')
+        t = time.time()
         processed = None
         exception = None
         with QueueLock(sd_queue_lock, name=task_id, pri=pri):
@@ -636,7 +655,7 @@ class Api:
                     p.extra_generation_params["Mask blur"] = img2imgreq.mask_blur
 
                 try:
-                    logger.info('img2imgapi start', task_id, pri)
+                    logger.info('img2imgapi start in {:.3f} seconds'.format(time.time() - t));t = time.time()
                     shared.state.begin(job=task_id)
                     ad_enable = False
                     batch_size = img2imgreq.batch_size
@@ -662,7 +681,7 @@ class Api:
                         progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
-                    logger.info('img2imgapi done', task_id, pri)
+                    logger.info('img2imgapi done in {:.3f} seconds'.format(time.time() - t))
 
         if not processed:
             raise exception if exception else Exception("Unknown exception")
@@ -680,12 +699,15 @@ class Api:
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
         pri = reqDict.pop("priority", 100)
-        logger.info('extras_single_image_api wait', task_id, pri)
+        logger.info(f'extras_single_image_api task_id={task_id}, priority={pri}')
+        logger.info('extras_single_image_api wait')
+        t = time.time()
+
         result = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
-            logger.info('extras_single_image_api start', task_id, pri)
+            logger.info('extras_single_image_api start in {:.3f} seconds'.format(time.time() - t));t = time.time()
             result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
-            logger.info('extras_single_image_api done', task_id, pri)
+            logger.info('extras_single_image_api done in {:.3f} seconds'.format(time.time() - t))
         if not result:
             raise  Exception("None result")
 
@@ -699,12 +721,15 @@ class Api:
 
         pri = reqDict.pop("priority", 100)
         
-        logger.info('extras_batch_images_api wait', task_id, pri)
+        logger.info(f'extras_batch_images_api task_id={task_id}, priority={pri}')
+        logger.info('extras_batch_images_api wait')
+        t = time.time()
+
         result = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
-            logger.info('extras_batch_images_api start', task_id, pri)
+            logger.info('extras_batch_images_api start in {:.3f} seconds'.format(time.time() - t));t = time.time()
             result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
-            logger.info('extras_batch_images_api done', task_id, pri)
+            logger.info('extras_batch_images_api done in {:.3f} seconds'.format(time.time() - t))
 
         if not result:
             raise Exception("None result")
@@ -718,12 +743,14 @@ class Api:
         reqDict['image'] = decode_base64_to_image(reqDict['image'])
 
         pri = reqDict.pop("priority", 100)
-        logger.info('extras_single_image_api wait', task_id, pri)
+        logger.info(f'extras_single_image_api_v2 task_id={task_id}, priority={pri}')
+        logger.info('extras_single_image_api_v2 wait')
+        t = time.time()
         result = None
         exception = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
             try:
-                logger.info('extras_single_image_api start', task_id, pri)
+                logger.info('extras_single_image_api_v2 start in {:.3f} seconds'.format(time.time() - t));t = time.time()
                 shared.state.begin(job=task_id)
                 task_time = progress.start_task(task_id)
                 if not task_time:
@@ -731,13 +758,13 @@ class Api:
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=0, image_folder="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
-                logger.error("extras_single_image_api error:", e)
+                logger.error('extras_single_image_api_v2 error in {:.3f} seconds'.format(time.time() - t), exception)
             finally:
                 if result:
                     progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
-                logger.info('extras_single_image_api done', task_id, pri)
+                logger.info('extras_single_image_api_v2 done in {:.3f} seconds'.format(time.time() - t))
 
         if not result:
             raise exception if exception else Exception("Unknown exception")
@@ -752,12 +779,15 @@ class Api:
 
         pri = reqDict.pop("priority", 100)
         
-        logger.info('extras_batch_images_api wait', task_id, pri)
+        logger.info(f'extras_batch_images_api_v2 task_id={task_id}, priority={pri}')
+        logger.info('extras_batch_images_api_v2 wait')
+        t = time.time()
+
         result = None
         exception = None
         with QueueLock(extras_queue_lock, name=task_id, pri=pri):
             try:
-                logger.info('extras_batch_images_api start', task_id, pri)
+                logger.info('extras_batch_images_api_v2 start in {:.3f} seconds'.format(time.time() - t));t = time.time()
                 shared.state.begin(job=task_id)
                 task_time = progress.start_task(task_id)
                 if not task_time:
@@ -765,13 +795,13 @@ class Api:
                 result = postprocessing.run_extras(task_id, token=None, extras_mode=1, image_folder=image_folder, image="", input_dir="", output_dir="", save_output=True, **reqDict)
             except Exception as e:
                 exception = e
-                logger.error("extras_batch_images_api error:", e)
+                logger.error('extras_batch_images_api_v2 error in {:.3f} seconds'.format(time.time() - t), exception)
             finally:
                 if result:
                     progress.save_images_result(task_id, json.loads(result[-1]), None)
                 progress.finish_task(task_id)
                 shared.state.end()
-                logger.info('extras_batch_images_api done', task_id, pri)
+                logger.info('extras_batch_images_api_v2 done in {:.3f} seconds'.format(time.time() - t))
 
         if not result:
             raise exception if exception else Exception("Unknown exception")
@@ -829,9 +859,12 @@ class Api:
 
         img = decode_base64_to_image(image_b64)
         img = img.convert('RGB')
+        logger.info('interrogateapi wait')
+        t = time.time()
 
         # Override object param
         with QueueLock(sd_queue_lock):
+            logger.info('interrogateapi start in {:.3f} seconds'.format(time.time() - t));t = time.time()
             if interrogatereq.model == "clip":
                 processed = shared.interrogator.interrogate(img)
             elif interrogatereq.model == "deepdanbooru":
@@ -839,6 +872,7 @@ class Api:
             else:
                 raise HTTPException(status_code=404, detail="Model not found")
 
+        logger.info('interrogateapi done in {:.3f} seconds'.format(time.time() - t))
         return models.InterrogateResponse(caption=processed)
 
     def interruptapi(self):
