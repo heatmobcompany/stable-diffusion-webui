@@ -67,7 +67,7 @@ def setUpscalers(req: dict):
 
 
 def image_url_to_base64(image_url):
-    logger.info("Get image from url:", image_url)
+    logger.info("Get image from url: {}", image_url)
     try:
         response = requests.get(image_url)
         response.raise_for_status()
@@ -283,7 +283,7 @@ class Api:
             try:
                 self.text2imgapi(txt2imgreq, task_id)
             except HTTPException as e:
-                logger.error("text2imgtask HTTPException:", e.detail)
+                logger.error("text2imgtask HTTPException: {}", e.detail)
                 progress.save_failure_result(task_id, e.detail)
             except Exception as e:
                 logger.error("text2imgtask Exception:", e)
@@ -295,7 +295,7 @@ class Api:
             try:
                 self.img2imgapi(img2imgreq, task_id)
             except HTTPException as e:
-                logger.error("img2imgtask HTTPException:", e.detail)
+                logger.error("img2imgtask HTTPException: {}", e.detail)
                 progress.save_failure_result(task_id, e.detail)
             except Exception as e:
                 logger.error("img2imgtask Exception:", e)

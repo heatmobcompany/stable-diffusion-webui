@@ -40,7 +40,7 @@ install_dir="/workspace"
 #clone_dir="stable-diffusion-webui"
 
 # Commandline arguments for webui.py, for example: export COMMANDLINE_ARGS="--medvram --opt-split-attention"
-export COMMANDLINE_ARGS="--xformers --opt-sdp-attention --port 3000 --listen --enable-insecure-extension-access --api --google-id $ID --group $GROUP --type $TYPE --share-url $URL"
+export COMMANDLINE_ARGS="--log-file /workspace/logs/app.logging.log --xformers --opt-sdp-attention --port 3000 --listen --enable-insecure-extension-access --api --google-id $ID --group $GROUP --type $TYPE --share-url $URL"
 #export XFORMERS_PACKAGE="xformers==0.0.17.dev447"
 
 # python3 executable
