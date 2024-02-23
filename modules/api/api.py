@@ -549,6 +549,7 @@ class Api:
         send_images = args.pop('send_images', True)
         args.pop('save_images', None)
         pri = args.pop('priority', 100)
+        ad_controlnet = args.pop('ad_controlnet', None)
         logger.info(f'text2imgapi task_id={task_id}, priority={pri}')
         logger.info('text2imgapi wait')
         t = time.time()
@@ -566,7 +567,8 @@ class Api:
                     ad_enable = False
                     batch_size = txt2imgreq.batch_size
                     try:
-                        ad_enable = txt2imgreq.alwayson_scripts["adetailer"]["args"][0]
+                        ad_enable = txt2imgreq.alwayson_scripts["adetailer"]["args"][0] == True or txt2imgreq.alwayson_scripts["adetailer"]["args"][0]["ad_model"] is not "None"
+                        p.ad_controlnet = ad_controlnet
                     except Exception as e:
                         logger.warning("No ad_enable in request")
                     if ad_enable:
@@ -640,6 +642,7 @@ class Api:
         args.pop('save_images', None)
         
         pri = args.pop('priority', 100)
+        ad_controlnet = args.pop('ad_controlnet', None)
         logger.info(f'img2imgapi task_id={task_id}, priority={pri}')
         logger.info('img2imgapi wait')
         t = time.time()
@@ -660,9 +663,10 @@ class Api:
                     ad_enable = False
                     batch_size = img2imgreq.batch_size
                     try:
-                        ad_enable = img2imgreq.alwayson_scripts["adetailer"]["args"][0]
+                        ad_enable = img2imgreq.alwayson_scripts["adetailer"]["args"][0] == True or img2imgreq.alwayson_scripts["adetailer"]["args"][0]["ad_model"] is not "None"
+                        p.ad_controlnet = ad_controlnet
                     except Exception as e:
-                        logger.error("No ad_enable in request")
+                        logger.warning("No ad_enable in request")
                     if ad_enable:
                         shared.state.adetail_task_count = batch_size
                     task_time = progress.start_task(task_id)
