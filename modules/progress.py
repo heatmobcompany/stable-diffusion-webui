@@ -8,11 +8,16 @@ from pydantic import BaseModel, Field
 from modules.shared import opts
 
 import modules.shared as shared
+from collections import OrderedDict
+import string
+import random
+from typing import List
+
 from modules.shared import sd_queue_lock
 
 current_task = None
 current_task_progress = None
-pending_tasks = {}
+pending_tasks = OrderedDict()
 images_results = {}
 failed_results = {}
 inputs_infos = {}
@@ -39,6 +44,11 @@ def finish_task(id_task):
     if len(finished_tasks) > 16:
         finished_tasks.pop(0)
 
+def create_task_id(task_type):
+    N = 7
+    res = ''.join(random.choices(string.ascii_uppercase +
+    string.digits, k=N))
+    return f"task({task_type}-{res})"
 
 def record_results(id_task, res):
     recorded_results.append((id_task, res))
@@ -96,6 +106,10 @@ def remove_task_to_queue(id_job):
         return True
     return False
 
+class PendingTasksResponse(BaseModel):
+    size: int = Field(title="Pending task size")
+    tasks: List[str] = Field(title="Pending task ids")
+
 class ProgressRequest(BaseModel):
     id_task: str = Field(default=None, title="Task ID", description="id of the task to get progress for")
     live_preview_enabled: bool = Field(default=False, title="Enable live preview", description="send live preview for processing job")
@@ -117,7 +131,14 @@ class ProgressResponse(BaseModel):
     result_info: str = Field(default=None, title="Result info", description="Info of result.")
 
 def setup_progress_api(app):
+    app.add_api_route("/internal/pending-tasks", get_pending_tasks, methods=["GET"])
     return app.add_api_route("/internal/progress", progressapi, methods=["POST"], response_model=ProgressResponse)
+
+
+def get_pending_tasks():
+    pending_tasks_ids = list(pending_tasks)
+    pending_len = len(pending_tasks_ids)
+    return PendingTasksResponse(size=pending_len, tasks=pending_tasks_ids)
 
 
 def progressapi(req: ProgressRequest):
