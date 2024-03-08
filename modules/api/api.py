@@ -1,5 +1,9 @@
 import base64
 import io
+import json
+import random
+import string
+import threading
 import os
 import time
 import datetime
@@ -19,7 +23,7 @@ from fastapi.encoders import jsonable_encoder
 from secrets import compare_digest
 
 import modules.shared as shared
-from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors, restart, shared_items, script_callbacks, infotext_utils, sd_models
+from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors, progress, restart, shared_items, script_callbacks, infotext_utils, sd_models
 from modules.api import models
 from modules.call_queue import QueueLock
 from modules.shared import opts, sd_queue_lock, extras_queue_lock

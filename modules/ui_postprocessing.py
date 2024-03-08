@@ -40,6 +40,7 @@ def create_ui():
         _js="submit_extras",
         inputs=[
             dummy_component,
+            dummy_component,
             tab_index,
             extras_image,
             image_batch,
