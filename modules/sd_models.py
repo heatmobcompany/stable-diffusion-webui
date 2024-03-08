@@ -9,6 +9,9 @@ import safetensors.torch
 from omegaconf import OmegaConf, ListConfig
 from os import mkdir
 from urllib import request
+from helper.v2a_server import post_v2a
+from helper import hm
+from helper.hm import get_server_info, server_infos
 import ldm.modules.midas as midas
 
 from ldm.util import instantiate_from_config
@@ -18,6 +21,8 @@ from modules.timer import Timer
 from modules.shared import opts
 import tomesd
 import numpy as np
+from helper.logging import Logger
+logger = Logger("SDModels")
 
 model_dir = "Stable-diffusion"
 model_path = os.path.abspath(os.path.join(paths.models_path, model_dir))
@@ -161,7 +166,7 @@ def list_models():
 
         shared.opts.data['sd_model_checkpoint'] = checkpoint_info.title
     elif cmd_ckpt is not None and cmd_ckpt != shared.default_sd_model_file:
-        print(f"Checkpoint in --ckpt argument not found (Possible it was moved to {model_path}: {cmd_ckpt}", file=sys.stderr)
+        logger.info(f"Checkpoint in --ckpt argument not found (Possible it was moved to {model_path}: {cmd_ckpt}", file=sys.stderr)
 
     for filename in model_list:
         checkpoint_info = CheckpointInfo(filename)
@@ -226,7 +231,7 @@ def select_checkpoint():
 
     checkpoint_info = next(iter(checkpoints_list.values()))
     if model_checkpoint is not None:
-        print(f"Checkpoint {model_checkpoint} not found; loading fallback {checkpoint_info.title}", file=sys.stderr)
+        logger.info(f"Checkpoint {model_checkpoint} not found; loading fallback {checkpoint_info.title}", file=sys.stderr)
 
     return checkpoint_info
 
@@ -310,7 +315,7 @@ def read_state_dict(checkpoint_file, print_global_state=False, map_location=None
         pl_sd = torch.load(checkpoint_file, map_location=map_location or shared.weight_load_location)
 
     if print_global_state and "global_step" in pl_sd:
-        print(f"Global Step: {pl_sd['global_step']}")
+        logger.info(f"Global Step: {pl_sd['global_step']}")
 
     sd = get_state_dict_from_checkpoint(pl_sd)
     return sd
@@ -322,12 +327,11 @@ def get_checkpoint_state_dict(checkpoint_info: CheckpointInfo, timer):
 
     if checkpoint_info in checkpoints_loaded:
         # use checkpoint cache
-        print(f"Loading weights [{sd_model_hash}] from cache")
+        logger.info(f"Loading weights [{sd_model_hash}] from cache")
         # move to end as latest
         checkpoints_loaded.move_to_end(checkpoint_info)
-        return checkpoints_loaded[checkpoint_info]
 
-    print(f"Loading weights [{sd_model_hash}] from {checkpoint_info.filename}")
+    logger.info(f"Loading weights [{sd_model_hash}] from {checkpoint_info.filename}")
     res = read_state_dict(checkpoint_info.filename)
     timer.record("load weights from disk")
 
@@ -510,9 +514,9 @@ def enable_midas_autodownload():
             if not os.path.exists(midas_path):
                 mkdir(midas_path)
 
-            print(f"Downloading midas model weights for {model_type} to {path}")
+            logger.info(f"Downloading midas model weights for {model_type} to {path}")
             request.urlretrieve(midas_urls[model_type], path)
-            print(f"{model_type} downloaded")
+            logger.info(f"{model_type} downloaded")
 
         return midas.api.load_model_inner(model_type)
 
@@ -622,8 +626,8 @@ class SdModelData:
 
                 except Exception as e:
                     errors.display(e, "loading stable diffusion model", full_traceback=True)
-                    print("", file=sys.stderr)
-                    print("Stable diffusion model failed to load", file=sys.stderr)
+                    # logger.error("", str(e))
+                    logger.error("Stable diffusion model failed to load:", str(e))
                     self.sd_model = None
 
         return self.sd_model
@@ -715,7 +719,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
     timer.record("load config")
 
-    print(f"Creating model from config: {checkpoint_config}")
+    logger.info(f"Creating model from config: {checkpoint_config}")
 
     sd_model = None
     try:
@@ -727,7 +731,7 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
         errors.display(e, "creating model quickly", full_traceback=True)
 
     if sd_model is None:
-        print('Failed to create model quickly; will retry using slow method.', file=sys.stderr)
+        logger.error('Failed to create model quickly; will retry using slow method.', file=sys.stderr)
 
         with sd_disable_initialization.InitializeOnMeta():
             sd_model = instantiate_from_config(sd_config.model)
@@ -773,7 +777,11 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
     timer.record("calculate empty prompt")
 
-    print(f"Model loaded in {timer.summary()}.")
+    logger.info(f"Model loaded in {timer.summary()}.")
+    
+    servers = server_infos if server_infos else get_server_info()
+    for server in servers:
+        post_v2a(server["id"], 'Model_loaded: ' + checkpoint_info.title)
 
     return sd_model
 
@@ -880,7 +888,7 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
     try:
         load_model_weights(sd_model, checkpoint_info, state_dict, timer)
     except Exception:
-        print("Failed to load checkpoint, restoring previous")
+        logger.error("Failed to load checkpoint, restoring previous")
         load_model_weights(sd_model, current_checkpoint_info, None, timer)
         raise
     finally:
@@ -894,7 +902,7 @@ def reload_model_weights(sd_model=None, info=None, forced_reload=False):
         script_callbacks.model_loaded_callback(sd_model)
         timer.record("script callbacks")
 
-    print(f"Weights loaded in {timer.summary()}.")
+    logger.info(f"Weights loaded in {timer.summary()}.")
 
     model_data.set_sd_model(sd_model)
     sd_unet.apply_unet()

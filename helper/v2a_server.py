@@ -1,6 +1,6 @@
-import threading
-import time
 import requests
+from helper.logging import Logger
+logger = Logger("V2A")
 
 BASE_API_URL = 'https://beta-api.v2a.ai'
 WEB_API_URL = 'https://web-api.v2a.ai'
@@ -15,9 +15,9 @@ def post_v2a(name, log):
     try:
         response = requests.post(url, json=data)
         response.raise_for_status()
-        print('Post v2a success: ', name, log)
+        logger.info('Post v2a success: {} {}', name, log)
     except Exception as e:
-        print('Post v2a fail: ', name, log)
+        logger.error('Post v2a fail: {} {}', name, log)
         
 def get_model_info(name):
     url = f'{BASE_API_URL}/sdstyle/getsimple?name={name}'
@@ -25,7 +25,7 @@ def get_model_info(name):
         response = requests.request("GET", url)
         return response.json()
     except Exception as e:
-        print(f'Get model info fail: {e}')
+        logger.error(f'Get model info fail: {e}')
         return None
 
 def get_user_info(token):
@@ -37,16 +37,5 @@ def get_user_info(token):
         user_info = response.json()
         return user_info
     except Exception as e:
-        print(f'Get user info fail: {e}')
+        logger.error(f'Get user info fail: {e}')
         return None
-
-class HeartbeatThread(threading.Thread):
-    def __init__(self, name):
-        threading.Thread.__init__(self)
-        self._stop_event = threading.Event(); self.name = name; self.count = 0
-    def stop(self):
-        self._stop_event.set()
-    def run(self):
-        while not self._stop_event.is_set():
-            time.sleep(20); self.count += 1
-            post_v2a(self.name, 'Heartbeat, count = ' + str(self.count))
