@@ -424,7 +424,15 @@ options_templates.update(options_section(('sd', "Stable Diffusion"), {
     # "sd_model_checkpoint": OptionInfo(None, "Model checkpoint", gr.Textbox, lambda: { "interactive": False, "visible": False}),
     "sd_model_checkpoint": OptionInfo(None, "Stable Diffusion checkpoint", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_cache": OptionInfo(0, "Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
+    "sd_checkpoint_cache_items": OptionInfo(
+        "cyberrealistic_v40-inpainting.safetensors",
+        "Checkpoint names to cache in RAM",
+        gr.Textbox, lambda: { "interactive": False, "visible": True}),
     "sd_vae_checkpoint_cache": OptionInfo(0, "VAE Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
+    "sd_vae_checkpoint_cache_items": OptionInfo(
+        "vae-ft-mse-840000-ema-pruned.safetensors",
+        "VAE Checkpoint names to cache in RAM",
+        gr.Textbox, lambda: { "interactive": False, "visible": True}),
     "sd_vae": OptionInfo("Automatic", "SD VAE", gr.Dropdown, lambda: {"choices": shared_items.sd_vae_items()}, refresh=shared_items.refresh_vae_list).info("choose VAE model: Automatic = use one with same filename as checkpoint; None = use VAE from checkpoint"),
     "sd_vae_as_default": OptionInfo(True, "Ignore selected VAE for stable diffusion checkpoints that have their own .vae.pt next to them"),
     "sd_unet": OptionInfo("Automatic", "SD Unet", gr.Dropdown, lambda: {"choices": shared_items.sd_unet_items()}, refresh=shared_items.refresh_unet_list).info("choose Unet model: Automatic = use one with same filename as checkpoint; None = use Unet from checkpoint"),
