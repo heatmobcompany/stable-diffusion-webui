@@ -3,8 +3,6 @@ import collections
 from modules import paths, shared, devices, script_callbacks, sd_models
 import glob
 from copy import deepcopy
-from helper.logging import Logger
-logger = Logger("SDVAE")
 
 
 vae_path = os.path.abspath(os.path.join(paths.models_path, "VAE"))
@@ -128,11 +126,7 @@ def load_vae(model, vae_file=None, vae_source="from unknown source"):
     global vae_dict, loaded_vae_file
     # save_settings = False
 
-    cache_enabled = False
-    for i in shared.opts.sd_vae_checkpoint_cache_items.split(","):
-        if i in vae_file:
-            cache_enabled = True
-            break
+    cache_enabled = shared.opts.sd_vae_checkpoint_cache > 0
 
     if vae_file:
         if cache_enabled and vae_file in checkpoints_loaded:
@@ -149,14 +143,13 @@ def load_vae(model, vae_file=None, vae_source="from unknown source"):
             _load_vae_dict(model, vae_dict_1)
 
             if cache_enabled:
-                logger.warning(f"Cached VAE weights {vae_source}: {vae_file}")
                 # cache newly loaded vae
                 checkpoints_loaded[vae_file] = vae_dict_1.copy()
 
         # clean up cache if limit is reached
-        # if cache_enabled:
-        #     while len(checkpoints_loaded) > shared.opts.sd_vae_checkpoint_cache + 1: # we need to count the current model
-        #         checkpoints_loaded.popitem(last=False)  # LRU
+        if cache_enabled:
+            while len(checkpoints_loaded) > shared.opts.sd_vae_checkpoint_cache + 1: # we need to count the current model
+                checkpoints_loaded.popitem(last=False)  # LRU
 
         # If vae used is not in dict, update it
         # It will be removed on refresh though

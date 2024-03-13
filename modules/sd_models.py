@@ -313,16 +313,10 @@ def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer
     model.load_state_dict(state_dict, strict=False)
     del state_dict
     timer.record("apply weights to model")
-    
-    is_cache = False
-    for i in shared.opts.sd_checkpoint_cache_items.split(","):
-        if i in checkpoint_info.filename:
-            is_cache = True
-            break
-    if is_cache and checkpoint_info not in checkpoints_loaded:
+
+    if shared.opts.sd_checkpoint_cache > 0:
         # cache newly loaded model
         checkpoints_loaded[checkpoint_info] = model.state_dict().copy()
-        logger.warning(f"Cached checkpoint {checkpoint_info.filename}")
 
     if shared.cmd_opts.opt_channelslast:
         model.to(memory_format=torch.channels_last)
@@ -353,8 +347,8 @@ def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer
     timer.record("apply dtype to VAE")
 
     # clean up cache if limit is reached
-    # while len(checkpoints_loaded) > shared.opts.sd_checkpoint_cache:
-    #     checkpoints_loaded.popitem(last=False)
+    while len(checkpoints_loaded) > shared.opts.sd_checkpoint_cache:
+        checkpoints_loaded.popitem(last=False)
 
     model.sd_model_hash = sd_model_hash
     model.sd_model_checkpoint = checkpoint_info.filename
