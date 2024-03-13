@@ -130,7 +130,7 @@ def load_vae(model, vae_file=None, vae_source="from unknown source"):
 
     cache_enabled = False
     for i in shared.opts.sd_vae_checkpoint_cache_items.split(","):
-        if i in vae_file:
+        if i in str(vae_file):
             cache_enabled = True
             break
 

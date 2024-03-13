@@ -316,7 +316,7 @@ def load_model_weights(model, checkpoint_info: CheckpointInfo, state_dict, timer
     
     is_cache = False
     for i in shared.opts.sd_checkpoint_cache_items.split(","):
-        if i in checkpoint_info.filename:
+        if i in str(checkpoint_info.filename):
             is_cache = True
             break
     if is_cache and checkpoint_info not in checkpoints_loaded:
