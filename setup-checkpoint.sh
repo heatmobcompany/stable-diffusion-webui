@@ -28,8 +28,8 @@ downloadModels() {
         downloadModel  $file $link
     fi
     if [[ $group == *"RevAnimated"* || $group == "all" ]]; then
-        file=revAnimated_v11.safetensors
-        link=https://huggingface.co/ckpt/rev-animated/resolve/main/revAnimated_v11.safetensors
+        file=revAnimated_v121.safetensors
+        link=https://huggingface.co/ckpt/rev-animated/resolve/main/revAnimated_v121.safetensors
         downloadModel  $file $link
     fi
     if [[ $group == *"Meinamix"* || $group == "all" ]]; then
