@@ -571,8 +571,9 @@ class Api:
                         p.ad_controlnet = ad_controlnet
                     except Exception as e:
                         logger.warning("No ad_enable in request")
+                    shared.state.adetail_task_count = 0
                     if ad_enable:
-                        shared.state.adetail_task_count = batch_size
+                        shared.state.adetail_task_count += batch_size
                     task_time = progress.start_task(task_id)
                     if not task_time:
                         raise Exception(f"Task {task_id} has been cancelled")
@@ -670,7 +671,9 @@ class Api:
                     except Exception as e:
                         logger.warning("No ad_enable in request")
                     if ad_enable:
-                        shared.state.adetail_task_count = batch_size
+                        shared.state.adetail_task_count += batch_size
+                    if smooth_border:
+                        shared.state.adetail_task_count += 1
                     task_time = progress.start_task(task_id)
                     if not task_time:
                         raise Exception(f"Task {task_id} has been cancelled")
@@ -682,6 +685,9 @@ class Api:
                         processed = process_images(p)
                     if smooth_border:
                         logger.info(f"Smooth border: {smooth_border}")
+                        shared.state.adetail_task_no += 1
+                        shared.state.adetail_subtask_no = 1
+                        shared.state.adetail_subtask_count = 1
                         for script in p.scripts.scripts:
                             if script.name == "adetailer":
                                 script_args[script.args_from] = False
