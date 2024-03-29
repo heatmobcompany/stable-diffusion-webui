@@ -285,10 +285,13 @@ class Api:
             except HTTPException as e:
                 logger.error("text2imgtask HTTPException: {}", e.detail)
                 progress.save_failure_result(task_id, e.detail)
+                raise e
             except Exception as e:
                 logger.error("text2imgtask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
-            progress.finish_task(task_id)
+                raise e
+            finally:
+                progress.finish_task(task_id)
 
         def img2imgtask(img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, task_id):
             progress.add_task_to_queue(task_id)
@@ -297,10 +300,13 @@ class Api:
             except HTTPException as e:
                 logger.error("img2imgtask HTTPException: {}", e.detail)
                 progress.save_failure_result(task_id, e.detail)
+                raise e
             except Exception as e:
                 logger.error("img2imgtask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
-            progress.finish_task(task_id)
+                raise e
+            finally:
+                progress.finish_task(task_id)
         
         def extrasingletask(req: models.ExtrasSingleImageRequest, task_id):
             progress.add_task_to_queue(task_id)
@@ -309,10 +315,13 @@ class Api:
             except HTTPException as e:
                 logger.error("extrasingletask HTTPException:", e.detail)
                 progress.save_failure_result(task_id, e.detail)
+                raise e
             except Exception as e:
                 logger.error("extrasingletask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
-            progress.finish_task(task_id)
+                raise e
+            finally:
+                progress.finish_task(task_id)
 
         def extrabatchtask(req: models.ExtrasBatchImagesRequest, task_id):
             progress.add_task_to_queue(task_id)
@@ -321,10 +330,13 @@ class Api:
             except HTTPException as e:
                 logger.error("extrabatchtask HTTPException:", e.detail)
                 progress.save_failure_result(task_id, e.detail)
+                raise e
             except Exception as e:
                 logger.error("extrabatchtask Exception:", e)
                 progress.save_failure_result(task_id, str(e))
-            progress.finish_task(task_id)
+                raise e
+            finally:
+                progress.finish_task(task_id)
 
 
         @app.post("/sdapi/v2/txt2img")
@@ -650,6 +662,7 @@ class Api:
         logger.info('img2imgapi wait')
         t = time.time()
         processed = None
+        processed2 = None
         exception = None
         with QueueLock(sd_queue_lock, name=task_id, pri=pri):
             with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p:
@@ -693,7 +706,7 @@ class Api:
                                 script_args[script.args_from] = False
                             if script.name == "controlnet":
                                 for i in range(script.args_from, script.args_to):
-                                    if not script_args[i]["module"] or "canny" not in script_args[i]["module"]:
+                                    if isinstance(script_args[i], dict) and script_args[i]["module"] != "canny":
                                         script_args[i]["enabled"] = False
 
                         p.init_images = processed.imagesdata
@@ -707,6 +720,7 @@ class Api:
                             processed2 = process_images(p)
                 except Exception as e:
                     exception = e
+                    raise e
                 finally:
                     if smooth_border and processed2:
                         progress.save_images_result(task_id, processed2.imagespath, processed.js())
