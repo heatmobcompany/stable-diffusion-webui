@@ -718,7 +718,7 @@ class Api:
                     raise e
                 finally:
                     if refine_output and processed2:
-                        progress.save_images_result(task_id, processed2.imagespath + processed.imagespath, processed2.js() + ";" + processed.js())
+                        progress.save_images_result(task_id, processed2.imagespath, processed.js())
                     elif processed:
                         progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
