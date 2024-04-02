@@ -617,7 +617,7 @@ class Api:
         mask = img2imgreq.mask
         auto_mask = img2imgreq.auto_mask
         boxed_mask = img2imgreq.boxed_mask
-        smooth_border = img2imgreq.smooth_border
+        refine_output = img2imgreq.refine_output
         if mask:
             mask = decode_base64_to_image(mask)
             if not auto_mask:
@@ -649,7 +649,7 @@ class Api:
         args.pop('alwayson_scripts', None)
         args.pop('auto_mask', None)
         args.pop('boxed_mask', None)
-        args.pop('smooth_border', None)
+        args.pop('refine_output', None)
 
         script_args = self.init_script_args(img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
 
@@ -670,8 +670,6 @@ class Api:
                 p.scripts = script_runner
                 p.outpath_grids = opts.outdir_img2img_grids
                 p.outpath_samples = opts.outdir_img2img_samples
-                if mask and img2imgreq.mask_blur:
-                    p.extra_generation_params["Mask blur"] = img2imgreq.mask_blur
 
                 try:
                     logger.info('img2imgapi start in {:.3f} seconds'.format(time.time() - t));t = time.time()
@@ -685,7 +683,7 @@ class Api:
                         logger.warning("No ad_enable in request")
                     if ad_enable:
                         shared.state.adetail_task_count += batch_size
-                    if smooth_border:
+                    if refine_output:
                         shared.state.adetail_task_count += 1
                     task_time = progress.start_task(task_id)
                     if not task_time:
@@ -696,34 +694,31 @@ class Api:
                     else:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
-                    if smooth_border:
-                        logger.info(f"Smooth border: {smooth_border}")
-                        shared.state.adetail_task_no += 1
-                        shared.state.adetail_subtask_no = 1
-                        shared.state.adetail_subtask_count = 1
-                        for script in p.scripts.scripts:
-                            if script.name == "adetailer":
-                                script_args[script.args_from] = False
-                            if script.name == "controlnet":
-                                for i in range(script.args_from, script.args_to):
-                                    if isinstance(script_args[i], dict) and script_args[i]["module"] != "canny":
-                                        script_args[i]["enabled"] = False
+                    if refine_output:
+                        with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p2:
+                            logger.info(f"Refine output: {refine_output}")
+                            shared.state.adetail_task_no += 1
+                            shared.state.adetail_subtask_no = 1
+                            shared.state.adetail_subtask_count = 1
 
-                        p.init_images = processed.imagesdata
-                        p.image_mask = Image.fromarray(self.extract_outer_inner_border(np.array(mask), smooth_border[0], smooth_border[1] if len(smooth_border) > 1 else smooth_border[0]))
-                        p.inpainting_mask_invert = False # Inpaint mask
-                        if selectable_scripts is not None:
-                            p.script_args = script_args
-                            processed2 = scripts.scripts_img2img.run(p, *p.script_args)
-                        else:
-                            p.script_args = tuple(script_args)
-                            processed2 = process_images(p)
+                            p2.init_images = processed.imagesdata
+                            p2.scripts = script_runner
+                            p2.outpath_grids = opts.outdir_img2img_grids
+                            p2.outpath_samples = opts.outdir_img2img_samples
+                            for key in refine_output.keys():
+                                setattr(p2, key, refine_output[key])
+                            if selectable_scripts is not None:
+                                p2.script_args = self.default_script_arg_img2img.copy()
+                                processed2 = scripts.scripts_img2img.run(p2, *p2.script_args)
+                            else:
+                                p2.script_args = tuple(self.default_script_arg_img2img.copy())
+                                processed2 = process_images(p2)
                 except Exception as e:
                     exception = e
                     raise e
                 finally:
-                    if smooth_border and processed2:
-                        progress.save_images_result(task_id, processed2.imagespath, processed.js())
+                    if refine_output and processed2:
+                        progress.save_images_result(task_id, processed2.imagespath + processed.imagespath, processed2.js() + ";" + processed.js())
                     elif processed:
                         progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
