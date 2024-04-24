@@ -67,11 +67,12 @@ def setUpscalers(req: dict):
 
 
 def image_url_to_base64(image_url):
-    logger.info("Get image from url: {}", image_url)
+    t = time.time()
     try:
         response = requests.get(image_url)
         response.raise_for_status()
         base64_data = base64.b64encode(response.content).decode('utf-8')
+        logger.info(f"Get image from: {image_url} in {time.time() - t} seconds")
         return base64_data
     except Exception as e:
         logger.error("Error", e)
