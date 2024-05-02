@@ -719,7 +719,10 @@ class Api:
                     raise e
                 finally:
                     if refine_output and processed2:
-                        progress.save_images_result(task_id, processed2.imagespath, processed.js())
+                        infotext = json.loads(processed.js())
+                        infotext2 = json.loads(processed2.js())
+                        infotext["refine_output"] = infotext2
+                        progress.save_images_result(task_id, processed2.imagespath, json.dumps(infotext))
                     elif processed:
                         progress.save_images_result(task_id, processed.imagespath, processed.js())
                     progress.finish_task(task_id)
