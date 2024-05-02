@@ -467,7 +467,6 @@ class Processed:
             "extra_generation_params": self.extra_generation_params,
             "index_of_first_image": self.index_of_first_image,
             "infotexts": self.infotexts,
-            "infotexts_2": [self.infotext2(self, False), self.infotext2(self, True)],
             "styles": self.styles,
             "job_timestamp": self.job_timestamp,
             "clip_skip": self.clip_skip,
@@ -478,10 +477,6 @@ class Processed:
 
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
-
-    
-    def infotext2(self, p: StableDiffusionProcessing, is_simple):
-        return create_infotext_2(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=0, iteration=0 // self.batch_size, is_simple=is_simple)
 
     def get_token_merging_ratio(self, for_hr=False):
         return self.token_merging_ratio_hr if for_hr else self.token_merging_ratio
@@ -678,76 +673,6 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
 
     return f"{prompt_text}{negative_prompt_text}\n{generation_params_text}".strip()
 
-
-def create_infotext_2(p, all_prompts, all_seeds, all_subseeds, comments=None, iteration=0, position_in_batch=0, use_main_prompt=False, index=None, all_negative_prompts=None, is_simple=False):
-    if index is None:
-        index = position_in_batch + iteration * p.batch_size
-
-    if all_negative_prompts is None:
-        all_negative_prompts = p.all_negative_prompts
-
-    clip_skip = getattr(p, 'clip_skip', opts.CLIP_stop_at_last_layers)
-    enable_hr = getattr(p, 'enable_hr', False)
-    token_merging_ratio = p.get_token_merging_ratio()
-    token_merging_ratio_hr = p.get_token_merging_ratio(for_hr=True)
-
-    uses_ensd = opts.eta_noise_seed_delta != 0
-    if uses_ensd:
-        uses_ensd = sd_samplers_common.is_sampler_using_eta_noise_seed_delta(p)
-
-    tiling = p.tiling
-    resize_mode = p.resize_mode if hasattr(p, "resize_mode") else None
-    mask_blur_x = p.mask_blur_x if hasattr(p, "mask_blur_x") else None
-    mask_blur_y = p.mask_blur_y if hasattr(p, "mask_blur_y") else None
-    inpainting_mask_invert = p.inpainting_mask_invert if hasattr(p, "inpainting_mask_invert") else None
-    inpainting_fill = p.inpainting_fill if hasattr(p, "inpainting_fill") else None
-    inpaint_full_res = p.inpaint_full_res if hasattr(p, "inpaint_full_res") else None
-    inpaint_full_res_padding = p.inpaint_full_res_padding if hasattr(p, "inpaint_full_res_padding") else None
-    img2img_params = {
-        "Tiling" : tiling,
-        "Resize mode": resize_mode,
-        "Mask blur" : f"{mask_blur_x}x{mask_blur_y}",
-        "Mask mode" : inpainting_mask_invert,
-        "Masked content" : inpainting_fill,
-        "Inpaint area" : inpaint_full_res,
-        "Only masked padding" : inpaint_full_res_padding,
-    }
-
-    generation_params = {
-        "Steps": p.steps,
-        "Sampler": p.sampler_name,
-        "CFG scale": p.cfg_scale,
-        "Image CFG scale": getattr(p, 'image_cfg_scale', None),
-        "Seed": p.all_seeds[0] if use_main_prompt else all_seeds[index],
-        "Face restoration": (opts.face_restoration_model if p.restore_faces else None),
-        "Size": f"{p.width}x{p.height}",
-        "Model hash": getattr(p, 'sd_model_hash', None if not opts.add_model_hash_to_info or not shared.sd_model.sd_model_hash else shared.sd_model.sd_model_hash),
-        "Model": (None if not opts.add_model_name_to_info else shared.sd_model.sd_checkpoint_info.name_for_extra),
-        "Variation seed": (None if p.subseed_strength == 0 else (p.all_subseeds[0] if use_main_prompt else all_subseeds[index])),
-        "Variation seed strength": (None if p.subseed_strength == 0 else p.subseed_strength),
-        "Seed resize from": (None if p.seed_resize_from_w <= 0 or p.seed_resize_from_h <= 0 else f"{p.seed_resize_from_w}x{p.seed_resize_from_h}"),
-        "Denoising strength": getattr(p, 'denoising_strength', None),
-        "Conditional mask weight": getattr(p, "inpainting_mask_weight", shared.opts.inpainting_mask_weight) if p.is_using_inpainting_conditioning else None,
-        "Clip skip": None if clip_skip <= 1 else clip_skip,
-        "ENSD": opts.eta_noise_seed_delta if uses_ensd else None,
-        "Token merging ratio": None if token_merging_ratio == 0 else token_merging_ratio,
-        "Token merging ratio hr": None if not enable_hr or token_merging_ratio_hr == 0 else token_merging_ratio_hr,
-        "Init image hash": getattr(p, 'init_img_hash', None),
-        "RNG": opts.randn_source if opts.randn_source != "GPU" else None,
-        "NGMS": None if p.s_min_uncond == 0 else p.s_min_uncond,
-        "img2img" : None if is_simple or not inpaint_full_res_padding else img2img_params,
-        "extras": None if is_simple or not p.extra_generation_params else p.extra_generation_params,
-        "Version": program_version() if opts.add_version_to_infotext else None,
-        "User": p.user if opts.add_user_name_to_info else None,
-    }
-    
-    generation_params_text = ", ".join([k if k == v else f'{k}: {generation_parameters_copypaste.quote(v)}' for k, v in generation_params.items() if v is not None])
-
-    prompt_text = p.prompt if use_main_prompt else all_prompts[index]
-    negative_prompt_text = f"\nNegative prompt: {all_negative_prompts[index]}" if all_negative_prompts[index] else ""
-    negative_prompt_text = negative_prompt_text.replace(NSFW_PROMPT, '')
-
-    return f"{prompt_text}{negative_prompt_text}\n{generation_params_text}".strip()
 
 def process_images(p: StableDiffusionProcessing) -> Processed:
     if p.scripts is not None:
