@@ -15,7 +15,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from packaging import version
-from helper.v2a_server import post_v2a
+
 from helper.hm import get_server_info, server_infos
 
 import logging
@@ -429,10 +429,10 @@ def webui():
         # after initial launch, disable --autolaunch for subsequent restarts
         cmd_opts.autolaunch = False
 
-        if share_url:
-            servers = server_infos if server_infos else get_server_info()
-            for server in servers:
-                post_v2a(server["id"], "share_url: {}".format(share_url))
+        # if share_url:
+        #     servers = server_infos if server_infos else get_server_info()
+        #     for server in servers:
+        #         post_v2a(server["id"], "share_url: {}".format(share_url))
 
 
         startup_timer.record("gradio launch")

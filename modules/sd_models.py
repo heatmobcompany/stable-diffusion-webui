@@ -10,7 +10,6 @@ import safetensors.torch
 from omegaconf import OmegaConf
 from os import mkdir
 from urllib import request
-from helper.v2a_server import post_v2a
 from helper import hm
 from helper.hm import get_server_info, server_infos
 import ldm.modules.midas as midas
@@ -559,9 +558,9 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
 
     logger.info(f"Model loaded in {timer.summary()}.")
     
-    servers = server_infos if server_infos else get_server_info()
-    for server in servers:
-        post_v2a(server["id"], 'Model_loaded: ' + checkpoint_info.title)
+    # servers = server_infos if server_infos else get_server_info()
+    # for server in servers:
+    #     post_v2a(server["id"], 'Model_loaded: ' + checkpoint_info.title)
 
     return sd_model
 
