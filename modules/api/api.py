@@ -592,7 +592,7 @@ class Api:
                         ad_enable = txt2imgreq.alwayson_scripts["adetailer"]["args"][0] == True or txt2imgreq.alwayson_scripts["adetailer"]["args"][0]["ad_model"] != "None"
                         p.ad_controlnet = ad_controlnet
                     except Exception as e:
-                        logger.warning("No ad_enable in request")
+                        logger.debug("No ad_enable in request")
                     shared.state.adetail_task_count = 0
                     if ad_enable:
                         shared.state.adetail_task_count += batch_size
@@ -628,6 +628,7 @@ class Api:
         auto_mask = img2imgreq.auto_mask
         boxed_mask = img2imgreq.boxed_mask
         refine_output = img2imgreq.refine_output
+        alwayson_scripts = img2imgreq.alwayson_scripts
         if mask:
             mask = decode_base64_to_image(mask)
             if not auto_mask:
@@ -690,7 +691,7 @@ class Api:
                         ad_enable = img2imgreq.alwayson_scripts["adetailer"]["args"][0] == True or img2imgreq.alwayson_scripts["adetailer"]["args"][0]["ad_model"] != "None"
                         p.ad_controlnet = ad_controlnet
                     except Exception as e:
-                        logger.warning("No ad_enable in request")
+                        logger.debug("No ad_enable in request")
                     if ad_enable:
                         shared.state.adetail_task_count += batch_size
                     if refine_output:
@@ -705,8 +706,15 @@ class Api:
                         p.script_args = tuple(script_args) # Need to pass args as tuple here
                         processed = process_images(p)
                     if refine_output:
+                        if refine_output.get("alwayson_scripts", {}).get("controlnet", {}).get("args", []) and alwayson_scripts["controlnet"]["args"]:
+                            refine_output["alwayson_scripts"]["controlnet"]["args"][0]["input_image"] = alwayson_scripts["controlnet"]["args"][0]["input_image"]
+                        shared.state.adetail_task_count += 1
+                        refine_output_req = models.StableDiffusionImg2ImgProcessingAPI()
+                        for key in refine_output.keys():
+                            setattr(refine_output_req, key, refine_output[key])
+                        script_args = self.init_script_args(refine_output_req, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
                         with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p2:
-                            logger.info(f"Refine output: {refine_output}")
+                            logger.debug(f"Refine output: {refine_output}")
                             shared.state.adetail_task_no += 1
                             shared.state.adetail_subtask_no = 1
                             shared.state.adetail_subtask_count = 1
@@ -718,10 +726,10 @@ class Api:
                             for key in refine_output.keys():
                                 setattr(p2, key, refine_output[key])
                             if selectable_scripts is not None:
-                                p2.script_args = self.default_script_arg_img2img.copy()
+                                p2.script_args = script_args
                                 processed2 = scripts.scripts_img2img.run(p2, *p2.script_args)
                             else:
-                                p2.script_args = tuple(self.default_script_arg_img2img.copy())
+                                p2.script_args = tuple(script_args)
                                 processed2 = process_images(p2)
                 except Exception as e:
                     exception = e
