@@ -40,6 +40,7 @@ import piexif
 import piexif.helper
 from contextlib import closing
 import requests
+import psutil
 
 from helper.logging import Logger
 logger = Logger("API")
@@ -171,15 +172,21 @@ def api_middleware(app: FastAPI):
     except Exception:
         pass
 
+    def measure_ram_usage():
+        process = psutil.Process()
+        return "{:,.3f}".format(process.memory_info().rss / (1024 * 1024))
+
     @app.middleware("http")
     async def log_and_time(req: Request, call_next):
         ts = time.time()
+        start_ram = measure_ram_usage()
         res: Response = await call_next(req)
         duration = str(round(time.time() - ts, 4))
+        finished_ram = measure_ram_usage()
         res.headers["X-Process-Time"] = duration
         endpoint = req.scope.get('path', 'err')
         if shared.cmd_opts.api_log and endpoint.startswith('/sdapi'):
-            logger.info('API {t} {code} {prot}/{ver} {method} {endpoint} {cli} {duration}'.format(
+            logger.info('API {t} {code} {prot}/{ver} {method} {endpoint} {cli} {start_ram}/{finished_ram} {duration}'.format(
                 t=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),
                 code=res.status_code,
                 ver=req.scope.get('http_version', '0.0'),
@@ -188,6 +195,8 @@ def api_middleware(app: FastAPI):
                 method=req.scope.get('method', 'err'),
                 endpoint=endpoint,
                 duration=duration,
+                start_ram=start_ram,
+                finished_ram=finished_ram,
             ))
         return res
 
