@@ -136,18 +136,18 @@ downloadModels() {
         file=sdvn1Real_origin.safetensors
         downloadModel  $file
     fi
-    if [[ $group == *"AnimeCivitaiv1"* || $group == "all" ]]; then
-        file=KizukiAnimeCivitaiv1.safetensors
-        downloadModel  $file
-    fi
-    if [[ $group == *"AnimeCivitaiv2"* || $group == "all" ]]; then
-        file=KizukiAnimeCivitaiv2.safetensors
-        downloadModel  $file
-    fi
-    if [[ $group == *"AnimeCivitaiv3"* || $group == "all" ]]; then
-        file=KizukiAnimeCivitaiv3.safetensors
-        downloadModel  $file
-    fi
+    # if [[ $group == *"AnimeCivitaiv1"* || $group == "all" ]]; then
+    #     file=KizukiAnimeCivitaiv1.safetensors
+    #     downloadModel  $file
+    # fi
+    # if [[ $group == *"AnimeCivitaiv2"* || $group == "all" ]]; then
+    #     file=KizukiAnimeCivitaiv2.safetensors
+    #     downloadModel  $file
+    # fi
+    # if [[ $group == *"AnimeCivitaiv3"* || $group == "all" ]]; then
+    #     file=KizukiAnimeCivitaiv3.safetensors
+    #     downloadModel  $file
+    # fi
     if [[ $group == *"flat2DAnimerge"* || $group == "all" ]]; then
         file=flat2DAnimerge_v30.safetensors
         downloadModel  $file
