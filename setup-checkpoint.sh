@@ -156,6 +156,14 @@ downloadModels() {
         file=cyberrealistic_v40-inpainting.safetensors
         downloadModel  $file
     fi
+    if [[ $group == *"RealisticVisionV60B1"* || $group == "all" ]]; then
+        file=realisticVisionV60B1_v60B1VAE.safetensors
+        downloadModel  $file
+    fi
+    if [[ $group == *"RealisticVisionV60B1Inpaint"* || $group == "all" ]]; then
+        file=realisticVisionV60B1_v60B1InpaintingVAE.safetensors
+        downloadModel  $file
+    fi
 }
 
 downloadModels $1
