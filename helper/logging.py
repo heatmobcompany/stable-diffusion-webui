@@ -47,6 +47,9 @@ class Logger:
     def debug(self, message, *args):
         self.logger.debug(message.format(*args) if args else message)
 
+    def warn(self, message, *args):
+        self.logger.warning(message.format(*args) if args else message)
+
     def warning(self, message, *args):
         self.logger.warning(message.format(*args) if args else message)
 
