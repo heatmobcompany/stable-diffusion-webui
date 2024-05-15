@@ -35,10 +35,12 @@ class Logger:
             self.logger.addHandler(stdout_handler)
             
             if args.log_file:
-                file_handler = RotatingFileHandler(args.log_file, maxBytes=2e6)
+                file_handler = RotatingFileHandler(args.log_file, maxBytes=10000000, backupCount=5)
                 file_handler.setFormatter(format_log)
                 self.logger.addHandler(file_handler)
 
+        if args.log_level:
+            level = args.log_level
         loglevel_string = level
         loglevel = getattr(logging, loglevel_string.upper(), None)
         self.level = loglevel

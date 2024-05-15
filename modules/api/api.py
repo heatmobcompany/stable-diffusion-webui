@@ -185,7 +185,7 @@ def api_middleware(app: FastAPI):
         finished_ram = measure_ram_usage()
         res.headers["X-Process-Time"] = duration
         endpoint = req.scope.get('path', 'err')
-        if shared.cmd_opts.api_log and endpoint.startswith('/sdapi'):
+        if shared.cmd_opts.api_log and not endpoint.startswith('/file='):
             logger.info('API {t} {code} {prot}/{ver} {method} {endpoint} {cli} {start_ram}/{finished_ram} {duration}'.format(
                 t=datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"),
                 code=res.status_code,
