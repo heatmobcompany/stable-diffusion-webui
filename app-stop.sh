@@ -2,6 +2,6 @@
 
 cd /workspace/sd-worker || exit
 curl http://172.17.0.1:3003/pause-worker
-sudo service sd-service restart
-docker compose down
-docker compose up -d
+if [ "$1" == "shutdown" ] || [ "$1" == "poweroff" ]; then
+  sudo poweroff
+fi

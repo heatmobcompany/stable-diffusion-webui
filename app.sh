@@ -4,6 +4,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 if [ "$1" == "stop" ]; then
     echo "Stop the app"
+    curl http://172.17.0.1:3003/pause-worker
     $SCRIPT_DIR/job_healthcheck.sh remove
     exit 0
 fi
