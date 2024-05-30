@@ -160,11 +160,11 @@ def progressapi(req: ProgressRequest):
             progress += 1 / job_count * sampling_step / sampling_steps
     else:
         if sampling_steps == 0 or adetail_subtask_count == 0:
-            print(f"Abnormal Sampling steps:{sampling_steps} or subtask count: {adetail_subtask_count}")
             progress = current_task_progress if current_task_progress is not None else 0
         else:
             if adetail_task_no == 0:
-                progress = 0.5 * sampling_step / sampling_steps
+                progress = 0.5
+                progress += 0.5 * sampling_step / sampling_steps
             else:
                 progress = 0.5
                 progress += 0.5 * (((adetail_task_no-1) + ( + ((adetail_subtask_no-1) + sampling_step / sampling_steps) / adetail_subtask_count)) / adetail_task_count)

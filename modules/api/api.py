@@ -708,7 +708,6 @@ class Api:
                     if refine_output:
                         if refine_output.get("alwayson_scripts", {}).get("controlnet", {}).get("args", []) and alwayson_scripts["controlnet"]["args"]:
                             refine_output["alwayson_scripts"]["controlnet"]["args"][0]["input_image"] = alwayson_scripts["controlnet"]["args"][0]["input_image"]
-                        shared.state.adetail_task_count += 1
                         refine_output_req = models.StableDiffusionImg2ImgProcessingAPI()
                         for key in refine_output.keys():
                             setattr(refine_output_req, key, refine_output[key])
