@@ -9,6 +9,8 @@ from modules.shared import opts
 
 import modules.shared as shared
 from modules.shared import sd_queue_lock
+from helper.logging import Logger
+logger = Logger("PROGRESS")
 
 current_task = None
 current_task_progress = None
@@ -36,37 +38,42 @@ def finish_task(id_task):
         current_task = None
 
     finished_tasks.append(id_task)
-    if len(finished_tasks) > 16:
+    while len(finished_tasks) > 16:
         finished_tasks.pop(0)
 
 
 def record_results(id_task, res):
     recorded_results.append((id_task, res))
-    if len(recorded_results) > recorded_results_limit:
+    while len(recorded_results) > recorded_results_limit:
         recorded_results.pop(0)
 
 def save_images_result(id_task, images_path, inputs_info):
     images_results[id_task] = images_path
     inputs_infos[id_task] = inputs_info
-    if len(images_results) > 16:
+    while len(images_results) > 16:
         images_results.pop(list(images_results.keys())[0])
-    if len(inputs_infos) > 16:
+    while len(inputs_infos) > 16:
         inputs_infos.pop(list(inputs_infos.keys())[0])
 
 def save_failure_result(id_task, result):
     failed_results[id_task] = result
     if id_task in pending_tasks:
         pending_tasks.pop(id_task)
-    if len(failed_results) > 16:
+    while len(failed_results) > 16:
         failed_results.pop(list(failed_results.keys())[0])
-    if len(inputs_infos) > 16:
+    while len(inputs_infos) > 16:
         failed_results.pop(list(failed_results.keys())[0])
 
 def get_tasks_info():
     ret = {}
     ret['current_task'] = current_task
+    ret['current_task_progress'] = current_task_progress
     ret['queue_tasks'] = len(pending_tasks)
     ret['finished_tasks'] = len(finished_tasks)
+    ret['images_results'] = len(images_results)
+    ret['failed_results'] = len(failed_results)
+    ret['inputs_infos'] = len(inputs_infos)
+    ret['recorded_results'] = len(recorded_results)
     return ret
 
 def get_task_info(task_id):
@@ -162,12 +169,24 @@ def progressapi(req: ProgressRequest):
         if sampling_steps == 0 or adetail_subtask_count == 0:
             progress = current_task_progress if current_task_progress is not None else 0
         else:
-            if adetail_task_no == 0:
-                progress = 0.5
-                progress += 0.5 * sampling_step / sampling_steps
+            if job_count <= 0:
+                progress = 0
+            elif job_no > job_count:
+                progress = 1
+            elif adetail_task_no == 0:
+                if job_no == 0:
+                    progress = 0.5 * sampling_step / sampling_steps
+                else:
+                    progress = 0.5
+                    progress += 0.5 * (job_no - 1) / job_count
             else:
                 progress = 0.5
-                progress += 0.5 * (((adetail_task_no-1) + ( + ((adetail_subtask_no-1) + sampling_step / sampling_steps) / adetail_subtask_count)) / adetail_task_count)
+                progress += 0.5 * (
+                    ((adetail_task_no-1) + (
+                        ((adetail_subtask_no-1) + sampling_step / sampling_steps) 
+                        / adetail_subtask_count))
+                    / adetail_task_count)
+    progress = max(progress, 0)
     progress = min(progress, 1)
 
     elapsed_since_start = time.time() - shared.state.time_start
@@ -199,7 +218,11 @@ def progressapi(req: ProgressRequest):
             live_preview = None
     else:
         live_preview = None
+    if current_task_progress is not None and progress < current_task_progress:
+        logger.error(f"Progress went backwards: {current_task_progress} -> {progress}")
+        logger.error(f"Progress: {progress} - sampling:{sampling_step}/{sampling_steps} - job:{job_no}/{job_count} - adetailJob:{adetail_task_no}/{adetail_task_count} - adetailSubJob:{adetail_subtask_no}/{adetail_subtask_count}")
     current_task_progress = progress
+    logger.debug(f"Progress: {progress} - sampling:{sampling_step}/{sampling_steps} - job:{job_no}/{job_count} - adetailJob:{adetail_task_no}/{adetail_task_count} - adetailSubJob:{adetail_subtask_no}/{adetail_subtask_count}")
 
     return ProgressResponse(active=active, queued=queued, completed=completed, failed=failed, progress=progress, eta=eta, live_preview=live_preview, id_live_preview=id_live_preview, textinfo=shared.state.textinfo if progress > 0 else "Processing...")
 
