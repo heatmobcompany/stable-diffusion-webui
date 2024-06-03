@@ -121,6 +121,7 @@ StableDiffusionImg2ImgProcessingAPI = PydanticModelGenerator(
         {"key": "ad_controlnet", "type": bool, "default": False},
         {"key": "auto_mask", "type": bool, "default": True},
         {"key": "boxed_mask", "type": bool, "default": False},
+        {"key": "watermark", "type": dict, "default": {}},
         {"key": "refine_output", "type": dict, "default": {}},
         {"key": "sampler_index", "type": str, "default": "Euler"},
         {"key": "init_images", "type": list, "default": None},

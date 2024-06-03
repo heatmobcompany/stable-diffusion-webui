@@ -86,17 +86,18 @@ def convert_1bit_to_rgb(input_image):
     return rgb_image
 
 
-def decode_base64_to_image(encoding):
+def decode_base64_to_image(encoding, keep_format=False):
     if encoding.startswith("http"):
         encoding = image_url_to_base64(encoding)
     if encoding.startswith("data:image/"):
         encoding = encoding.split(";")[1].split(",")[1]
     try:
         image = Image.open(BytesIO(base64.b64decode(encoding)))
-        if image.mode == 'RGBA':
-            image = image.convert("RGB")
-        if image.mode == '1':
-            image = convert_1bit_to_rgb(image)
+        if not keep_format:
+            if image.mode == 'RGBA':
+                image = image.convert("RGB")
+            if image.mode == '1':
+                image = convert_1bit_to_rgb(image)
         return image
     except Exception as e:
         raise HTTPException(status_code=500, detail="Invalid encoded image") from e
@@ -159,6 +160,26 @@ def encode_pil_to_base64(image):
 
     return base64.b64encode(bytes_data)
 
+def add_watermark(image_paths, watermark):
+    if not watermark:
+        return image_paths
+    top = watermark.get('top', None)
+    left = watermark.get('left', None)
+    image = watermark.get('image', None)
+    if top is None or left is None or image is None:
+        logger.error(f"Watermark parameters are not correct: top={top}, left={left}, image={image}")
+        return image_paths
+    image = decode_base64_to_image(image, True)
+    ret = []
+    for image_path in image_paths:
+        original_image = Image.open(image_path)
+        position = (left, top)
+        original_image.paste(image, position, image.convert("RGBA"))
+        base, ext = os.path.splitext(image_path)
+        new_filename = f"{base}-wtm{ext}"
+        original_image.save(new_filename)
+        ret.append(new_filename)
+    return ret
 
 def api_middleware(app: FastAPI):
     rich_available = False
@@ -627,6 +648,7 @@ class Api:
         mask = img2imgreq.mask
         auto_mask = img2imgreq.auto_mask
         boxed_mask = img2imgreq.boxed_mask
+        watermark = img2imgreq.watermark
         refine_output = img2imgreq.refine_output
         alwayson_scripts = img2imgreq.alwayson_scripts
         if mask:
@@ -660,6 +682,7 @@ class Api:
         args.pop('alwayson_scripts', None)
         args.pop('auto_mask', None)
         args.pop('boxed_mask', None)
+        args.pop('watermark', None)
         args.pop('refine_output', None)
 
         script_args = self.init_script_args(img2imgreq, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
@@ -738,9 +761,15 @@ class Api:
                         infotext = json.loads(processed.js())
                         infotext2 = json.loads(processed2.js())
                         infotext["refine_output"] = infotext2
-                        progress.save_images_result(task_id, processed2.imagespath, json.dumps(infotext))
+                        imagespath = processed2.imagespath
+                        if watermark:
+                            imagespath = add_watermark(imagespath, watermark)
+                        progress.save_images_result(task_id, imagespath, json.dumps(infotext))
                     elif processed:
-                        progress.save_images_result(task_id, processed.imagespath, processed.js())
+                        imagespath = processed.imagespath
+                        if watermark:
+                            imagespath = add_watermark(imagespath, watermark)
+                        progress.save_images_result(task_id, imagespath, processed.js())
                     progress.finish_task(task_id)
                     shared.state.end()
                     logger.info('img2imgapi done in {:.3f} seconds'.format(time.time() - t))
