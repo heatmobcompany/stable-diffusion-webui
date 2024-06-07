@@ -3,7 +3,6 @@ import html
 import time
 
 from modules.queue_lock import QueueLock
-from helper.hm import get_user_priority
 
 from modules import shared, progress, errors, devices
 from modules.shared import sd_queue_lock
@@ -31,9 +30,6 @@ def wrap_gradio_gpu_call(func, extra_outputs=None):
             id_task = None
 
         pri, name = 100, None
-        if args and type(args[1]) == str and args[1].startswith("token:"):
-            token = args[1].replace('token:', '')
-            pri, name = get_user_priority(token)
         print('wrap_gradio_gpu_call wait', pri, name, id_task)
         with QueueLock(sd_queue_lock, pri, id_task):
             shared.state.begin(job=id_task)

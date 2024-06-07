@@ -7,129 +7,14 @@ function set_theme(theme) {
     }
 }
 
-window.max_w = 1152
-window.max_h = 1152
+window.max_w = 1200
+window.max_h = 1200
 
-document.addEventListener("DOMContentLoaded", async function() {
-    await initialize();
-});
-
-function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)) }
-async function check_tk() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    let isValid = false;
-    let _s = false;
-    if (!token) {
-        window.location.href = window.topWeb
-        return
-    }
-    try {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', `${window.topApi}/account/user-info`, false);
-        xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send();
-        if (xhr.status === 200) {
-            var res = JSON.parse(xhr.responseText);
-            isValid = res?.success
-            if (res && res.data && res.data.subscription) {
-                const expirationDate = new Date(res.data.subscription.expires);
-                const currentDate = new Date();
-                _s = expirationDate > currentDate;
-                window._s = _s
-            }
-        }
-    } catch {
-        console.error('Error getting user infomation!!!')
-    }
-    if (!isValid) {
-        window.location.href = window.topWeb
-        return
-    }
-    if (!_s) {
-        var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
-        const nsfwlabel = document.querySelector('#nsfw_negative_switch > label');
-        nsfwlabel.addEventListener('click', () => {
-            if (nsfw.disabled) {
-                window.parent?.postMessage({ message: "onlySubscription", data: undefined }, "*");
-            }
-        });
-        if (nsfw) nsfw.disabled = true;
-        else console.error('Can not get NSFW checkbox')
-    } else {
-        window.max_w = 1152
-        window.max_h = 1152
-    }
-
-    const sizeIds = ["txt2img_width", "txt2img_height", "img2img_width", "img2img_height"]
-    sizeIds.forEach(item => {
-        const inputs = document.querySelectorAll(`#${item} input`);
-        inputs.forEach(input => {
-            input.setAttribute('max', window.max_w);
-        });
-    })
-
-    const sizeIds2 = ["extras_upscaling_resize_w", "extras_upscaling_resize_h"]
-    sizeIds2.forEach(item => {
-        const inputs = document.querySelectorAll(`#${item} input`);
-        inputs.forEach(input => {
-            input.setAttribute('max', 4 * window.max_w);
-        });
-    })
-}
-
-function get_model_checkpoint(style) {
-    try {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', `https://beta-api.v2a.ai/sdstyle/getsimple?name=${style}`, false);
-        xhr.setRequestHeader('Content-Type', 'application/json');
-        xhr.send();
-        if (xhr.status === 200) {
-            let res = JSON.parse(xhr.responseText);
-            let model_checkpoint =  res?.result?.file
-            if (!model_checkpoint) {
-                console.error('Empty model checkpoint')
-            }
-            return model_checkpoint
-        } else {
-            console.error('Error getting model checkpoint, code:', xhr.status)
-        }
-    } catch (err) {
-        console.error('Error getting model checkpoint', err)
-    }
-}
-
-async function initialize() {
-    window.topWeb = "https://beta.vision2art.ai"
-    window.topApi = "https://web-api.vision2art.ai"
-    window.tasks_info = {}
-    
-    // Wait until document loaded
-    while (!gradioApp().querySelector('#footer')) {
-        await delay(200);
-    }
-
-    async function handleWindowMessage(event) {
-        if (event.data && event.data.message) {
-            console.log('SD message received:', event.data);
-            if (event.data.message == "InitData") {
-                window.topWeb = event.origin
-                window.topApi = event.data.data.api
-                window.style = event.data.data.style
-                window.model_checkpoint = get_model_checkpoint(window.style)
-                await check_tk();
-            }    
-        }
-    }
-    window.addEventListener('message', handleWindowMessage);
-    window.parent?.postMessage({ message: "SdDOMLoaded", data: undefined }, "*");
-}
 
 function all_gallery_buttons() {
     var allGalleryButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnails > .thumbnail-item.thumbnail-small');
     var visibleGalleryButtons = [];
-    allGalleryButtons.forEach(function (elem) {
+    allGalleryButtons.forEach(function(elem) {
         if (elem.parentElement.offsetParent) {
             visibleGalleryButtons.push(elem);
         }
@@ -140,7 +25,7 @@ function all_gallery_buttons() {
 function selected_gallery_button() {
     var allCurrentButtons = gradioApp().querySelectorAll('[style="display: block;"].tabitem div[id$=_gallery].gradio-gallery .thumbnail-item.thumbnail-small.selected');
     var visibleCurrentButton = null;
-    allCurrentButtons.forEach(function (elem) {
+    allCurrentButtons.forEach(function(elem) {
         if (elem.parentElement.offsetParent) {
             visibleCurrentButton = elem;
         }
@@ -153,7 +38,7 @@ function selected_gallery_index() {
     var button = selected_gallery_button();
 
     var result = -1;
-    buttons.forEach(function (v, i) {
+    buttons.forEach(function(v, i) {
         if (v == button) {
             result = i;
         }
@@ -267,37 +152,13 @@ function showRestoreProgressButton(tabname, show) {
     button.style.display = show ? "flex" : "none";
 }
 
-function getUrlParams() {
-    const urlSearchParams = new URLSearchParams(window.location.search);
-    const queryParams = {};
-
-    for (const [key, value] of urlSearchParams.entries()) {
-        queryParams[key] = value;
-    }
-
-    return queryParams;
-}
-
-// Search NSFW_PROMPT in python code to update
-const NSFW_PROMPT = ",nsfw,nude,topless,nipples,nudity,pussy,penis,cum,big tits,big tit"
-function replaceAll(input, from, to) {
-    const regex = new RegExp(from, 'g');
-    const ret = input.replace(regex, to);
-    return ret;
-}
-  
 function submit() {
-    // console.log('Submit txt2img')
-    window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'txt2img_generate', button_text: 'Generate' } }, "*");
-    // checkCredit();
     showSubmitButtons('txt2img', false);
 
     var id = randomId();
     localStorage.setItem("txt2img_task_id", id);
-    window.tasks_info[id] = {}
-    window.tasks_info[id].action = "txt2img_generate"
 
-    requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function () {
+    requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function() {
         showSubmitButtons('txt2img', true);
         localStorage.removeItem("txt2img_task_id");
         showRestoreProgressButton('txt2img', false);
@@ -306,33 +167,17 @@ function submit() {
     var res = create_submit_args(arguments);
 
     res[0] = id;
-    res[1] = `token:${getUrlParams().token}`;
-    res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
-    var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
-    if (nsfw && nsfw.checked) {
-        const nsfwArray = NSFW_PROMPT.split(',')
-        for (let idx in nsfwArray) {
-            res[3] = replaceAll(res[3], nsfwArray[idx].trim(), '')
-        }
-        res[4] += NSFW_PROMPT
-    }
 
     return res;
 }
 
 function submit_img2img() {
-    // console.log('Submit img2img')
-    window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'img2img_generate', button_text: 'Generate' } }, "*");
-
-    // checkCredit();
     showSubmitButtons('img2img', false);
 
     var id = randomId();
     localStorage.setItem("img2img_task_id", id);
-    window.tasks_info[id] = {}
-    window.tasks_info[id].action = "img2img_generate"
 
-    requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function () {
+    requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function() {
         showSubmitButtons('img2img', true);
         localStorage.removeItem("img2img_task_id");
         showRestoreProgressButton('img2img', false);
@@ -341,51 +186,19 @@ function submit_img2img() {
     var res = create_submit_args(arguments);
 
     res[0] = id;
-    res[1] = `token:${getUrlParams().token}`;
+    res[1] = get_tab_index('mode_img2img');
     res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
     res[3] = get_tab_index('mode_img2img');
-    var nsfw = gradioApp().querySelector("#nsfw_negative_switch > label > input");
-    if (nsfw && nsfw.checked) {
-        const nsfwArray = NSFW_PROMPT.split(',')
-        for (let idx in nsfwArray) {
-            res[4] = replaceAll(res[4], nsfwArray[idx].trim(), '')
-        }
-        res[5] += NSFW_PROMPT
-    }
 
     return res;
 }
 
 function submit_extras() {
     // console.log('Submit extras')
-    window.parent?.postMessage({ message: "logEvent", name: "generate_button_click", data: { button_id: 'extras_generate', button_text: 'Generate' } }, "*");
-
-    // checkCredit();
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    fetch(`${window.topApi}/account/use-credit`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            action: "extras_generate",
-            infodata: {
-                sd_model_checkpoint: window.model_checkpoint || opts.sd_model_checkpoint
-            }
-        })
-    })
-        .then(response => response.json())
-        .catch(error => {
-            console.error('Error occurred during token verification:', error);
-        });
 
     var id = randomId();
     var res = create_submit_args(arguments);
     res[0] = id;
-    res[1] = `token:${getUrlParams().token}`;
 
     return res;
 }
@@ -397,7 +210,7 @@ function restoreProgressTxt2img() {
     id = localStorage.getItem("txt2img_task_id");
 
     if (id) {
-        requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function () {
+        requestProgress(id, gradioApp().getElementById('txt2img_gallery_container'), gradioApp().getElementById('txt2img_gallery'), function() {
             showSubmitButtons('txt2img', true);
         }, null, 0);
     }
@@ -411,7 +224,7 @@ function restoreProgressImg2img() {
     var id = localStorage.getItem("img2img_task_id");
 
     if (id) {
-        requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function () {
+        requestProgress(id, gradioApp().getElementById('img2img_gallery_container'), gradioApp().getElementById('img2img_gallery'), function() {
             showSubmitButtons('img2img', true);
         }, null, 0);
     }
@@ -420,7 +233,7 @@ function restoreProgressImg2img() {
 }
 
 
-onUiLoaded(function () {
+onUiLoaded(function() {
     showRestoreProgressButton('txt2img', localStorage.getItem("txt2img_task_id"));
     showRestoreProgressButton('img2img', localStorage.getItem("img2img_task_id"));
 });
@@ -428,7 +241,7 @@ onUiLoaded(function () {
 
 function modelmerger() {
     var id = randomId();
-    requestProgress(id, gradioApp().getElementById('modelmerger_results_panel'), null, function () { });
+    requestProgress(id, gradioApp().getElementById('modelmerger_results_panel'), null, function() {});
 
     var res = create_submit_args(arguments);
     res[0] = id;
@@ -465,7 +278,7 @@ onAfterUiUpdate(function() {
     executeCallbacks(optionsChangedCallbacks); /*global optionsChangedCallbacks*/
 
     Object.defineProperty(textarea, 'value', {
-        set: function (newValue) {
+        set: function(newValue) {
             var valueProp = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
             var oldValue = valueProp.get.call(textarea);
             valueProp.set.call(textarea, newValue);
@@ -476,7 +289,7 @@ onAfterUiUpdate(function() {
 
             executeCallbacks(optionsChangedCallbacks);
         },
-        get: function () {
+        get: function() {
             var valueProp = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value');
             return valueProp.get.call(textarea);
         }
@@ -490,8 +303,8 @@ onAfterUiUpdate(function() {
     var settings_tabs = gradioApp().querySelector('#settings div');
     if (show_all_pages && settings_tabs) {
         settings_tabs.appendChild(show_all_pages);
-        show_all_pages.onclick = function () {
-            gradioApp().querySelectorAll('#settings > div').forEach(function (elem) {
+        show_all_pages.onclick = function() {
+            gradioApp().querySelectorAll('#settings > div').forEach(function(elem) {
                 if (elem.id == "settings_tab_licenses") {
                     return;
                 }
@@ -502,7 +315,7 @@ onAfterUiUpdate(function() {
     }
 });
 
-onOptionsChanged(function () {
+onOptionsChanged(function() {
     var elem = gradioApp().getElementById('sd_checkpoint_hash');
     var sd_checkpoint_hash = opts.sd_checkpoint_hash || "";
     var shorthash = sd_checkpoint_hash.substring(0, 10);
@@ -519,10 +332,10 @@ let txt2img_textarea, img2img_textarea = undefined;
 function restart_reload() {
     document.body.innerHTML = '<h1 style="font-family:monospace;margin-top:20%;color:lightgray;text-align:center;">Reloading...</h1>';
 
-    var requestPing = function () {
-        requestGet("./internal/ping", {}, function (data) {
+    var requestPing = function() {
+        requestGet("./internal/ping", {}, function(data) {
             location.reload();
-        }, function () {
+        }, function() {
             setTimeout(requestPing, 500);
         });
     };
@@ -535,8 +348,8 @@ function restart_reload() {
 // Simulate an `input` DOM event for Gradio Textbox component. Needed after you edit its contents in javascript, otherwise your edits
 // will only visible on web page and not sent to python.
 function updateInput(target) {
-    let e = new Event("input", { bubbles: true });
-    Object.defineProperty(e, "target", { value: target });
+    let e = new Event("input", {bubbles: true});
+    Object.defineProperty(e, "target", {value: target});
     target.dispatchEvent(e);
 }
 
@@ -606,7 +419,7 @@ function updateImg2imgResizeToTextAfterChangingImage() {
     // At the time this is called from gradio, the image has no yet been replaced.
     // There may be a better solution, but this is simple and straightforward so I'm going with it.
 
-    setTimeout(function () {
+    setTimeout(function() {
         gradioApp().getElementById('img2img_update_resize_to').click();
     }, 500);
 
@@ -637,76 +450,4 @@ function switchWidthHeight(tabname) {
     updateInput(width);
     updateInput(height);
     return [];
-}
-
-function checkCredit() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-
-    // Call the API endpoint to consume credit
-    if (!token) {
-        throw new Error('Token not found');
-    }
-
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', `${window.topApi}/account/check-credit`, false);
-    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.send();
-    if (xhr.status === 200) {
-        // console.log('Successfully checked credit');
-    } else {
-        var errorMessage = 'Request failed with status: ' + xhr.status;
-        throw new Error(errorMessage);
-    }
-}
-
-function getCurrentDateTime() {
-    const now = new Date();
-    const year = now.getFullYear().toString();
-    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const day = now.getDate().toString().padStart(2, '0');
-    const hours = now.getHours().toString().padStart(2, '0');
-    const minutes = now.getMinutes().toString().padStart(2, '0');
-    const seconds = now.getSeconds().toString().padStart(2, '0');
-    
-    return `${year}${month}${day}_${hours}${minutes}${seconds}`;
-}
-
-async function check_export(task_id, task_type, retry) {
-    let txt = gradioApp().getElementById('export_component').textContent
-    if (retry < 10) {
-        if (txt.includes(task_id)) {
-            let listStr = txt.split(task_id)
-            let jsonData = listStr[listStr.length - 1];
-            var blob = new Blob([jsonData], { type: 'application/json' });
-            var anchor = document.createElement('a');
-            anchor.href = URL.createObjectURL(blob);
-            anchor.download = `${task_type}_${getCurrentDateTime()}.json`;
-            anchor.click();
-        } else {
-            retry ++;
-            setTimeout(() => check_export(task_id, task_type, retry), 1000);
-        }
-     } else {
-        alert("Error in export parameter!")
-    }
-}
-
-async function export_txt2img_parameters() {
-    var res = create_submit_args(arguments);
-    var task_id = randomId().replace('task', 'export');
-    res[0] = task_id
-    res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
-    setTimeout(() => check_export(task_id, "txt2img", 0), 1000);
-    return res
-}
-
-async function export_img2img_parameters() {
-    var res = create_submit_args(arguments);
-    var task_id = randomId().replace('task', 'export');
-    res[0] = task_id
-    res[2] = window.model_checkpoint || opts.sd_model_checkpoint;
-    setTimeout(() => check_export(task_id, "img2img", 0), 1000);
-    return res
 }

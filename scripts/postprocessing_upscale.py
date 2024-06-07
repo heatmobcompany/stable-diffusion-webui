@@ -9,8 +9,8 @@ from modules.ui import switch_values_symbol
 
 upscale_cache = {}
 
-MAX_WIDTH = 1152
-MAX_HEIGHT = 1152
+MAX_WIDTH = 1200
+MAX_HEIGHT = 1200
 def resize_from_to_html(width, height, scale_by):
     target_width = int(width * scale_by)
     target_height = int(height * scale_by)
