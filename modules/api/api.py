@@ -733,7 +733,8 @@ class Api:
                             refine_output["alwayson_scripts"]["controlnet"]["args"][0]["input_image"] = alwayson_scripts["controlnet"]["args"][0]["input_image"]
                         refine_output_req = models.StableDiffusionImg2ImgProcessingAPI()
                         for key in refine_output.keys():
-                            setattr(refine_output_req, key, refine_output[key])
+                            if hasattr(refine_output_req, key):
+                                setattr(refine_output_req, key, refine_output[key])
                         script_args = self.init_script_args(refine_output_req, self.default_script_arg_img2img, selectable_scripts, selectable_script_idx, script_runner)
                         with closing(StableDiffusionProcessingImg2Img(sd_model=shared.sd_model, **args)) as p2:
                             logger.debug(f"Refine output: {refine_output}")
@@ -761,6 +762,8 @@ class Api:
                         infotext = json.loads(processed.js())
                         infotext2 = json.loads(processed2.js())
                         infotext["refine_output"] = infotext2
+                        if refine_output.get("debug_step1", None):
+                            infotext["imagespath_step1"] = processed.imagespath
                         imagespath = processed2.imagespath
                         if watermark:
                             imagespath = add_watermark(imagespath, watermark)
