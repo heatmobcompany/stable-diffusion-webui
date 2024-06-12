@@ -429,11 +429,8 @@ def webui():
         # after initial launch, disable --autolaunch for subsequent restarts
         cmd_opts.autolaunch = False
 
-        # if share_url:
-        #     servers = server_infos if server_infos else get_server_info()
-        #     for server in servers:
-        #         post_v2a(server["id"], "share_url: {}".format(share_url))
-
+        if cmd_opts.share_url:
+            print("Static public URL:", cmd_opts.share_url)
 
         startup_timer.record("gradio launch")
 
