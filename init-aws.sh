@@ -4,8 +4,9 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 sudo apt update -y && sudo apt upgrade -y
 # install ndvia drivers
-# sudo apt autoremove nvidia* --purge
-# sudo apt install nvidia-driver-535 -y
+cd /tmp && wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
+sudo sh cuda_11.8.0_520.61.05_linux.run --silent --override --toolkit
+cd $SCRIPT_DIR
 
 # install python lib
 sudo apt install -y aria2 lnav jq
@@ -22,15 +23,10 @@ git clone https://github.com/heatmobcompany/sd-webui-controlnet /workspace/stabl
 git clone https://github.com/heatmobcompany/sd-webui-segment-anything /workspace/stable-diffusion-webui/extensions/sd-webui-segment-anything
 git clone https://github.com/heatmobcompany/sd-webui-roop /workspace/stable-diffusion-webui/extensions/sd-webui-roop
 git clone https://github.com/heatmobcompany/sd-webui-adetailer /workspace/stable-diffusion-webui/extensions/sd-webui-adetailer
-# git clone https://github.com/heatmobcompany/sd-webui-prompt-all-in-one /workspace/stable-diffusion-webui/extensions/sd-webui-prompt-all-in-one
-git clone https://github.com/heatmobcompany/Civitai-Helper /workspace/stable-diffusion-webui/extensions/Civitai-Helper
-# git clone https://github.com/heatmobcompany/openpose-editor /workspace/stable-diffusion-webui/extensions/openpose-editor
-git clone https://github.com/heatmobcompany/stable-diffusion-webui-rembg /workspace/stable-diffusion-webui/extensions/stable-diffusion-webui-rembg
 git clone https://github.com/heatmobcompany/sd-webui-openpose-editor /workspace/stable-diffusion-webui/extensions/sd-webui-openpose-editor
-git clone https://github.com/heatmobcompany/sd-webui-inpaint-anything /workspace/stable-diffusion-webui/extensions/sd-webui-inpaint-anything
 git clone https://github.com/heatmobcompany/sd-ootd /workspace/stable-diffusion-webui/extensions/sd-ootd
 
-# $SCRIPT_DIR/setup-checkpoint.sh all
+$SCRIPT_DIR/setup-modeli.sh
 $SCRIPT_DIR/setup-common.sh
 
 # create and add config.yaml

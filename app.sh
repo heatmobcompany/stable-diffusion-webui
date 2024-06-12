@@ -16,6 +16,6 @@ $SCRIPT_DIR/update.sh
 $SCRIPT_DIR/job_healthcheck.sh
 
 echo "Starting the app"
-$SCRIPT_DIR/webui.sh --api-log --skip-prepare-environment --disable-safe-unpickle
+$SCRIPT_DIR/webui.sh --api-log --skip-prepare-environment
 
 $SCRIPT_DIR/job_healthcheck.sh remove
