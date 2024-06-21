@@ -35,7 +35,6 @@ from blendmodes.blend import blendLayers, BlendType
 opt_C = 4
 opt_f = 8
 
-NSFW_PROMPT = ",nsfw,nude,topless,nipples,nudity,pussy,penis,cum,big tits,big tit"
 def setup_color_correction(image):
     logging.info("Calibrating color correction.")
     correction_target = cv2.cvtColor(np.asarray(image.copy()), cv2.COLOR_RGB2LAB)
@@ -473,7 +472,7 @@ class Processed:
             "is_using_inpainting_conditioning": self.is_using_inpainting_conditioning,
         }
 
-        return json.dumps(obj).replace(NSFW_PROMPT, '')
+        return json.dumps(obj)
 
     def infotext(self, p: StableDiffusionProcessing, index):
         return create_infotext(p, self.all_prompts, self.all_seeds, self.all_subseeds, comments=[], position_in_batch=index % self.batch_size, iteration=index // self.batch_size)
@@ -669,7 +668,6 @@ def create_infotext(p, all_prompts, all_seeds, all_subseeds, comments=None, iter
 
     prompt_text = p.prompt if use_main_prompt else all_prompts[index]
     negative_prompt_text = f"\nNegative prompt: {all_negative_prompts[index]}" if all_negative_prompts[index] else ""
-    negative_prompt_text = negative_prompt_text.replace(NSFW_PROMPT, '')
 
     return f"{prompt_text}{negative_prompt_text}\n{generation_params_text}".strip()
 
