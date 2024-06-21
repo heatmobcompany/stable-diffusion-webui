@@ -327,7 +327,7 @@ def create_toprow(is_img2img):
                     outputs=[],
                 )
 
-            with gr.Row(elem_id=f"{id_part}_tools", visible=False):
+            with gr.Row(elem_id=f"{id_part}_tools", visible=True):
                 paste = ToolButton(value=paste_symbol, elem_id="paste")
                 clear_prompt_button = ToolButton(value=clear_prompt_symbol, elem_id=f"{id_part}_clear_prompt")
                 extra_networks_button = ToolButton(value=extra_networks_symbol, elem_id=f"{id_part}_extra_networks")
@@ -347,12 +347,9 @@ def create_toprow(is_img2img):
                     outputs=[prompt, negative_prompt],
                 )
 
-            with gr.Row(elem_id=f"{id_part}_styles_row", visible=False):
+            with gr.Row(elem_id=f"{id_part}_styles_row", visible=True):
                 prompt_styles = gr.Dropdown(label="Styles", elem_id=f"{id_part}_styles", choices=[k for k, v in shared.prompt_styles.styles.items()], value=[], multiselect=True)
                 create_refresh_button(prompt_styles, shared.prompt_styles.reload, lambda: {"choices": [k for k, v in shared.prompt_styles.styles.items()]}, f"refresh_{id_part}_styles")
-    with gr.Row():
-        extra_networks_button = gr.Button(value="Show/hide Lora, Extra networks", elem_id=f"{id_part}_extra_networks")
-        nsfw_negative_switch = gr.Checkbox(label='NSFW Filter (Subcription Only)', value=True, visible=True, elem_id="nsfw_negative_switch")
 
     return prompt, prompt_styles, negative_prompt, submit, button_interrogate, button_deepbooru, prompt_style_apply, save_style, paste, extra_networks_button, token_counter, token_button, negative_token_counter, negative_token_button, restore_progress_button
 
@@ -1505,11 +1502,11 @@ def create_ui():
         (img2img_interface, "img2img", "img2img"),
         (extras_interface, "Extras", "extras"),
         (pnginfo_interface, "PNG Info", "pnginfo"),
-        # (modelmerger_interface, "Checkpoint Merger", "modelmerger"),
-        # (train_interface, "Train", "train"),
+        (modelmerger_interface, "Checkpoint Merger", "modelmerger"),
+        (train_interface, "Train", "train"),
     ]
-    # extensions_interface = ui_extensions.create_ui()
-    # interfaces += [(extensions_interface, "Extensions", "extensions")]
+    extensions_interface = ui_extensions.create_ui()
+    interfaces += [(extensions_interface, "Extensions", "extensions")]
     interfaces += [(settings.interface, "Settings", "settings")]
     interfaces += script_callbacks.ui_tabs_callback()
 
