@@ -19,7 +19,7 @@ install_dir="/workspace"
 
 # Commandline arguments for webui.py, for example: export COMMANDLINE_ARGS="--medvram --opt-split-attention"
 export COMMANDLINE_ARGS="--log-file /workspace/logs/app.logging.log --disable-safe-unpickle --xformers --opt-sdp-attention --port 3000 --listen --enable-insecure-extension-access --api \
---google-id '$ID' --group '$GROUP' --type '$TYPE' --share-url '$URL' --base-api '$BASE_API' --lora-base-url '$LORA_BASE_URL'"
+--google-id $ID --group $GROUP --type $TYPE --share-url $URL --base-api $BASE_API --lora-base-url $LORA_BASE_URL"
 
 #export XFORMERS_PACKAGE="xformers==0.0.17.dev447"
 
