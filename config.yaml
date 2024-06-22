@@ -4,4 +4,6 @@ app:
   models: "Majicmix"
   url: ""
   app_name: ""
-  source_branch: "pod_modeli"
+  source_branch: ""
+  base_api: ""
+  lora_base_url: ""

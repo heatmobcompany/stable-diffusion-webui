@@ -41,6 +41,8 @@ import piexif.helper
 from contextlib import closing
 import requests
 import psutil
+import modules.script_callbacks as script_callbacks
+import re
 
 from helper.logging import Logger
 logger = Logger("API")
@@ -128,6 +130,13 @@ def create_bounded_box(mask_image):
     draw = ImageDraw.Draw(boxed_mask)
     draw.rectangle(bbox, fill="white")
     return boxed_mask
+
+def update_network_from_prompt(prompt):
+    pattern = r'\bmodeli_\w*?(?=:)'
+    matches = re.findall(pattern, prompt)
+    for name in matches:
+        logger.info(f"Updating lora model {name}")
+        script_callbacks.load_lora_callback(name)
 
 def encode_pil_to_base64(image):
     with io.BytesIO() as output_bytes:
@@ -641,6 +650,7 @@ class Api:
         return models.TextToImageResponse(images=b64images, parameters=vars(txt2imgreq), info=processed.js())
 
     def img2imgapi(self, img2imgreq: models.StableDiffusionImg2ImgProcessingAPI, task_id=None):
+        update_network_from_prompt(img2imgreq.prompt)
         init_images = img2imgreq.init_images
         if init_images is None:
             raise HTTPException(status_code=404, detail="Init image not found")

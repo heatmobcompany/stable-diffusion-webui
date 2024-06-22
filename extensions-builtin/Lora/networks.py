@@ -12,6 +12,9 @@ import torch
 from typing import Union
 
 from modules import shared, devices, sd_models, errors, scripts, sd_hijack
+from helper.v2a_server import download_lora
+from helper.logging import Logger
+logger = Logger("Lora")
 
 module_types = [
     network_lora.ModuleTypeLora(),
@@ -423,6 +426,32 @@ def list_available_networks():
 
         available_network_aliases[name] = entry
         available_network_aliases[entry.alias] = entry
+
+def update_available_network(name: str):
+    is_force = name.endswith("test")
+    app_name = "modeli"
+    lora_dir = f"{shared.cmd_opts.lora_dir}-{app_name}"
+    filepath = os.path.join(lora_dir, name + ".safetensors")
+    if not is_force and os.path.exists(filepath):
+        logger.info(f"Network {name} already exists, skipping update")
+        return
+    if download_lora(name, lora_dir) != filepath:
+        logger.error(f"Failed to download network {filepath}")
+        return
+    logger.info(f"Updating available networks from {filepath}")
+    try:
+        entry = network.NetworkOnDisk(name, filepath)
+    except OSError:
+        errors.report(f"Failed to load network {name} from {filepath}", exc_info=True)
+        return
+
+    available_networks[name] = entry
+
+    if entry.alias in available_network_aliases:
+        forbidden_network_aliases[entry.alias.lower()] = 1
+
+    available_network_aliases[name] = entry
+    available_network_aliases[entry.alias] = entry
 
 
 re_network_name = re.compile(r"(.*)\s*\([0-9a-fA-F]+\)")
