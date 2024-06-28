@@ -432,7 +432,7 @@ def update_available_network(name: str):
     app_name = "modeli"
     lora_dir = f"{shared.cmd_opts.lora_dir}-{app_name}"
     filepath = os.path.join(lora_dir, name + ".safetensors")
-    if not is_force and os.path.exists(filepath):
+    if not is_force and (name in available_networks):
         logger.info(f"Network {name} already exists, skipping update")
         return
     if download_lora(name, lora_dir) != filepath:
