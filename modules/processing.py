@@ -1283,6 +1283,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
 
         if image_mask is not None:
             image_mask = image_mask.convert('L')
+            if self.inpaint_full_res:
+                image_mask = images.resize_image(self.resize_mode, image_mask, self.width, self.height)
 
             if self.inpainting_mask_invert:
                 image_mask = ImageOps.invert(image_mask)
@@ -1324,6 +1326,8 @@ class StableDiffusionProcessingImg2Img(StableDiffusionProcessing):
             self.color_corrections = []
         imgs = []
         for img in self.init_images:
+            if self.inpaint_full_res:
+                img = images.resize_image(self.resize_mode, img, self.width, self.height)
 
             # Save init image
             if opts.save_init_img:
