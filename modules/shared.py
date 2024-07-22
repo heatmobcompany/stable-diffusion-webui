@@ -425,7 +425,7 @@ options_templates.update(options_section(('sd', "Stable Diffusion"), {
     "sd_model_checkpoint": OptionInfo(None, "Stable Diffusion checkpoint", gr.Dropdown, lambda: {"choices": list_checkpoint_tiles()}, refresh=refresh_checkpoints),
     "sd_checkpoint_cache": OptionInfo(2, "Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
     "sd_checkpoint_cache_items": OptionInfo(
-        "cyberrealistic_v40-inpainting.safetensors",
+        "cyberrealistic_v40-inpainting.safetensors,realisticVisionV60B1_v51VAE_2G.safetensors",
         "Checkpoint names to cache in RAM",
         gr.Textbox, lambda: { "interactive": False, "visible": True}),
     "sd_vae_checkpoint_cache": OptionInfo(0, "VAE Checkpoints to cache in RAM", gr.Slider, {"minimum": 0, "maximum": 10, "step": 1}),
