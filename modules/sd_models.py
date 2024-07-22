@@ -477,6 +477,12 @@ for i in shared.opts.sd_checkpoint_cache_items.split(","):
     sd_models_cached[i.strip()] = None
 
 def load_model(checkpoint_info=None, already_loaded_state_dict=None):
+    if checkpoint_info and checkpoint_info.name in sd_models_cached and sd_models_cached[checkpoint_info.name] is not None:
+        logger.info(f"Load cached model checkpoint: {checkpoint_info.name}")
+        sd_model = sd_models_cached[checkpoint_info.name]
+        model_data.sd_model = sd_model
+        return sd_model
+
     from modules import lowvram, sd_hijack
     checkpoint_info = checkpoint_info or select_checkpoint()
 
@@ -499,13 +505,6 @@ def load_model(checkpoint_info=None, already_loaded_state_dict=None):
     clip_is_included_into_sd = any(x for x in [sd1_clip_weight, sd2_clip_weight, sdxl_clip_weight, sdxl_refiner_clip_weight] if x in state_dict)
 
     timer.record("find config")
-    
-    if checkpoint_info.name in sd_models_cached and sd_models_cached[checkpoint_info.name] is not None:
-        logger.info(f"Load cached model checkpoint: {checkpoint_info.name}")
-        sd_model = sd_models_cached[checkpoint_info.name]
-        sd_model.used_config = checkpoint_config
-        model_data.sd_model = sd_model
-        return sd_model
 
     sd_config = OmegaConf.load(checkpoint_config)
     repair_config(sd_config)
@@ -581,11 +580,11 @@ def reload_model_weights(sd_model=None, info=None):
     if sd_model is None:  # previous model load failed
         current_checkpoint_info = None
     else:
-        if sd_model not in sd_models_cached.values():
-            current_checkpoint_info = sd_model.sd_checkpoint_info
-            if sd_model.sd_model_checkpoint == checkpoint_info.filename:
-                return
+        current_checkpoint_info = sd_model.sd_checkpoint_info
+        if sd_model.sd_model_checkpoint == checkpoint_info.filename:
+            return
 
+        if sd_model not in sd_models_cached.values():
             sd_unet.apply_unet("None")
 
             if shared.cmd_opts.lowvram or shared.cmd_opts.medvram:
@@ -596,6 +595,13 @@ def reload_model_weights(sd_model=None, info=None):
             sd_hijack.model_hijack.undo_hijack(sd_model)
 
     timer = Timer()
+    
+    if checkpoint_info.name in sd_models_cached:
+        if sd_model and sd_model not in sd_models_cached.values():
+            del sd_model
+        load_model(checkpoint_info, already_loaded_state_dict=None)
+        return model_data.sd_model
+
 
     state_dict = get_checkpoint_state_dict(checkpoint_info, timer)
 
@@ -605,7 +611,6 @@ def reload_model_weights(sd_model=None, info=None):
 
     if sd_model is None or\
     checkpoint_config != sd_model.used_config or \
-    checkpoint_info.name in sd_models_cached or \
     sd_model in sd_models_cached.values():
         if sd_model and sd_model not in sd_models_cached.values():
             logger.info(f"Release model checkpoint: {sd_model.sd_model_checkpoint}")
