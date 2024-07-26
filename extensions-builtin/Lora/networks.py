@@ -435,7 +435,8 @@ def update_available_network(name: str):
     if not is_force and (name in available_networks):
         logger.info(f"Network {name} already exists, skipping update")
         return
-    if download_lora(name, lora_dir) != filepath:
+
+    if not os.path.exists(filepath) and download_lora(name, lora_dir) != filepath:
         logger.error(f"Failed to download network {filepath}")
         return
     logger.info(f"Updating available networks from {filepath}")
@@ -453,6 +454,16 @@ def update_available_network(name: str):
     available_network_aliases[name] = entry
     available_network_aliases[entry.alias] = entry
 
+    while len(available_networks) > 64:
+        list_custom_networks = [ x for x in list(available_networks.keys()) if x.startswith("modeli_")]
+        if len(list_custom_networks) == 0:
+            break
+        entry_name = list_custom_networks[0]
+        logger.error(f"Removing {entry_name} from available networks, length: {len(available_networks)}")
+        entry = available_networks[entry_name]
+        available_networks.pop(entry_name, None)
+        available_network_aliases.pop(entry_name, None)
+        available_network_aliases.pop(entry.alias, None)
 
 re_network_name = re.compile(r"(.*)\s*\([0-9a-fA-F]+\)")
 
