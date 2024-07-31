@@ -29,4 +29,5 @@ if [ -d "$extensions_dir" ]; then
 else
   echo "Extensions directory not found: $extensions_dir"
 fi
+./setup-modeli.sh
 cd "$script_dir"

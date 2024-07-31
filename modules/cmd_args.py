@@ -111,6 +111,8 @@ parser.add_argument("--server-id", type=str, help="Server id that run this scrip
 parser.add_argument("--group", type=str, help="Style selected", default='')
 parser.add_argument("--type", type=str, help="Type of server", default='colab')
 parser.add_argument("--share-url", type=str, help="Shared url defined extenal", default='')
+parser.add_argument("--base-api", type=str, help="Base api", default='')
+parser.add_argument("--lora-base-url", type=str, help="Base lora url", default='')
 parser.add_argument("--log-file", type=str, help="Path of log file", default='')
 parser.add_argument("--log-level", type=str, help="Log level", default='')
 parser.add_argument('--subpath', type=str, help='customize the subpath for gradio, use with reverse proxy')

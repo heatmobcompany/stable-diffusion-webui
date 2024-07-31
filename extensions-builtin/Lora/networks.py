@@ -12,6 +12,9 @@ import torch
 from typing import Union
 
 from modules import shared, devices, sd_models, errors, scripts, sd_hijack
+from helper.v2a_server import download_lora
+from helper.logging import Logger
+logger = Logger("Lora")
 
 module_types = [
     network_lora.ModuleTypeLora(),
@@ -424,6 +427,43 @@ def list_available_networks():
         available_network_aliases[name] = entry
         available_network_aliases[entry.alias] = entry
 
+def update_available_network(name: str):
+    is_force = name.endswith("test")
+    app_name = "modeli"
+    lora_dir = f"{shared.cmd_opts.lora_dir}-{app_name}"
+    filepath = os.path.join(lora_dir, name + ".safetensors")
+    if not is_force and (name in available_networks):
+        logger.info(f"Network {name} already exists, skipping update")
+        return
+
+    if not os.path.exists(filepath) and download_lora(name, lora_dir) != filepath:
+        logger.error(f"Failed to download network {filepath}")
+        return
+    logger.info(f"Updating available networks from {filepath}")
+    try:
+        entry = network.NetworkOnDisk(name, filepath)
+    except OSError:
+        errors.report(f"Failed to load network {name} from {filepath}", exc_info=True)
+        return
+
+    available_networks[name] = entry
+
+    if entry.alias in available_network_aliases:
+        forbidden_network_aliases[entry.alias.lower()] = 1
+
+    available_network_aliases[name] = entry
+    available_network_aliases[entry.alias] = entry
+
+    while len(available_networks) > 64:
+        list_custom_networks = [ x for x in list(available_networks.keys()) if x.startswith("modeli_")]
+        if len(list_custom_networks) == 0:
+            break
+        entry_name = list_custom_networks[0]
+        logger.error(f"Removing {entry_name} from available networks, length: {len(available_networks)}")
+        entry = available_networks[entry_name]
+        available_networks.pop(entry_name, None)
+        available_network_aliases.pop(entry_name, None)
+        available_network_aliases.pop(entry.alias, None)
 
 re_network_name = re.compile(r"(.*)\s*\([0-9a-fA-F]+\)")
 

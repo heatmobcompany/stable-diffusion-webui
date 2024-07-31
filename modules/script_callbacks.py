@@ -93,6 +93,7 @@ class ImageGridLoopParams:
 
 ScriptCallback = namedtuple("ScriptCallback", ["script", "callback"])
 callback_map = dict(
+    callbacks_load_lora=[],
     callbacks_app_started=[],
     callbacks_model_loaded=[],
     callbacks_ui_tabs=[],
@@ -118,6 +119,14 @@ callback_map = dict(
 def clear_callbacks():
     for callback_list in callback_map.values():
         callback_list.clear()
+
+
+def load_lora_callback(lora):
+    for c in callback_map['callbacks_load_lora']:
+        try:
+            c.callback(lora)
+        except Exception:
+            report_exception(c, 'load_lora_callback')
 
 
 def app_started_callback(demo: Optional[Blocks], app: FastAPI):
@@ -306,6 +315,10 @@ def remove_callbacks_for_function(callback_func):
     for callback_list in callback_map.values():
         for callback_to_remove in [cb for cb in callback_list if cb.callback == callback_func]:
             callback_list.remove(callback_to_remove)
+
+def on_load_lora(callback):
+    """register a function to be called when the lora script is loaded; the lora object is passed as an argument"""
+    add_callback(callback_map['callbacks_load_lora'], callback)
 
 
 def on_app_started(callback):
