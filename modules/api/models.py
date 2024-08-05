@@ -204,6 +204,13 @@ class InterrogateRequest(BaseModel):
 
 class InterrogateResponse(BaseModel):
     caption: str = Field(default=None, title="Caption", description="The generated caption for the image.")
+    
+class CaptionRequest(BaseModel):
+    image: str = Field(default="", title="Image", description="Image to work on, url or base64 data.")
+    # model: str = Field(default="clip", title="Model", description="The interrogate model used.")
+
+class CaptionResponse(BaseModel):
+    caption: str = Field(default=None, title="Caption", description="The generated caption for the image.")
 
 class TrainResponse(BaseModel):
     info: str = Field(title="Train info", description="Response string from train embedding or hypernetwork task.")

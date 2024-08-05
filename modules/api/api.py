@@ -24,7 +24,8 @@ import modules.shared as shared
 from modules import sd_samplers, deepbooru, sd_hijack, images, scripts, ui, postprocessing, errors, progress, restart
 from modules.api import models
 from modules.call_queue import QueueLock
-from modules.shared import opts, sd_queue_lock, extras_queue_lock
+from modules.shared import opts, sd_queue_lock, extras_queue_lock, caption_lock
+from modules.caption import blipCaption
 from modules.processing import StableDiffusionProcessingTxt2Img, StableDiffusionProcessingImg2Img, process_images
 from modules.textual_inversion.textual_inversion import create_embedding, train_embedding
 from modules.textual_inversion.preprocess import preprocess
@@ -460,6 +461,23 @@ class Api:
             outer_thickness = req.outer_thickness if req.outer_thickness else req.thickness
             result = self.get_auto_border(req.image, inner_thickness, outer_thickness)
             return  {"message": f"Successfully", "result": result}
+        
+        @app.post("/sdapi/v2/caption")
+        def get_caption(req: models.CaptionRequest):
+            image_b64 = req.image
+            if image_b64 is None:
+                raise HTTPException(status_code=404, detail="Image not found")
+            img = decode_base64_to_image(image_b64)
+            img = img.convert('RGB')
+            t = time.time()
+
+            caption = None
+            with QueueLock(caption_lock):
+                logger.info('Caption start in {:.3f} seconds'.format(time.time() - t));t = time.time()
+                caption = blipCaption.caption_image(img)
+
+            logger.info('Caption done in {:.3f} seconds'.format(time.time() - t))
+            return models.CaptionResponse(caption=caption)
 
     def get_auto_border(self, mask: str, inner_thickness=15, outer_thickness=15):
         mask_image = decode_base64_to_image(mask).convert("RGB")

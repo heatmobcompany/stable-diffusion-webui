@@ -30,6 +30,7 @@ parser = cmd_args.parser
 
 sd_queue_lock = PriorityLock("Main SD")
 extras_queue_lock = PriorityLock("Extras SD")
+caption_lock = PriorityLock("Caption image")
 
 script_loading.preload_extensions(extensions_dir, parser, extension_list=launch.list_extensions(launch.args.ui_settings_file))
 script_loading.preload_extensions(extensions_builtin_dir, parser)
