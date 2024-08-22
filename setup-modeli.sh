@@ -26,3 +26,7 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/weight_slider-LECO-v1.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o weight_slider-LECO-v1.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/lora_office_3.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o lora_office_3.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/microwaistV05.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o microwaistV05.safetensors
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/age_slider_v20.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o age_slider_v20.safetensors
+
+# setup controlnet
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/blob/resolve/ip-adapter-faceid-plusv2_sd15.bin -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o ip-adapter-faceid-plusv2_sd15.bin
