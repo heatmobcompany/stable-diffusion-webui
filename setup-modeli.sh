@@ -29,4 +29,4 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/age_slider_v20.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o age_slider_v20.safetensors
 
 # setup controlnet
-aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/blob/resolve/ip-adapter-faceid-plusv2_sd15.bin -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o ip-adapter-faceid-plusv2_sd15.bin
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/ip-adapter-faceid-plusv2_sd15.bin -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o ip-adapter-faceid-plusv2_sd15.bin
