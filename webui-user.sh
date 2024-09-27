@@ -3,14 +3,6 @@
 # Uncomment and change the variables below to your need:#
 #########################################################
 
-# Group: Majicmix, RevAnimated, Meinamix, RealisticVision, CosplayMix, ...
-ID=$(cat /workspace/config.yaml | yq .app.server_id)
-TYPE=$(cat /workspace/config.yaml | yq .app.server_type)
-GROUP=$(cat /workspace/config.yaml | yq .app.models)
-URL="http://$(curl ifconfig.me --silent):3000"
-BASE_API=$(cat /workspace/config.yaml | yq .app.base_api)
-LORA_BASE_URL=$(cat /workspace/config.yaml | yq .app.lora_base_url)
-
 # Install directory without trailing slash
 install_dir="/workspace"
 
@@ -18,8 +10,7 @@ install_dir="/workspace"
 #clone_dir="stable-diffusion-webui"
 
 # Commandline arguments for webui.py, for example: export COMMANDLINE_ARGS="--medvram --opt-split-attention"
-export COMMANDLINE_ARGS="--log-file /workspace/logs/app.logging.log --disable-safe-unpickle --xformers --opt-sdp-attention --port 3000 --listen --enable-insecure-extension-access --api \
---google-id $ID --group $GROUP --type $TYPE --share-url $URL --base-api $BASE_API --lora-base-url $LORA_BASE_URL"
+export COMMANDLINE_ARGS="--disable-safe-unpickle --xformers --opt-sdp-attention --listen --enable-insecure-extension-access --api"
 
 #export XFORMERS_PACKAGE="xformers==0.0.17.dev447"
 

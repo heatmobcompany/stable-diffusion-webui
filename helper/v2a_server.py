@@ -29,7 +29,7 @@ def get_model_info(name):
         response = requests.request("GET", url)
         return response.json()
     except Exception as e:
-        logger.error(f'Get model info fail: {e}')
+        # logger.error(f'Get model info fail: {e}')
         return None
 
 
