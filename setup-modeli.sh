@@ -28,5 +28,11 @@ aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/ann
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/microwaistV05.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o microwaistV05.safetensors
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/age_slider_v20.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o age_slider_v20.safetensors
 
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/GS-DeFeminize-neg.pt -d /workspace/stable-diffusion-webui/models/Lora -o GS-DeFeminize-neg.pt
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/GS-DeMasculate-neg.pt -d /workspace/stable-diffusion-webui/models/Lora -o GS-DeMasculate-neg.pt
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/GS-Masculine.pt -d /workspace/stable-diffusion-webui/models/Lora -o GS-Masculine.pt
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/GS-Womanly.pt -d /workspace/stable-diffusion-webui/models/Lora -o GS-Womanly.pt
+aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/skin_tone_slider_v1.safetensors -d /workspace/stable-diffusion-webui/models/Lora -o skin_tone_slider_v1.safetensors
+
 # setup controlnet
 aria2c --console-log-level=error -c -x 16 -s 16 -k 1M https://huggingface.co/annh/general/resolve/main/ip-adapter-faceid-plusv2_sd15.bin -d /workspace/stable-diffusion-webui/extensions/sd-webui-controlnet/models -o ip-adapter-faceid-plusv2_sd15.bin
