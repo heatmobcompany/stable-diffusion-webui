@@ -393,5 +393,34 @@ def start():
     else:
         webui.webui()
 
+def fix_basicsr_package():
+    try:
+        basicsr_path = os.path.dirname(importlib.util.find_spec("basicsr").origin)
+        file_path = os.path.join(basicsr_path, 'data', 'degradations.py')
+        if not os.path.isfile(file_path):
+            print(f"File not found: {file_path}")
+            return
+        old_import = '\nfrom torchvision.transforms.functional_tensor import rgb_to_grayscale'
+        new_import = '''
+try:
+    from torchvision.transforms.functional_tensor import rgb_to_grayscale
+except ImportError:
+    from torchvision.transforms.functional import rgb_to_grayscale
+'''
+        with open(file_path, 'r') as file:
+            content = file.read()
+        if old_import in content:
+            new_content = content.replace(old_import, new_import)
+            with open(file_path, 'w') as file:
+                file.write(new_content)
+            print(f"Replaced import in: {file_path}")
+        else:
+            # print(f"No changes needed in: {file_path}")
+            pass
+
+    except ImportError:
+        print("Package basicsr not found.")
+
 if not is_installed("requests"):
     run_pip("install requests", "requests")
+fix_basicsr_package()
